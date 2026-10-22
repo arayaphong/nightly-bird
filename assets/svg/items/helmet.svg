@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 -125 165 85" role="img" aria-labelledby="title">
+  <title id="title">หมวกนิรภัย</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="helmet" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M28.12629 -60.01859 A64 64 0 0 1 155.87371 -60.01859 Z" fill="#f2c230" data-scorched-fill="#433512" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M22 -62 L162 -62 L162 -50 L22 -50 Z" fill="#b8860b" data-scorched-fill="#37280a" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M90.42122 -105.78837 A20 8 -22.91831 0 1 53.57878 -90.21163 A20 8 -22.91831 0 1 90.42122 -105.78837" fill="rgba(255,255,255,.6)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

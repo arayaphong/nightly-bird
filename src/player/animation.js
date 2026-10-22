@@ -23,7 +23,8 @@ function updateWing(dt) {
     b.wstop = null;
     b.lazyT = 1.4 + Math.random() * 1.2;
   } else {
-    if (b.wstop == null) b.wstop = WING_REST + TAU * Math.ceil((b.th - WING_REST) / TAU - 1e-9); // next 90° ahead of the wing
+    if (b.wstop == null)
+      b.wstop = WING_REST + TAU * Math.ceil((b.th - WING_REST) / TAU - 1e-9); // next 90° ahead of the wing
     if (b.th < b.wstop) {
       b.th = Math.min(b.wstop, b.th + (b.wspin || WING_OMEGA) * dt);
     } // keep turning forward, stop exactly at 90°
@@ -43,13 +44,6 @@ function updateWing(dt) {
   b.wing = -Math.cos(b.th);
 }
 // body centre and tail-to-beak span of the red-bird art
-export function birdFrame() {
-  if (!bird.alive) return 3; // wing swept down while falling
-  if (controls.holding && session.phase === 'play')
-    return ((Math.floor(bird.flap / 1.1) % 6) + 6) % 6; // full flap loop 01→06
-  const c = ((Math.floor(bird.flap / 1.1) % 18) + 18) % 18;
-  return c < 6 ? c : 2; // glide on the level-wing frame, with an occasional flap
-}
 export function blinkOpen() {
   // 1 = open, ~0.08 = shut
   if (!bird.blink) return 1;

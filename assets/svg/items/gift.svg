@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -18 32 33" role="img" aria-labelledby="title">
+  <title id="title">กล่องของขวัญ</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="gift" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M-12 -9 L12 -9 L12 12 L-12 12 Z" fill="#e8eefc" data-scorched-fill="#413f3f" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-12 8 L12 8 L12 12 L-12 12 Z" fill="#c9d3ee" data-scorched-fill="#3a393c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-2.16 -9 L2.16 -9 L2.16 12 L-2.16 12 Z" fill="#d9365a" data-scorched-fill="#3e161c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-12 -1.2 L12 -1.2 L12 2.64 L-12 2.64 Z" fill="#d9365a" data-scorched-fill="#3e161c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-13.44 -12 L13.44 -12 L13.44 -7.2 L-13.44 -7.2 Z" fill="#f4f7ff" data-scorched-fill="#444040" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-2.16 -12 L2.16 -12 L2.16 -7.2 L-2.16 -7.2 Z" fill="#d9365a" data-scorched-fill="#3e161c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-0.73946 -15.95606 A4.08 2.16 -28.64789 0 1 -7.90054 -12.04394 A4.08 2.16 -28.64789 0 1 -0.73946 -15.95606 L7.90054 -12.04394 A4.08 2.16 28.64789 0 1 0.73946 -15.95606 A4.08 2.16 28.64789 0 1 7.90054 -12.04394" fill="#d9365a" data-scorched-fill="#3e161c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

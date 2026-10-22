@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ภาพเกม · นกแดงราตรี</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #101527;
+        color: #faf7ee;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        max-width: 1120px;
+        margin: auto;
+        padding: 32px 20px 60px;
+      }
+      header {
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+        align-items: start;
+      }
+      h1 {
+        font-size: clamp(26px, 5vw, 40px);
+        margin: 0 0 12px;
+      }
+      p {
+        line-height: 1.7;
+        color: #bec6df;
+        max-width: 760px;
+      }
+      a {
+        color: #ffabb7;
+        text-underline-offset: 4px;
+      }
+      h2 {
+        margin-top: 38px;
+        font-size: 22px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: #192139;
+        border: 1px solid #35405b;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .image {
+        height: 195px;
+        display: grid;
+        place-items: center;
+        background-color: #202a43;
+        background-image:
+          linear-gradient(
+            45deg,
+            #ffffff05 25%,
+            transparent 25%,
+            transparent 75%,
+            #ffffff05 75%
+          ),
+          linear-gradient(
+            45deg,
+            #ffffff05 25%,
+            transparent 25%,
+            transparent 75%,
+            #ffffff05 75%
+          );
+        background-size: 24px 24px;
+        background-position:
+          0 0,
+          12px 12px;
+      }
+      .image img {
+        width: 90%;
+        height: 85%;
+        object-fit: contain;
+      }
+      .caption {
+        padding: 16px;
+      }
+      .caption h3 {
+        font-size: 17px;
+        margin: 0 0 8px;
+      }
+      .caption a {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .note {
+        padding: 16px;
+        border-left: 3px solid #ff6178;
+        background: #1b2137;
+        border-radius: 0 8px 8px 0;
+      }
+      footer {
+        margin-top: 36px;
+        color: #a9b3ce;
+        font-size: 13px;
+      }
+      @media (max-width: 500px) {
+        header {
+          display: block;
+        }
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .image {
+          height: 155px;
+        }
+        .caption {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>ภาพเกมนกแดงราตรี</h1>
+        <p>
+          ภาพ SVG ที่เกมโหลดมาใช้จริง เปิดไฟล์แต่ละภาพเพื่อดูขนาดเต็ม
+          หรือแก้ด้วยโปรแกรมวาดเวกเตอร์ได้
+        </p>
+      </div>
+      <a href="../index.html">กลับไปเล่นเกม ↗</a>
+    </header>
+    <p class="note">
+      ปีก ตา ปาก หาง และครีบเป็นชิ้นส่วนแยกใน SVG เกมจะขยับชิ้นส่วนเหล่านี้
+      ภาพด้านล่างแสดงท่าพื้นฐาน
+    </p>
+    <h2>ตัวละคร</h2>
+    <div class="grid">
+      <article class="card">
+        <a class="image" href="svg/characters/bird.svg"
+          ><img src="svg/characters/bird.svg" alt="นกแดง"
+        /></a>
+        <div class="caption">
+          <h3>นกแดง</h3>
+          <a href="svg/characters/bird.svg">characters/bird.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/characters/fish.svg"
+          ><img src="svg/characters/fish.svg" alt="ปลา"
+        /></a>
+        <div class="caption">
+          <h3>ปลา</h3>
+          <a href="svg/characters/fish.svg">characters/fish.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/characters/hawk.svg"
+          ><img src="svg/characters/hawk.svg" alt="เหยี่ยวท่าบิน"
+        /></a>
+        <div class="caption">
+          <h3>เหยี่ยว · บิน</h3>
+          <a href="svg/characters/hawk.svg">characters/hawk.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/characters/hawk-dive.svg"
+          ><img src="svg/characters/hawk-dive.svg" alt="เหยี่ยวท่าพุ่ง"
+        /></a>
+        <div class="caption">
+          <h3>เหยี่ยว · พุ่งโจมตี</h3>
+          <a href="svg/characters/hawk-dive.svg">characters/hawk-dive.svg</a>
+        </div>
+      </article>
+    </div>
+    <h2>ไอเท็มและอุปกรณ์</h2>
+    <div class="grid">
+      <article class="card">
+        <a class="image" href="svg/items/helmet.svg"
+          ><img src="svg/items/helmet.svg" alt="หมวกนิรภัย"
+        /></a>
+        <div class="caption">
+          <h3>หมวกนิรภัย</h3>
+          <a href="svg/items/helmet.svg">items/helmet.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/suit.svg"
+          ><img src="svg/items/suit.svg" alt="ชุดกันฟ้าผ่า"
+        /></a>
+        <div class="caption">
+          <h3>ชุดกันฟ้าผ่า</h3>
+          <a href="svg/items/suit.svg">items/suit.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/gun.svg"
+          ><img src="svg/items/gun.svg" alt="ปืน"
+        /></a>
+        <div class="caption">
+          <h3>ปืน</h3>
+          <a href="svg/items/gun.svg">items/gun.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/magnet.svg"
+          ><img src="svg/items/magnet.svg" alt="แม่เหล็ก"
+        /></a>
+        <div class="caption">
+          <h3>แม่เหล็ก</h3>
+          <a href="svg/items/magnet.svg">items/magnet.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/gift.svg"
+          ><img src="svg/items/gift.svg" alt="ของขวัญ"
+        /></a>
+        <div class="caption">
+          <h3>ของขวัญ</h3>
+          <a href="svg/items/gift.svg">items/gift.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/balloon.svg"
+          ><img src="svg/items/balloon.svg" alt="ลูกโป่ง"
+        /></a>
+        <div class="caption">
+          <h3>ลูกโป่ง</h3>
+          <a href="svg/items/balloon.svg">items/balloon.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/firefly.svg"
+          ><img src="svg/items/firefly.svg" alt="หิ่งห้อย"
+        /></a>
+        <div class="caption">
+          <h3>หิ่งห้อย</h3>
+          <a href="svg/items/firefly.svg">items/firefly.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/worm.svg"
+          ><img src="svg/items/worm.svg" alt="หนอน"
+        /></a>
+        <div class="caption">
+          <h3>หนอน</h3>
+          <a href="svg/items/worm.svg">items/worm.svg</a>
+        </div>
+      </article>
+      <article class="card">
+        <a class="image" href="svg/items/boost.svg"
+          ><img src="svg/items/boost.svg" alt="เพิ่มความเร็ว"
+        /></a>
+        <div class="caption">
+          <h3>เพิ่มความเร็ว</h3>
+          <a href="svg/items/boost.svg">items/boost.svg</a>
+        </div>
+      </article>
+    </div>
+    <footer>
+      Copyright © 2026 Arayaphong Traisopon ·
+      <a href="../LICENSE">CC BY-NC 4.0 และเงื่อนไขโครงการ</a>
+    </footer>
+  </body>
+</html>

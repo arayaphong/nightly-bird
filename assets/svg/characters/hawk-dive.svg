@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 400 1300 480" role="img" aria-labelledby="title">
+  <title id="title">เหยี่ยว — ท่าพุ่งโจมตี</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="body" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M40 505 C300 478 700 500 1000 540 C1120 560 1182 622 1182 700 C1172 762 1100 802 1000 812 C800 832 600 792 450 742 C300 690 150 630 40 505" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M430 708 C600 780 820 826 1010 808 C1080 800 1120 775 1140 742 L990 712 C820 738 620 735 430 708" fill="#bdbbc0" data-scorched-fill="#383332" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M560 722 C700 770 860 790 1000 778 C1060 770 1100 752 1120 738 L990 712 C850 730 700 734 560 722" fill="#d9d6d1" data-scorched-fill="#3e3936" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-0" data-sprite="" data-role="blade" data-target-x="35" data-target-y="552" data-length="666.730080317365" transform="translate(700 600) rotate(-175.8715246624501)">
+      <path d=" M0 -36 C233.35553 -39.6 500.04756 -21.6 666.73008 0 C500.04756 15.84 233.35553 32.4 0 36 Q-25.2 0 0 -36" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-1" data-sprite="" data-role="blade" data-target-x="30" data-target-y="505" data-length="672.2536723588797" transform="translate(700 560) rotate(-175.30713749441014)">
+      <path d=" M0 -37 C235.28879 -40.7 504.19025 -22.2 672.25367 0 C504.19025 16.28 235.28879 33.3 0 37 Q-25.9 0 0 -37" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-2" data-sprite="" data-role="blade" data-target-x="150" data-target-y="628" data-length="610.1180213696364" transform="translate(760 640) rotate(-178.8730152745221)">
+      <path d=" M0 -31 C213.54131 -34.1 457.58852 -18.6 610.11802 0 C457.58852 13.64 213.54131 27.9 0 31 Q-21.7 0 0 -31" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-3" data-sprite="" data-role="blade" data-target-x="132" data-target-y="490" data-length="690.1949000101348" transform="translate(820 545) rotate(-175.42938872158092)">
+      <path d=" M0 -36 C241.56822 -39.6 517.64618 -21.6 690.1949 0 C517.64618 15.84 241.56822 32.4 0 36 Q-25.2 0 0 -36" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-4" data-sprite="" data-role="blade" data-target-x="118" data-target-y="560" data-length="603.3274401185479" transform="translate(720 600) rotate(-176.19855929549675)">
+      <path d=" M0 -26 C211.1646 -28.6 452.49558 -15.6 603.32744 0 C452.49558 11.44 211.1646 23.4 0 26 Q-18.2 0 0 -26" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-5" data-sprite="" data-role="blade" data-target-x="205" data-target-y="622" data-length="575.3477209479498" transform="translate(780 642) rotate(-178.00790642703356)">
+      <path d=" M0 -24 C201.3717 -26.4 431.51079 -14.4 575.34772 0 C431.51079 10.56 201.3717 21.6 0 24 Q-16.8 0 0 -24" fill="#b9bccb" data-scorched-fill="#373434" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-6" data-sprite="" data-role="blade" data-target-x="345" data-target-y="470" data-length="568.1769090697017" transform="translate(910 530) rotate(-173.93821121127135)">
+      <path d=" M0 -37 C198.86192 -40.7 426.13268 -22.2 568.17691 0 C426.13268 16.28 198.86192 33.3 0 37 Q-25.9 0 0 -37" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-7" data-sprite="" data-role="blade" data-target-x="470" data-target-y="520" data-length="491.6299421312742" transform="translate(960 560) rotate(-175.333141628561)">
+      <path d=" M0 -41 C172.07048 -45.1 368.72246 -24.6 491.62994 0 C368.72246 18.04 172.07048 36.9 0 41 Q-28.7 0 0 -41" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-8" data-sprite="" data-role="blade" data-target-x="470" data-target-y="562" data-length="422.9657196511321" transform="translate(890 612) rotate(-173.21102542556122)">
+      <path d=" M0 -25 C148.038 -27.5 317.22429 -15 422.96572 0 C317.22429 11 148.038 22.5 0 25 Q-17.5 0 0 -25" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-9" data-sprite="" data-role="blade" data-target-x="545" data-target-y="612" data-length="367.1852393547431" transform="translate(910 652) rotate(-173.74596725608356)">
+      <path d=" M0 -22 C128.51483 -24.2 275.38893 -13.2 367.18524 0 C275.38893 9.68 128.51483 19.8 0 22 Q-15.4 0 0 -22" fill="#c4c6d0" data-scorched-fill="#393636" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-10" data-sprite="" data-role="blade" data-target-x="560" data-target-y="556" data-length="432.24530072633524" transform="translate(990 600) rotate(-174.15751073380838)">
+      <path d=" M0 -45 C151.28586 -49.5 324.18398 -27 432.2453 0 C324.18398 19.8 151.28586 40.5 0 45 Q-31.5 0 0 -45" fill="#5e6889" data-scorched-fill="#232126" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-11" data-sprite="" data-role="blade" data-target-x="620" data-target-y="646" data-length="390.04615111548014" transform="translate(1010 640) rotate(179.11859600341785)">
+      <path d=" M0 -35 C136.51615 -38.5 292.53461 -21 390.04615 0 C292.53461 15.4 136.51615 31.5 0 35 Q-24.5 0 0 -35" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="blade-12" data-sprite="" data-role="blade" data-target-x="690" data-target-y="535" data-length="314.0063693621516" transform="translate(1000 585) rotate(-170.8376529542783)">
+      <path d=" M0 -30 C109.90223 -33 235.50478 -18 314.00637 0 C235.50478 13.2 109.90223 27 0 30 Q-21 0 0 -30" fill="#6f7aa0" data-scorched-fill="#26252b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="head-back" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M950 560 C1030 528 1140 560 1186 640 C1202 690 1182 732 1150 746 C1080 762 1000 742 960 702 Z" fill="#454e70" data-scorched-fill="#1d1b20" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M0 -20 C54.15508 -22 116.0466 -12 154.72879 0 C116.0466 8.8 54.15508 18 0 20 Q-14 0 0 -20" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(-0.93712 -0.349 0.349 -0.93712 960 566)"/>
+      <path d=" M0 -16 C42.61528 -17.6 91.31847 -9.6 121.75796 0 C91.31847 7.04 42.61528 14.4 0 16 Q-11.2 0 0 -16" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(-0.9445 -0.32852 0.32852 -0.9445 990 560)"/>
+      <path d=" M962 692 C1022 680 1100 690 1162 722 C1122 772 1040 782 962 760" fill="#d9d6d1" data-scorched-fill="#3e3936" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1018 652 C1060 630 1122 640 1152 672 C1132 706 1070 714 1030 692" fill="#1d2236" data-scorched-fill="#141214" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye" data-sprite="" data-role="eye" transform="translate(1100 680) rotate(0)">
+      <path d=" M29.70804 4.17519 A30 23 8 0 1 -29.70804 -4.17519 A30 23 8 0 1 29.70804 4.17519" fill="#f2c04a" data-scorched-fill="#433418" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="head-front" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M1120 686 A10 10 0 0 1 1100 686 A10 10 0 0 1 1120 686" fill="#14141b" data-scorched-fill="#120f0e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1048 650 L1152 664 L1148 678 L1052 665 Z" fill="#1d2236" data-scorched-fill="#141214" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1140 672 C1190 664 1232 700 1236 746 C1238 772 1226 792 1214 800 C1212 772 1198 750 1172 744 C1150 740 1134 736 1124 720 Z" fill="#e8b13d" data-scorched-fill="#413115" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1214 800 C1212 772 1198 750 1172 744 L1186 762 C1202 772 1210 784 1214 800" fill="#a9742b" data-scorched-fill="#332411" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-import { FISH_PIVOT } from '../../assets/art/fish.js';
+import { FISH_PIVOT } from '../config/art.js';
 import { splash } from '../effects/particles.js';
 import { fishToWorld } from './fish-geometry.js';
 import { fishSize, respawn } from './model.js';

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1.1 2 2.4" role="img" aria-labelledby="title">
+  <title id="title">ลูกโป่ง — สี่สี</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs><radialGradient id="paint-6" gradientUnits="userSpaceOnUse" fx="-0.35" fy="-0.4" fr="0.1" cx="0" cy="0" r="1.1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#ff6fa8"/><stop offset="1" stop-color="#ff6fa8"/></radialGradient>
+<radialGradient id="paint-7" gradientUnits="userSpaceOnUse" fx="-0.35" fy="-0.4" fr="0.1" cx="0" cy="0" r="1.1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#57d6c4"/><stop offset="1" stop-color="#57d6c4"/></radialGradient>
+<radialGradient id="paint-8" gradientUnits="userSpaceOnUse" fx="-0.35" fy="-0.4" fr="0.1" cx="0" cy="0" r="1.1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#a98bff"/><stop offset="1" stop-color="#a98bff"/></radialGradient>
+<radialGradient id="paint-9" gradientUnits="userSpaceOnUse" fx="-0.35" fy="-0.4" fr="0.1" cx="0" cy="0" r="1.1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#ffb04a"/><stop offset="1" stop-color="#ffb04a"/></radialGradient></defs>
+  <g id="balloon-0" data-sprite="" data-color="#ff6fa8" transform="translate(0 0) rotate(0)">
+      <path d=" M0.88 0 A0.88 1 0 0 1 -0.88 0 A0.88 1 0 0 1 0.88 0" fill="url(#paint-6)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-0.15 1.15 L0.15 1.15 L0 0.95" fill="#ff6fa8" data-scorched-fill="#46232d" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="balloon-1" data-sprite="" data-color="#57d6c4" transform="translate(0 0) rotate(0)" display="none">
+      <path d=" M0.88 0 A0.88 1 0 0 1 -0.88 0 A0.88 1 0 0 1 0.88 0" fill="url(#paint-7)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-0.15 1.15 L0.15 1.15 L0 0.95" fill="#57d6c4" data-scorched-fill="#213933" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="balloon-2" data-sprite="" data-color="#a98bff" transform="translate(0 0) rotate(0)" display="none">
+      <path d=" M0.88 0 A0.88 1 0 0 1 -0.88 0 A0.88 1 0 0 1 0.88 0" fill="url(#paint-8)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-0.15 1.15 L0.15 1.15 L0 0.95" fill="#a98bff" data-scorched-fill="#332940" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="balloon-3" data-sprite="" data-color="#ffb04a" transform="translate(0 0) rotate(0)" display="none">
+      <path d=" M0.88 0 A0.88 1 0 0 1 -0.88 0 A0.88 1 0 0 1 0.88 0" fill="url(#paint-9)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-0.15 1.15 L0.15 1.15 L0 0.95" fill="#ffb04a" data-scorched-fill="#463118" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-7 -10 16 15" role="img" aria-labelledby="title">
+  <title id="title">หิ่งห้อย — ปีกและส่วนเรืองแสง</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="wing-left" data-sprite=""  transform="translate(-1 -4) rotate(-34.37746770784939)">
+      <path d=" M3.2 0 A3.2 1.6 0 0 1 -3.2 0 A3.2 1.6 0 0 1 3.2 0" fill="rgba(230,255,220,.55)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="wing-right" data-sprite=""  transform="translate(3 -4) rotate(34.37746770784939)">
+      <path d=" M3.2 0 A3.2 1.6 0 0 1 -3.2 0 A3.2 1.6 0 0 1 3.2 0" fill="rgba(230,255,220,.55)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="head" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M5.6 -1 A2.6 1.9 0 0 1 0.4 -1 A2.6 1.9 0 0 1 5.6 -1" fill="#2a2316" data-scorched-fill="#17120d" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="lamp" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M2.2 0 A3.2 2.6 0 0 1 -4.2 0 A3.2 2.6 0 0 1 2.2 0" fill="#dfff3c" data-scorched-fill="#3f4215" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

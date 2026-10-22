@@ -7,8 +7,3 @@ export function hslRgb(h, s, l) {
   };
   return f(0) + ',' + f(8) + ',' + f(4);
 }
-export const darken = (hex, a) => {
-  const n = parseInt(hex.slice(1), 16),
-    m = (c, d) => Math.round(c + (d - c) * a);
-  return `rgb(${m(n >> 16, 18)},${m((n >> 8) & 255, 13)},${m(n & 255, 10)})`;
-};

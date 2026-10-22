@@ -20,7 +20,7 @@ body {
 img {
   max-width: 100%;
 }
-[hidden]:not([hidden='until-found' i]) {
+[hidden]:not([hidden="until-found" i]) {
   display: none !important;
 }
 
@@ -33,7 +33,7 @@ img {
   --bird: #e3352b;
   --danger: #ff5a4a;
   --card: rgba(10, 14, 40, 0.72);
-  --display: 'Mitr', 'Noto Sans Thai', system-ui, sans-serif;
+  --display: "Mitr", "Noto Sans Thai", system-ui, sans-serif;
   color-scheme: dark;
 }
 [hidden] {
@@ -192,8 +192,10 @@ canvas {
 .item.worm i {
   width: 16px;
   height: 7px;
-  border-radius: 4px;
-  background: repeating-linear-gradient(90deg, #ff9fb4 0 3px, #e2708a 3px 4px);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/worm.svg") center / contain no-repeat;
 }
 .revive {
   pointer-events: auto;
@@ -275,21 +277,28 @@ canvas {
   border-radius: 4px;
 }
 .ic.helmet {
-  height: 12px;
-  border-radius: 12px 12px 3px 3px;
-  background: linear-gradient(#ffe27a, #d99a12);
+  width: 22px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/helmet.svg") center / contain no-repeat;
 }
 .ic.suit {
-  width: 16px;
-  height: 18px;
-  border-radius: 4px 4px 8px 8px;
-  background: linear-gradient(#bfe3ff, #3d8be0);
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/suit.svg") center / contain no-repeat;
 }
 .ic.gun {
-  height: 7px;
-  border-radius: 1px 3px 3px 1px;
-  background: linear-gradient(#c9ccd6, #5b6070);
-  box-shadow: -4px 6px 0 -1px #5b6070;
+  width: 24px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/gun.svg") center / contain no-repeat;
 }
 .item.magnet {
   background: rgba(255, 90, 90, 0.14);
@@ -297,13 +306,12 @@ canvas {
   color: #ffd0d0;
 }
 .item.magnet i {
-  width: 14px;
-  height: 13px;
-  border: 4px solid #e8343f;
-  border-top: 0;
-  border-radius: 0 0 9px 9px;
-  box-sizing: border-box;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/magnet.svg") center / contain no-repeat;
 }
 .item.boost {
   background: linear-gradient(
@@ -320,8 +328,10 @@ canvas {
 .item.boost i {
   width: 14px;
   height: 14px;
-  border-radius: 50%;
-  background: conic-gradient(#ff5a5a, #ffd23c, #50e68c, #5aa0ff, #be6eff, #ff5a5a);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/boost.svg") center / contain no-repeat;
 }
 .side {
   display: flex;
@@ -343,10 +353,11 @@ canvas {
 }
 .item i {
   width: 16px;
-  height: 10px;
-  border-radius: 10px 10px 2px 2px;
-  background: linear-gradient(#ffe27a, #d99a12);
-  box-shadow: inset 0 -2px 0 #a66f05;
+  height: 12px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/helmet.svg") center / contain no-repeat;
 }
 .item.suit {
   background: rgba(110, 190, 255, 0.16);
@@ -354,11 +365,12 @@ canvas {
   color: #bfe3ff;
 }
 .item.suit i {
-  width: 12px;
-  height: 14px;
-  border-radius: 3px 3px 6px 6px;
-  background: linear-gradient(#bfe3ff, #3d8be0);
-  box-shadow: inset 0 -2px 0 #1f5fa8;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/suit.svg") center / contain no-repeat;
 }
 .item.gun {
   background: rgba(255, 120, 90, 0.15);
@@ -366,11 +378,12 @@ canvas {
   color: #ffc2b0;
 }
 .item.gun i {
-  width: 16px;
-  height: 6px;
-  border-radius: 1px 3px 3px 1px;
-  background: linear-gradient(#c9ccd6, #5b6070);
-  box-shadow: -3px 4px 0 -1px #5b6070;
+  width: 18px;
+  height: 12px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: url("../assets/svg/items/gun.svg") center / contain no-repeat;
 }
 @keyframes pop {
   from {

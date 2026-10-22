@@ -1,4 +1,4 @@
-import { BALLOON_COLS } from '../../assets/art/items.js';
+import { BALLOON_COLS } from '../config/art.js';
 import { CHEW_TIME } from '../config/animation.js';
 import {
   AGI_MAX,

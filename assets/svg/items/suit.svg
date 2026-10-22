@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 140 410 290" role="img" aria-labelledby="title">
+  <title id="title">ชุดกันฟ้าผ่า — เสื้อและฮู้ด</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs><clipPath id="clip-0" clipPathUnits="userSpaceOnUse"><path d="M95,330 C150,298 220,254 300,248 C362,243 422,252 452,292 C472,334 440,382 380,396 C300,414 210,410 165,396 C130,382 110,356 95,330Z" transform="matrix(1 0 0 1 0 0)"/></clipPath>
+<linearGradient id="paint-1" gradientUnits="userSpaceOnUse" x1="0" y1="250" x2="0" y2="410"><stop offset="0" stop-color="#5fb3ff"/><stop offset="1" stop-color="#2f7fd8"/></linearGradient>
+<clipPath id="clip-2" clipPathUnits="userSpaceOnUse"><path d=" M240 150 L452 150 L458 214 L334 360 L240 360 Z" transform="matrix(1 0 0 1 0 0)"/></clipPath>
+<linearGradient id="paint-3" gradientUnits="userSpaceOnUse" x1="300" y1="190" x2="420" y2="330"><stop offset="0" stop-color="#6fbcff"/><stop offset="1" stop-color="#2f7fd8"/></linearGradient></defs>
+  <g id="coat" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <g clip-path="url(#clip-0)"><path d="M95,330 C150,298 220,254 300,248 C362,243 422,252 452,292 C472,334 440,382 380,396 C300,414 210,410 165,396 C130,382 110,356 95,330Z" fill="url(#paint-1)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <g clip-path="url(#clip-0)"><path d=" M90 372 C200 420 330 420 470 372 L470 430 L90 430" fill="#2468b8" data-scorched-fill="#162130" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <g clip-path="url(#clip-0)"><path d=" M358.92949 264.69096 A110 18 -8 0 1 141.07051 295.30904 A110 18 -8 0 1 358.92949 264.69096" fill="rgba(255,255,255,.22)" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <g clip-path="url(#clip-0)"><path d=" M110 346 C176 352 262 344 330 326" fill="none" stroke="rgba(20,60,130,.45)" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <path d=" M205 350 L233 350 Q242 350 242 359 L242 383 Q242 392 233 392 L205 392 Q196 392 196 383 L196 359 Q196 350 205 350 Z" fill="#ffd23c" data-scorched-fill="#463815" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M205 350 L233 350 Q242 350 242 359 L242 383 Q242 392 233 392 L205 392 Q196 392 196 383 L196 359 Q196 350 205 350 Z" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M8 -50 L-26 6 L-2 6 L-12 50 L28 -10 L4 -10 L18 -50 Z" fill="#1d4f96" data-scorched-fill="#141c29" fill-rule="nonzero" opacity="1" transform="matrix(0.31689 0.04454 -0.04454 0.31689 219 371)"/>
+      <path d=" M284 379 L296 379 Q301 379 301 384 L301 384 Q301 389 296 389 L284 389 Q279 389 279 384 L279 384 Q279 379 284 379 Z" fill="#fff7d6" data-scorched-fill="#464037" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M284 379 L296 379 Q301 379 301 384 L301 384 Q301 389 296 389 L284 389 Q279 389 279 384 L279 384 Q279 379 284 379 Z" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M324 377 L336 377 Q341 377 341 382 L341 382 Q341 387 336 387 L324 387 Q319 387 319 382 L319 382 Q319 377 324 377 Z" fill="#fff7d6" data-scorched-fill="#464037" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M324 377 L336 377 Q341 377 341 382 L341 382 Q341 387 336 387 L324 387 Q319 387 319 382 L319 382 Q319 377 324 377 Z" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M364 373 L376 373 Q381 373 381 378 L381 378 Q381 383 376 383 L364 383 Q359 383 359 378 L359 378 Q359 373 364 373 Z" fill="#fff7d6" data-scorched-fill="#464037" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M364 373 L376 373 Q381 373 381 378 L381 378 Q381 383 376 383 L364 383 Q359 383 359 378 L359 378 Q359 373 364 373 Z" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="hood" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <g clip-path="url(#clip-2)"><path d=" M478 280 A96 88 0 0 1 286 280 A96 88 0 0 1 478 280 L474 292 A70 64 0 0 1 334 292 A70 64 0 0 1 474 292" fill="url(#paint-3)" fill-rule="evenodd" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <g clip-path="url(#clip-2)"><path d=" M474 292 A70 64 0 0 1 334 292 A70 64 0 0 1 474 292" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="5" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
+      <path d=" M0 -7.8 C14 -19.5 38 -14.3 40 0 C40.8 10.4 16 16.12 0 7.8 Z" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(-0.37461 -0.92718 0.92718 -0.37461 352 198)"/>
+      <path d=" M0 -6.6 C11.9 -16.5 32.3 -12.1 34 0 C34.68 8.8 13.6 13.64 0 6.6 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(0.17365 -0.98481 0.98481 0.17365 372 194)"/>
+  </g>
+</svg>

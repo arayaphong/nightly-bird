@@ -1,4 +1,4 @@
-import { FISH_AX, FISH_AY, FISH_SPAN } from '../../assets/art/fish.js';
+import { FISH_AX, FISH_AY, FISH_SPAN } from '../config/art.js';
 import { fishSize } from './model.js';
 import { enemies } from '../game/state.js';
 export // scorched tint (shot fish)

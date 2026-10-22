@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1100" role="img" aria-labelledby="title">
+  <title id="title">เหยี่ยว — ท่าบิน</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="back-feather-0" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-156)">
+      <path d=" M0 -21.24 C193.2 -73.16 528.08 -59 644 -9.44 Q656.88 14.16 579.6 28.32 C418.6 59 161 49.56 0 21.24 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-1" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-167)">
+      <path d=" M0 -21.6 C198.72 -74.4 543.168 -60 662.4 -9.6 Q675.648 14.4 596.16 28.8 C430.56 60 165.6 50.4 0 21.6 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-2" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-178)">
+      <path d=" M0 -21.24 C179.4 -73.16 490.36 -59 598 -9.44 Q609.96 14.16 538.2 28.32 C388.7 59 149.5 49.56 0 21.24 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-3" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-189)">
+      <path d=" M0 -20.16 C154.56 -69.44 422.464 -56 515.2 -8.96 Q525.504 13.44 463.68 26.88 C334.88 56 128.8 47.04 0 20.16 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-4" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-200)">
+      <path d=" M0 -18.72 C129.72 -64.48 354.568 -52 432.4 -8.32 Q441.048 12.48 389.16 24.96 C281.06 52 108.1 43.68 0 18.72 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-5" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-210)">
+      <path d=" M0 -17.28 C104.88 -59.52 286.672 -48 349.6 -7.68 Q356.592 11.52 314.64 23.04 C227.24 48 87.4 40.32 0 17.28 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-6" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-154)">
+      <path d=" M0 -20.16 C126.9 -69.44 346.86 -56 423 -8.96 Q431.46 13.44 380.7 26.88 C274.95 56 105.75 47.04 0 20.16 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-7" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-166)">
+      <path d=" M0 -20.16 C129.6 -69.44 354.24 -56 432 -8.96 Q440.64 13.44 388.8 26.88 C280.8 56 108 47.04 0 20.16 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-8" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-178)">
+      <path d=" M0 -19.44 C118.8 -66.96 324.72 -54 396 -8.64 Q403.92 12.96 356.4 25.92 C257.4 54 99 45.36 0 19.44 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-9" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-190)">
+      <path d=" M0 -18 C102.6 -62 280.44 -50 342 -8 Q348.84 12 307.8 24 C222.3 50 85.5 42 0 18 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="back-feather-10" data-sprite="" data-role="wing-back" data-pivot-x="900" data-pivot-y="585" data-inset="0" transform="translate(900 585) rotate(-202)">
+      <path d=" M0 -16.56 C86.4 -57.04 236.16 -46 288 -7.36 Q293.76 11.04 259.2 22.08 C187.2 46 72 38.64 0 16.56 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="tail" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M0 -18.72 C129 -64.48 352.6 -52 430 -8.32 Q438.6 12.48 387 24.96 C279.5 52 107.5 43.68 0 18.72 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(-0.9703 0.24192 -0.24192 -0.9703 575 800)"/>
+      <path d=" M0 -19.44 C150 -66.96 410 -54 500 -8.64 Q510 12.96 450 25.92 C325 54 125 45.36 0 19.44 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(-0.99027 0.13917 -0.13917 -0.99027 575 800)"/>
+      <path d=" M0 -19.8 C156 -68.2 426.4 -55 520 -8.8 Q530.4 13.2 468 26.4 C338 55 130 46.2 0 19.8 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(-0.99939 0.0349 -0.0349 -0.99939 575 800)"/>
+      <path d=" M0 -19.44 C150 -66.96 410 -54 500 -8.64 Q510 12.96 450 25.92 C325 54 125 45.36 0 19.44 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(-0.99756 -0.06976 0.06976 -0.99756 575 800)"/>
+      <path d=" M0 -18 C132 -62 360.8 -50 440 -8 Q448.8 12 396 24 C286 50 110 42 0 18 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(-0.98163 -0.19081 0.19081 -0.98163 575 800)"/>
+      <path d=" M0 -11.664 C82.5 -40.176 225.5 -32.4 275 -5.184 Q280.5 7.776 247.5 15.552 C178.75 32.4 68.75 27.216 0 11.664 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(-0.99027 0.13917 -0.13917 -0.99027 600 805)"/>
+      <path d=" M0 -11.88 C85.8 -40.92 234.52 -33 286 -5.28 Q291.72 7.92 257.4 15.84 C185.9 33 71.5 27.72 0 11.88 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(-0.99939 0.0349 -0.0349 -0.99939 600 805)"/>
+      <path d=" M0 -11.664 C82.5 -40.176 225.5 -32.4 275 -5.184 Q280.5 7.776 247.5 15.552 C178.75 32.4 68.75 27.216 0 11.664 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(-0.99756 -0.06976 0.06976 -0.99756 600 805)"/>
+  </g>
+  <g id="body" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M545 770 C640 650 840 560 1000 560 C1085 600 1135 700 1122 785 C1095 905 955 955 800 948 C675 942 590 885 545 770" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M560 760 C660 660 840 590 990 585 C900 640 760 720 620 800 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M620 860 C740 780 940 735 1124 712 C1130 820 1070 915 935 940 C810 960 690 925 620 860" fill="#bdbbc0" data-scorched-fill="#383332" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M690 850 C800 790 960 750 1118 735 C1110 830 1050 890 930 905 C830 915 740 895 690 850" fill="#d9d6d1" data-scorched-fill="#3e3936" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="talons" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M-2 -40 L2 -40 Q15 -40 15 -27 L15 5 Q15 18 2 18 L-2 18 Q-15 18 -15 5 L-15 -27 Q-15 -40 -2 -40 Z" fill="#e8ae3a" data-scorched-fill="#413015" fill-rule="nonzero" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M0 18 L27.0891 45.73798" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M27.0891 45.73798 Q36.93969 58.34615 11.54923 54.00068" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M0 18 L0 53.2" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M0 53.2 Q0 69.2 -17.33262 50.14379" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M0 18 L-27.0891 45.73798" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M-27.0891 45.73798 Q-36.93969 58.34615 -38.8658 32.65863" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 560 895)"/>
+      <path d=" M-2 -40 L2 -40 Q15 -40 15 -27 L15 5 Q15 18 2 18 L-2 18 Q-15 18 -15 5 L-15 -27 Q-15 -40 -2 -40 Z" fill="#e8ae3a" data-scorched-fill="#413015" fill-rule="nonzero" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M0 18 L27.0891 45.73798" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M27.0891 45.73798 Q36.93969 58.34615 11.54923 54.00068" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M0 18 L0 53.2" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M0 53.2 Q0 69.2 -17.33262 50.14379" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M0 18 L-27.0891 45.73798" fill="none" stroke="#e8ae3a" data-scorched-stroke="#413015" stroke-width="18" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+      <path d=" M-27.0891 45.73798 Q-36.93969 58.34615 -38.8658 32.65863" fill="none" stroke="#3b2a18" data-scorched-stroke="#1b130d" stroke-width="9" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(0.98481 -0.17365 0.17365 0.98481 615.72486 911.5753)"/>
+  </g>
+  <g id="front-feather-0" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-142)">
+      <path d=" M0 -21.24 C210 -73.16 574 -59 700 -9.44 Q714 14.16 630 28.32 C455 59 175 49.56 0 21.24 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-1" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-153)">
+      <path d=" M0 -21.6 C216 -74.4 590.4 -60 720 -9.6 Q734.4 14.4 648 28.8 C468 60 180 50.4 0 21.6 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-2" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-164)">
+      <path d=" M0 -21.24 C195 -73.16 533 -59 650 -9.44 Q663 14.16 585 28.32 C422.5 59 162.5 49.56 0 21.24 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-3" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-175)">
+      <path d=" M0 -20.16 C168 -69.44 459.2 -56 560 -8.96 Q571.2 13.44 504 26.88 C364 56 140 47.04 0 20.16 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-4" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-186)">
+      <path d=" M0 -18.72 C141 -64.48 385.4 -52 470 -8.32 Q479.4 12.48 423 24.96 C305.5 52 117.5 43.68 0 18.72 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-5" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="0" transform="translate(875 615) rotate(-196)">
+      <path d=" M0 -17.28 C114 -59.52 311.6 -48 380 -7.68 Q387.6 11.52 342 23.04 C247 48 95 40.32 0 17.28 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-6" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="10" transform="translate(867.3395555688102 608.5721239031346) rotate(-140)">
+      <path d=" M0 -20.16 C141 -69.44 385.4 -56 470 -8.96 Q479.4 13.44 423 26.88 C305.5 56 117.5 47.04 0 20.16 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-7" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="10" transform="translate(866.1705240714107 610.305284372141) rotate(-152)">
+      <path d=" M0 -20.16 C144 -69.44 393.6 -56 480 -8.96 Q489.6 13.44 432 26.88 C312 56 120 47.04 0 20.16 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-8" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="10" transform="translate(865.3873830406168 612.24362644183) rotate(-164)">
+      <path d=" M0 -19.44 C132 -66.96 360.8 -54 440 -8.64 Q448.8 12.96 396 25.92 C286 54 110 45.36 0 19.44 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-9" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="10" transform="translate(865.0243594974017 614.3024352625588) rotate(-176)">
+      <path d=" M0 -18 C114 -62 311.6 -50 380 -8 Q387.6 12 342 24 C247 50 95 42 0 18 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-10" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="10" transform="translate(865.0973193125843 616.3917310096007) rotate(-188)">
+      <path d=" M0 -16.56 C96 -57.04 262.4 -46 320 -7.36 Q326.4 11.04 288 22.08 C208 46 80 38.64 0 16.56 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-11" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="20" transform="translate(860.613203993227 601.1068325908201) rotate(-136)">
+      <path d=" M0 -18.72 C90 -64.48 246 -52 300 -8.32 Q306 12.48 270 24.96 C195 52 75 43.68 0 18.72 Z" fill="#5e6889" data-scorched-fill="#232126" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-12" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="20" transform="translate(857.6794919243113 605) rotate(-150)">
+      <path d=" M0 -18.72 C90 -64.48 246 -52 300 -8.32 Q306 12.48 270 24.96 C195 52 75 43.68 0 18.72 Z" fill="#5e6889" data-scorched-fill="#232126" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-13" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="20" transform="translate(855.7747660812337 609.4872528836601) rotate(-164)">
+      <path d=" M0 -17.64 C84 -60.76 229.6 -49 280 -7.84 Q285.6 11.76 252 23.52 C182 49 70 41.16 0 17.64 Z" fill="#5e6889" data-scorched-fill="#232126" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-14" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="20" transform="translate(855.0121834596181 614.30201006595) rotate(-178)">
+      <path d=" M0 -16.2 C72 -55.8 196.8 -45 240 -7.2 Q244.8 10.8 216 21.6 C156 45 60 37.8 0 16.2 Z" fill="#5e6889" data-scorched-fill="#232126" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-15" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="60" transform="translate(831.839611979681 573.3204977724602) rotate(-136)">
+      <path d=" M0 -10.296 C49.5 -35.464 135.3 -28.6 165 -4.576 Q168.3 6.864 148.5 13.728 C107.25 28.6 41.25 24.024 0 10.296 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-16" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="60" transform="translate(823.0384757729337 585) rotate(-150)">
+      <path d=" M0 -10.296 C49.5 -35.464 135.3 -28.6 165 -4.576 Q168.3 6.864 148.5 13.728 C107.25 28.6 41.25 24.024 0 10.296 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="front-feather-17" data-sprite="" data-role="wing-front" data-pivot-x="875" data-pivot-y="615" data-inset="60" transform="translate(817.3242982437009 598.4617586509801) rotate(-164)">
+      <path d=" M0 -9.702 C46.2 -33.418 126.28 -26.95 154 -4.312 Q157.08 6.468 138.6 12.936 C100.1 26.95 38.5 22.638 0 9.702 Z" fill="#7d87a6" data-scorched-fill="#2a282c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="head-back" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M955 575 C990 505 1100 495 1165 555 C1205 600 1205 672 1160 715 C1110 760 1035 748 985 712 Z" fill="#454e70" data-scorched-fill="#1d1b20" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M0 -8.28 C36 -28.52 98.4 -23 120 -3.68 Q122.4 5.52 108 11.04 C78 23 30 19.32 0 8.28 Z" fill="#2f3657" data-scorched-fill="#18161b" fill-rule="nonzero" opacity="1" transform="matrix(-0.93969 -0.34202 0.34202 -0.93969 1010 540)"/>
+      <path d=" M0 -7.92 C39 -27.28 106.6 -22 130 -3.52 Q132.6 5.28 117 10.56 C84.5 22 32.5 18.48 0 7.92 Z" fill="#262c47" data-scorched-fill="#161417" fill-rule="nonzero" opacity="1" transform="matrix(-0.99027 -0.13917 0.13917 -0.99027 1000 560)"/>
+      <path d=" M0 -7.2 C28.5 -24.8 77.9 -20 95 -3.2 Q96.9 4.8 85.5 9.6 C61.75 20 23.75 16.8 0 7.2 Z" fill="#465073" data-scorched-fill="#1d1c21" fill-rule="nonzero" opacity="1" transform="matrix(-0.86603 -0.5 0.5 -0.86603 1030 525)"/>
+      <path d=" M985 712 C1040 690 1110 690 1158 712 C1150 760 1080 800 1000 770 Z" fill="#d9d6d1" data-scorched-fill="#3e3936" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1000 640 C1050 612 1125 615 1150 648 C1135 692 1070 705 1030 690 C1015 675 1004 660 1000 640" fill="#1d2236" data-scorched-fill="#141214" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye" data-sprite="" data-role="eye" transform="translate(1098 668) rotate(0)">
+      <path d=" M35.64965 5.01023 A36 31 8 0 1 -35.64965 -5.01023 A36 31 8 0 1 35.64965 5.01023" fill="#f2c04a" data-scorched-fill="#433418" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="head-front" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M1121 673 A13 13 0 0 1 1095 673 A13 13 0 0 1 1121 673" fill="#14141b" data-scorched-fill="#120f0e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1052 628 L1150 646 L1146 662 L1056 650 Z" fill="#1d2236" data-scorched-fill="#141214" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1128 650 C1185 632 1232 668 1236 722 C1238 748 1226 768 1214 778 C1212 750 1196 730 1170 724 C1148 720 1130 722 1118 708 Z" fill="#e8b13d" data-scorched-fill="#413115" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1214 778 C1212 750 1196 730 1170 724 L1184 742 C1202 752 1210 762 1214 778" fill="#a9742b" data-scorched-fill="#332411" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M1118 708 C1140 716 1160 716 1172 724 L1150 734 C1135 730 1124 722 1118 708" fill="#a9742b" data-scorched-fill="#332411" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

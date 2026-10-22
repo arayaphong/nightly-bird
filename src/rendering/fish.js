@@ -1,48 +1,8 @@
-import {
-  FISH_AX,
-  FISH_AY,
-  FISH_PART,
-  FISH_PIVOT,
-  FISH_SPAN,
-  FISH_SVG,
-  FISH_TAIL_CUT,
-} from '../../assets/art/fish.js';
+import { FISH_AX, FISH_AY, FISH_SPAN } from '../config/art.js';
 import { fishSize } from '../enemies/model.js';
 import { effects, enemies, session, viewport } from '../game/state.js';
-import { darken } from '../math/color.js';
 import { cx } from '../platform/canvas.js';
-const fishVec = [];
-FISH_SVG.forEach(([fill, tx, ty, d], i) => {
-  const path = new Path2D(d);
-  if (i === 0) {
-    fishVec.push(
-      {
-        fill,
-        tx,
-        ty,
-        path,
-        part: 'body',
-        clip: [0, FISH_TAIL_CUT + 8],
-      },
-      {
-        fill,
-        tx,
-        ty,
-        path,
-        part: 'tail',
-        clip: [FISH_TAIL_CUT - 14, 1536],
-      },
-    );
-    return;
-  }
-  fishVec.push({
-    fill,
-    tx,
-    ty,
-    path,
-    part: FISH_PART[i] || 'body',
-  });
-});
+import { art } from '../platform/svg-art.js';
 function drawFishBody(x, y, ang, belly, alpha, pose, burnt) {
   // burnt: scorched colours for a shot fish // belly: 1 = upright, -1 = upside down (values between = mid-roll)
   const s = fishSize();
@@ -55,24 +15,13 @@ function drawFishBody(x, y, ang, belly, alpha, pose, burnt) {
   const k = (s * 2.1) / FISH_SPAN;
   cx.scale(-k, k);
   cx.translate(-FISH_AX, -FISH_AY); // art faces left: mirror so the mouth leads
-  for (const q of fishVec) {
-    cx.save();
-    if (q.part !== 'body') {
-      const [px, py] = FISH_PIVOT[q.part];
-      cx.translate(px, py);
-      if (q.part === 'gill') cx.scale(pose.gill, 1 + (pose.gill - 1) * 0.35);
-      else cx.rotate(pose[q.part]);
-      cx.translate(-px, -py);
-    }
-    if (q.clip) {
-      cx.beginPath();
-      cx.rect(q.clip[0], -50, q.clip[1] - q.clip[0], 1124);
-      cx.clip();
-    }
-    cx.translate(q.tx, q.ty);
-    cx.fillStyle = burnt ? q.burnt || (q.burnt = darken(q.fill, 0.6)) : q.fill;
-    cx.fill(q.path);
-    cx.restore();
+  for (const part of art('fish')) {
+    part.draw(cx, {
+      angle: part.role === 'body' || part.role === 'gill' ? 0 : pose[part.role],
+      scaleX: part.role === 'gill' ? pose.gill : 1,
+      scaleY: part.role === 'gill' ? 1 + (pose.gill - 1) * 0.35 : 1,
+      scorched: !!burnt,
+    });
   }
   cx.restore();
   cx.globalAlpha = 1;
@@ -93,7 +42,9 @@ export function drawFish() {
     gill: 1 + 0.28 * Math.max(0, Math.sin(session.time * 2.6 + (enemies.fish.bob || 0))),
   };
   if (enemies.fish.mode === 'leap' && enemies.fish.trail)
-    enemies.fish.trail.forEach((p, i) => drawFishBody(p[0], p[1], p[2], 1, 0.06 + 0.05 * i, pose)); // afterimages
+    enemies.fish.trail.forEach((p, i) =>
+      drawFishBody(p[0], p[1], p[2], 1, 0.06 + 0.05 * i, pose),
+    ); // afterimages
   drawFishBody(
     enemies.fish.x,
     enemies.fish.y,

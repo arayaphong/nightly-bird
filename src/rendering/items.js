@@ -4,6 +4,7 @@ import { giftParts } from '../items/collectibles.js';
 import { magnetR } from '../items/magnet.js';
 import { hslRgb } from '../math/color.js';
 import { cx } from '../platform/canvas.js';
+import { art, sprite } from '../platform/svg-art.js';
 export function drawGifts() {
   for (const g of items.gifts) {
     const p = giftParts(g),
@@ -14,47 +15,15 @@ export function drawGifts() {
     cx.moveTo(p.bx, p.by + p.br);
     cx.quadraticCurveTo(p.bx - 6 + sway, (p.by + p.cy) / 2, p.cx, p.cy - p.cs / 2);
     cx.stroke();
-    const bg = cx.createRadialGradient(
-      p.bx - p.br * 0.35,
-      p.by - p.br * 0.4,
-      p.br * 0.1,
-      p.bx,
-      p.by,
-      p.br * 1.1,
-    );
-    bg.addColorStop(0, '#ffffff');
-    bg.addColorStop(0.25, g.col);
-    bg.addColorStop(1, g.col);
-    cx.fillStyle = bg;
-    cx.beginPath();
-    cx.ellipse(p.bx, p.by, p.br * 0.88, p.br, 0, 0, 7);
-    cx.fill();
-    cx.fillStyle = g.col;
-    cx.beginPath();
-    cx.moveTo(p.bx - 3, p.by + p.br + 3);
-    cx.lineTo(p.bx + 3, p.by + p.br + 3);
-    cx.lineTo(p.bx, p.by + p.br - 1);
-    cx.fill();
-    const s = p.cs;
-    cx.save();
-    cx.translate(p.cx, p.cy);
-    cx.rotate(sway * 0.02);
-    cx.fillStyle = '#e8eefc';
-    cx.fillRect(-s / 2, -s / 2 + 3, s, s - 3);
-    cx.fillStyle = '#c9d3ee';
-    cx.fillRect(-s / 2, s / 2 - 4, s, 4);
-    cx.fillStyle = '#d9365a';
-    cx.fillRect(-s * 0.09, -s / 2 + 3, s * 0.18, s - 3);
-    cx.fillRect(-s / 2, -s * 0.05, s, s * 0.16);
-    cx.fillStyle = '#f4f7ff';
-    cx.fillRect(-s * 0.56, -s / 2, s * 1.12, s * 0.2);
-    cx.fillStyle = '#d9365a';
-    cx.fillRect(-s * 0.09, -s / 2, s * 0.18, s * 0.2);
-    cx.beginPath();
-    cx.ellipse(-s * 0.18, -s / 2 - 2, s * 0.17, s * 0.09, -0.5, 0, 7);
-    cx.ellipse(s * 0.18, -s / 2 - 2, s * 0.17, s * 0.09, 0.5, 0, 7);
-    cx.fill();
-    cx.restore();
+    const balloon = art('balloon').find((part) => part.color === g.col) || art('balloon')[0];
+    balloon.draw(cx, { x: p.bx, y: p.by, scaleX: p.br, scaleY: p.br });
+    sprite('gift', 'gift').draw(cx, {
+      x: p.cx,
+      y: p.cy,
+      angle: sway * 0.02,
+      scaleX: p.cs / 24,
+      scaleY: p.cs / 24,
+    });
   }
 }
 export function drawFlies() {
@@ -98,21 +67,27 @@ export function drawFlies() {
     cx.arc(f.x, f.y, R * 0.75, 0, 7);
     cx.stroke();
     const w = Math.sin(session.time * 40 + f.ph);
-    cx.fillStyle = 'rgba(230,255,220,.55)';
-    cx.beginPath();
-    cx.ellipse(f.x - 1, f.y - 4, 3.2, 1.6 + w, -0.6, 0, 7);
-    cx.ellipse(f.x + 3, f.y - 4, 3.2, 1.6 - w, 0.6, 0, 7);
-    cx.fill();
-    cx.fillStyle = '#2a2316';
-    cx.beginPath();
-    cx.ellipse(f.x + 3, f.y - 1, 2.6, 1.9, 0, 0, 7);
-    cx.fill();
-    cx.fillStyle = `rgb(${lamp})`;
+    sprite('firefly', 'wing-left').draw(cx, {
+      x: f.x - 1,
+      y: f.y - 4,
+      scaleY: (1.6 + w) / 1.6,
+    });
+    sprite('firefly', 'wing-right').draw(cx, {
+      x: f.x + 3,
+      y: f.y - 4,
+      scaleY: (1.6 - w) / 1.6,
+    });
+    sprite('firefly', 'head').draw(cx, { x: f.x, y: f.y });
+    const color =
+      'rgb(' +
+      lamp
+        .split(',')
+        .map((channel) => Math.min(255, Math.round(Number(channel) / 16) * 16))
+        .join(',') +
+      ')';
     cx.shadowColor = `rgb(${mid})`;
     cx.shadowBlur = 10 * pulse;
-    cx.beginPath();
-    cx.ellipse(f.x - 1, f.y, 3.2, 2.6, 0, 0, 7);
-    cx.fill();
+    sprite('firefly', 'lamp').draw(cx, { x: f.x, y: f.y, color });
     cx.shadowBlur = 0;
   }
 }
