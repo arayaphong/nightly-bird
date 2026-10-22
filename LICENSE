@@ -24,10 +24,37 @@ https://github.com/arayaphong/nightly-bird
 
 Source code
 -----------
-Source code is excluded from the CC BY-NC 4.0 license above. Unless a separate
-license is expressly provided for a source file or component, all rights in
-that source code are reserved by its respective copyright holder. No separate
-source code license is granted by this notice.
+Source code is excluded from the CC BY-NC 4.0 license above and is instead
+provided under the following custom noncommercial terms, except where a
+separate license is expressly provided for a file or component.
+
+To the extent that Arayaphong Traisopon holds the necessary rights, permission
+is granted, free of charge, to use, copy, modify, and redistribute the source
+code and compiled versions solely for noncommercial purposes, subject to
+these conditions:
+
+1. Retain this copyright notice and these license terms in all copies or
+   substantial portions, including distributions of modified or compiled
+   versions. Credit Arayaphong Traisopon, link to the original project, and
+   clearly identify modifications.
+2. Commercial use requires prior written permission from Arayaphong
+   Traisopon. Commercial use includes selling or licensing the software for
+   payment, monetizing it through advertisements or in-app purchases,
+   incorporating it into paid products or services, and using it to provide
+   paid development or other commercial services. This restriction applies
+   to the original code, modified versions, and compiled versions, whether
+   or not the activity ultimately earns a profit.
+3. Redistribution under this permission must preserve these noncommercial
+   restrictions for the covered code. No right to authorize commercial use
+   of that code is granted.
+
+These terms do not restrict uses permitted by applicable law independently
+of this license. All rights not expressly granted are reserved.
+
+THE SOURCE CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NONINFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER
+IS NOT LIABLE FOR CLAIMS OR DAMAGES ARISING FROM THE CODE OR ITS USE.
 
 Gameplay ideas and mechanics
 ---------------------------
