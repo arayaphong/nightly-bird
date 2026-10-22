@@ -1,36 +1,31 @@
-import { buyItem, initializeGame, resumeRun, revive, startRun } from './game/lifecycle.js';
-import { startLoop } from './game/loop.js';
-import { initCanvas } from './platform/canvas.js';
-import { bindInput } from './platform/input.js';
-import { resize } from './platform/viewport.js';
-import { renderHud } from './ui/hud.js';
-import { bindPanels, renderPanels } from './ui/panels.js';
-import { loadArt } from './platform/svg-art.js';
+import { createGame } from './game/create-game.js';
 
 const startPanel = document.getElementById('start');
 const status = startPanel.querySelector('.go');
+let platform;
+export function getPlatform() {
+  return platform;
+}
+
 async function boot() {
   startPanel.setAttribute('aria-busy', 'true');
   status.textContent = 'กำลังโหลดภาพ…';
   try {
-    await loadArt();
-    initCanvas(document.getElementById('c'));
-    initializeGame();
-    addEventListener('resize', resize);
-    bindInput({
-      onStart: startRun,
+    platform = createGame({
+      canvas: document.getElementById('c'),
+      document,
+      host: window,
+      width: innerWidth,
+      height: innerHeight,
+      pixelRatio: devicePixelRatio,
     });
-    bindPanels({
-      onRevive: revive,
-      onBuy: buyItem,
-      onResume: resumeRun,
-    });
-    renderHud();
-    renderPanels();
-    startLoop();
+    await platform.load();
     startPanel.setAttribute('aria-busy', 'false');
     status.textContent = 'แตะเพื่อเริ่ม';
+    platform.render();
+    platform.start();
   } catch (error) {
+    platform?.dispose();
     console.error(error);
     startPanel.setAttribute('aria-busy', 'false');
     status.textContent = 'โหลดภาพไม่สำเร็จ ';

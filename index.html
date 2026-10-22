@@ -38,7 +38,9 @@
           <div class="item magnet" id="magnet" hidden>
             <i></i><span id="magnetN">แม่เหล็ก</span>
           </div>
-          <div class="item boost" id="boost" hidden><i></i><span id="boostN">เร็ว ×4</span></div>
+          <div class="item boost" id="boost" hidden>
+            <i></i><span id="boostN">เร็ว ×4</span>
+          </div>
           <div class="item worm" id="worms" hidden><i></i><span id="wormN">หนอน ×0</span></div>
         </div>
       </div>
@@ -60,7 +62,8 @@
         <p>หนอน 1 ตัว แลกไอเท็มได้ 1 ชิ้น<br />เหลือหนอน <b id="shopWorms">0</b> ตัว</p>
         <div class="shop-list">
           <button class="shop-btn" type="button" data-item="helmet">
-            <i class="ic helmet"></i><span>หมวกนิรภัย<small>กันเหยี่ยวหรือปลา 1 ครั้ง</small></span
+            <i class="ic helmet"></i
+            ><span>หมวกนิรภัย<small>กันเหยี่ยวหรือปลา 1 ครั้ง</small></span
             ><em>1 หนอน</em>
           </button>
           <button class="shop-btn" type="button" data-item="suit">
@@ -73,6 +76,10 @@
           </button>
         </div>
         <button class="revive" id="shopGo" type="button">บินต่อ</button>
+      </div>
+      <div class="card" id="paused" hidden>
+        <h1>พัก<span>เกม</span></h1>
+        <button class="revive" id="pauseGo" type="button">เล่นต่อ</button>
       </div>
     </div>
   </body>
