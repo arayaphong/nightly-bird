@@ -1,0 +1,9 @@
+export const BLINK_DUR = 0.18;
+export const TAU = Math.PI * 2;
+export const WING_REST = Math.PI / 2;
+export const WING_OMEGA = 22;
+export const WING_LAZY_OMEGA = 9;
+export const CHEW_TIME = 0.55;
+export const CHEW_BITES = 3;
+export const JET_LIFE = 0.5;
+export const JET_BANDS = 6;
