@@ -7,7 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const graph = new Map();
 async function scan(folder) {
   for (const entry of await readdir(folder, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+    if (entry.name.startsWith('.') || ['node_modules', 'dist'].includes(entry.name)) continue;
     const file = resolve(folder, entry.name);
     if (entry.isDirectory()) await scan(file);
     else if (entry.name.endsWith('.js')) {

@@ -1,7 +1,7 @@
 # นกแดงราตรี · Nightly Bird
 
 เกมนกบินบน Canvas 2D เขียนด้วย JavaScript ES modules (`import` / `export`)
-เบราว์เซอร์โหลดโมดูลโดยตรง ไม่มีขั้นตอน build และไม่มี runtime dependency
+เบราว์เซอร์โหลดโมดูลโดยตรง ไม่ต้อง bundle และไม่มี runtime dependency
 
 ## เริ่มเล่นในเครื่อง
 
@@ -62,6 +62,35 @@ npm test
 ไม่ต้องติดตั้ง dependency สำหรับสองคำสั่งนี้ `check` ตรวจ syntax, import path และ circular imports
 ส่วน tests ตรวจการบิน กระเด้งน้ำ ศัตรู ไอเท็ม ชุบชีวิต ร้านค้า และการบันทึกคะแนน
 การตรวจภาพและอินพุตจริงให้เปิดเกมในเบราว์เซอร์ทั้งแนวตั้งและแนวนอน
+
+## CI/CD และ GitHub Pages
+
+Workflow อยู่ที่ [`.github/workflows/pages.yml`](./.github/workflows/pages.yml)
+
+- Push และ PR เข้า `development` หรือ `main`: ตรวจ syntax/imports, รัน tests และสร้างไฟล์เว็บไซต์
+- Push เข้า `development`: เมื่อผ่านทั้งหมด จะ deploy ไป GitHub Pages อัตโนมัติ
+- PR และ push เข้า `main` จะตรวจสอบเท่านั้น ขณะนี้ใช้ `development` เป็นสาขาสำหรับเผยแพร่เกม
+- ใช้ `GITHUB_TOKEN` ที่ GitHub ออกให้แต่ละ run ไม่ต้องเพิ่ม PAT หรือ secret
+- ให้สิทธิ์ `pages: write` และ `id-token: write` เฉพาะ job deploy; PR ไม่สามารถ deploy ได้
+
+ตั้งค่าครั้งแรกใน repository:
+
+1. เปิด **Settings → Pages → Build and deployment → Source** เลือก **GitHub Actions**
+2. หาก environment `github-pages` จำกัดสาขาที่ deploy ได้ ให้เพิ่ม `development` ใน **Settings → Environments → github-pages**
+3. หาก workflow รอบแรกหยุดเพราะยังไม่ได้เปิด Pages ให้เปิด run ใน **Actions** แล้วเลือก **Re-run failed jobs** หรือ push commit ใหม่เข้า `development`
+
+หลัง deploy สำเร็จ เว็บไซต์อยู่ที่ <https://arayaphong.github.io/nightly-bird/>
+ดูผลแต่ละรอบและลิงก์เว็บไซต์ได้ใน job **Deploy to GitHub Pages**
+
+สร้างชุดไฟล์เผยแพร่ในเครื่องด้วย:
+
+```sh
+npm run build
+```
+
+คำสั่งนี้ล้างและสร้าง `dist/` ใหม่ โดยคัดลอกเฉพาะ `index.html`, `styles/`, `src/`, `assets/` และ `LICENSE`
+พร้อม `.nojekyll` ไม่แปลงโค้ด ESM และไม่รวม tests หรือสคริปต์พัฒนาในเว็บไซต์
+ไฟล์ใช้ relative paths จึงเปิดได้ทั้งที่ root ของเว็บและใต้ `/nightly-bird/`
 
 ## License
 
