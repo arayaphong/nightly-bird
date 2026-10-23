@@ -27,6 +27,7 @@ import { MessageBox } from '../ui/message-box.js';
 import { ShopPanel } from '../ui/shop-panel.js';
 import { MAX_FRAME_DELTA } from '../config/game.js';
 import { AudioSystem } from '../platform/audio-system.js';
+import { SOUND_EFFECTS } from '../config/audio.js';
 
 /** Composition root. Import in tests without creating a DOM or starting a loop. */
 export function createGame({
@@ -41,7 +42,7 @@ export function createGame({
   audio = host
     ? new AudioSystem({
         host,
-        sounds: { crunch: new URL('../../assets/audio/crunch.wav', import.meta.url) },
+        sounds: SOUND_EFFECTS,
         events: { 'firefly-eaten': 'crunch' },
       })
     : null,

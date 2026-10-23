@@ -8,7 +8,7 @@ export class AudioSystem extends PlatformObject {
     events = {},
     contextFactory = () => {
       const Context = host?.AudioContext ?? host?.webkitAudioContext;
-      return Context ? new Context() : null;
+      return Context ? new Context({ latencyHint: 'interactive' }) : null;
     },
     fetcher = (url) => fetch(url),
     volume = 0.6,
@@ -42,9 +42,10 @@ export class AudioSystem extends PlatformObject {
         this.output.connect(this.context.destination);
       }
       await Promise.all(
-        Object.entries(this.sounds).map(async ([name, url]) => {
+        Object.entries(this.sounds).map(async ([name, definition]) => {
           if (this.buffers.has(name)) return;
           try {
+            const url = definition.url ?? definition;
             const response = await this.fetcher(url);
             if (!response.ok)
               throw new Error(`Sound load failed (${response.status}): ${name}`);
@@ -88,7 +89,7 @@ export class AudioSystem extends PlatformObject {
         source.disconnect();
       };
       this.voices.add(source);
-      source.start();
+      source.start(0, this.sounds[name]?.offset ?? 0);
       return true;
     } catch {
       if (source) this.stopVoice(source);

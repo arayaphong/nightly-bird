@@ -7,9 +7,15 @@ import { AssetStore } from '../src/platform/asset-store.js';
 import { createGame } from '../src/game/create-game.js';
 import { Firefly } from '../src/objects/firefly.js';
 import { BalloonGift } from '../src/objects/balloon-gift.js';
+import { SOUND_EFFECTS } from '../src/config/audio.js';
 
 const crunch = new URL('../assets/audio/crunch.wav', import.meta.url);
-function mockAudio({ state = 'running', host = null, fail = false } = {}) {
+function mockAudio({
+  state = 'running',
+  host = null,
+  fail = false,
+  sounds = { crunch },
+} = {}) {
   const sources = [];
   const context = {
     state,
@@ -33,8 +39,10 @@ function mockAudio({ state = 'running', host = null, fail = false } = {}) {
         stopped: false,
         disconnected: false,
         connect() {},
-        start() {
+        start(when, offset) {
           this.started = true;
+          this.when = when;
+          this.offset = offset;
         },
         stop() {
           this.stopped = true;
@@ -50,7 +58,7 @@ function mockAudio({ state = 'running', host = null, fail = false } = {}) {
   const audio = new AudioSystem({
     host,
     contextFactory: () => context,
-    sounds: { crunch },
+    sounds,
     events: { 'firefly-eaten': 'crunch' },
     fetcher: async (url) => ({
       ok: !fail,
@@ -116,7 +124,7 @@ test('failed audio download and absent Web Audio never prevent game startup', as
 });
 
 test('normal and rainbow fireflies each crunch once; gifts and dead birds do not', async () => {
-  const { audio, sources } = mockAudio();
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
   const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
   await p.load();
   p.command('restart');
@@ -130,6 +138,9 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
   for (const rainbow of [false, true]) {
     add(new Firefly({ x: bird.x + bird.r * 1.6, y: bird.y, rainbow }));
     p.step(0);
+    assert.ok(bird.animation.chewTime > 0);
+    assert.equal(sources.at(-1).when, 0);
+    assert.equal(sources.at(-1).offset, SOUND_EFFECTS.crunch.offset);
     p.step(0);
   }
   assert.equal(sources.length, 2);
@@ -142,4 +153,33 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
   p.step(0);
   assert.equal(sources.length, 2);
   p.dispose();
+});
+
+test('configured crunch starts within 15 ms of its audible bite instead of after chewing ends', async () => {
+  const bytes = await readFile(SOUND_EFFECTS.crunch.url);
+  assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+  let format, pcm;
+  for (let pos = 12; pos + 8 <= bytes.length;) {
+    const name = bytes.toString('ascii', pos, pos + 4),
+      size = bytes.readUInt32LE(pos + 4);
+    if (name === 'fmt ') format = bytes.subarray(pos + 8, pos + 8 + size);
+    if (name === 'data') pcm = bytes.subarray(pos + 8, pos + 8 + size);
+    pos += 8 + size + (size % 2);
+  }
+  assert.equal(format.readUInt16LE(0), 1); // PCM
+  assert.equal(format.readUInt16LE(14), 16);
+  const channels = format.readUInt16LE(2),
+    rate = format.readUInt32LE(4);
+  const firstFrame = Math.floor(SOUND_EFFECTS.crunch.offset * rate);
+  let onset = Infinity;
+  for (let frame = firstFrame; frame < pcm.length / (channels * 2); frame++) {
+    for (let channel = 0; channel < channels; channel++) {
+      if (Math.abs(pcm.readInt16LE((frame * channels + channel) * 2)) / 32768 >= 0.1) {
+        onset = (frame - firstFrame) / rate;
+        break;
+      }
+    }
+    if (Number.isFinite(onset)) break;
+  }
+  assert.ok(onset >= 0 && onset <= 0.015, `Audible onset delayed ${onset * 1000} ms`);
 });
