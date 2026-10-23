@@ -13,7 +13,6 @@ export function createBirdPainter(view, cx, assets) {
     const deadEyes = !bird.alive && ['storm', 'drown', 'hawk'].includes(session.deathBy);
     const open = deadEyes ? 1 : blinkOpen();
     const chew = bird.alive ? chewAmount() : 0;
-    const swallow = bird.alive ? bird.animation.swallowAmount() : 0;
     const scorched = !!bird.zapped;
     const eating = bird.alive && bird.mouthfuls.size > 0;
     const draw = (id, options = {}) =>
@@ -67,17 +66,6 @@ export function createBirdPainter(view, cx, assets) {
       );
       draw('mouth');
       cx.restore();
-    }
-    if (eating) {
-      // One composed mouthful silhouette even during rapid pickups. Both kinds
-      // use this matte, folded-wing pose; food lifetime stays with the objects.
-      sprite('birdEating', 'mouthful').draw(cx, {
-        x: 490 - swallow * 46,
-        y: 326 + chew * 5,
-        angle: ((-4 + chew * 12) * Math.PI) / 180,
-        scaleX: 1 - swallow * 0.8,
-        scaleY: (1 - swallow * 0.8) * (1 - chew * 0.2),
-      });
     }
     const beak = eating ? 'birdEating' : 'bird';
     if (eating) {
