@@ -928,3 +928,30 @@ test('balloon and gift-box contacts pop once, including overlapping colliders; r
   assert.ok(!audio.voices.has(source));
   p.dispose();
 });
+
+test('a bird killed in the air sinks audibly only on water entry, once per life', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  const count = () => sources.filter((s) => s.buffer === audio.buffers.get('sinking')).length;
+  for (const [index, cause] of ['hawk', 'storm', 'fish'].entries()) {
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player'),
+      v = p.get('viewport');
+    bird.die(cause);
+    p.step(0);
+    assert.equal(count(), index, 'Death in the air does not play sinking audio');
+    p.physics.place(bird, 144, v.waterY - 0.1);
+    bird.vy = 200;
+    p.step(0.01);
+    assert.equal(count(), index + 1, cause);
+    p.step(0.02);
+    assert.equal(count(), index + 1, 'Underwater frames stay silent');
+    p.physics.place(bird, 144, v.waterY - 0.1);
+    bird.vy = 200;
+    p.step(0.01);
+    assert.equal(count(), index + 1, 'The same corpse cannot replay the sound');
+  }
+  p.dispose();
+});

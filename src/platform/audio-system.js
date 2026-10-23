@@ -20,6 +20,7 @@ export class AudioSystem extends PlatformObject {
     Object.assign(this, { host, sounds, events, contextFactory, fetcher, volume, maxVoices });
     this.volumes = volumes;
     this.soundOutputs = new Map();
+    this.sunkBirds = new WeakSet();
     this.repeatRequests = new Set();
     this.buffers = new Map();
     this.voices = new Set();
@@ -85,7 +86,13 @@ export class AudioSystem extends PlatformObject {
   event(event) {
     if (event.type === 'bird-died') {
       this.stopRainbow();
-      if (event.cause === 'drown') this.play('sinking', { owner: event.bird });
+      this.sunkBirds.delete(event.bird);
+    }
+    if (event.type === 'bird-sank' || (event.type === 'bird-died' && event.cause === 'drown')) {
+      if (!this.sunkBirds.has(event.bird)) {
+        this.sunkBirds.add(event.bird);
+        this.play('sinking', { owner: event.bird });
+      }
     }
     if (event.type === 'shot-fired' && event.target?.tags.has('hawk'))
       this.stopOwned('hawkStrike', event.target);

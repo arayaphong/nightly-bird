@@ -36,6 +36,7 @@ export class WaterRule extends Rule {
           water.splash(bird.x, wet ? 8 : 12, v.height * (wet ? 0.22 : 0.3));
         if (bird.flightBounds) p.physics.clamp(bird, bird.flightBounds);
       } else if (before <= v.waterY && bird.y > v.waterY) {
+        p.emit('bird-sank', { bird });
         water.splash(bird.x, 14, v.height * 0.28);
         water.ripple(bird.x);
         bird.vy *= 0.3;
