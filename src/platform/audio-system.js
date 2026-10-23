@@ -24,8 +24,12 @@ export class AudioSystem extends PlatformObject {
     this.buffers = new Map();
     this.voices = new Set();
     this.loops = new Map();
+    this.rainbowPlayback = null;
     this.onVisibilityChange = () => {
-      if (this.host?.document?.hidden) this.finishRepeats();
+      if (this.host?.document?.hidden) {
+        this.finishRepeats();
+        this.stopRainbow(false);
+      }
     };
     this.errors = [];
     this.disposed = false;
@@ -78,6 +82,7 @@ export class AudioSystem extends PlatformObject {
   }
 
   event(event) {
+    if (event.type === 'bird-died') this.stopRainbow();
     const sound = this.events[event.type];
     if (sound) this.play(sound);
   }
@@ -129,6 +134,52 @@ export class AudioSystem extends PlatformObject {
 
   afterFrame() {
     this.setLoop('wingFlap', this.wingRequested());
+    this.syncRainbow();
+  }
+
+  syncRainbow() {
+    const bird = this.platform?.find('player');
+    if (!bird?.alive || !bird.status.has('boost')) {
+      this.stopRainbow();
+      return;
+    }
+    if (
+      this.platform.clock.paused ||
+      this.host?.document?.hidden ||
+      this.context?.state !== 'running'
+    ) {
+      this.stopRainbow(false);
+      return;
+    }
+    const buffer = this.buffers.get('rainbow');
+    if (this.disposed || !buffer || this.rainbowPlayback?.source) return;
+    const playback = (this.rainbowPlayback ??= { offset: 0, source: null, startedAt: 0 });
+    let source;
+    try {
+      source = this.context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(this.outputFor('rainbow'));
+      playback.source = source;
+      playback.startedAt = this.context.currentTime ?? 0;
+      source.start(0, playback.offset % buffer.duration);
+    } catch {
+      if (source) this.stopVoice(source);
+      playback.source = null;
+    }
+  }
+
+  stopRainbow(reset = true) {
+    const playback = this.rainbowPlayback;
+    if (playback?.source) {
+      const duration = playback.source.buffer.duration;
+      playback.offset =
+        (playback.offset + Math.max(0, (this.context.currentTime ?? 0) - playback.startedAt)) %
+        duration;
+      this.stopVoice(playback.source);
+      playback.source = null;
+    }
+    if (reset) this.rainbowPlayback = null;
   }
 
   setLoop(name, active) {
@@ -177,6 +228,7 @@ export class AudioSystem extends PlatformObject {
 
   onStop() {
     this.finishRepeats();
+    this.stopRainbow(false);
   }
 
   stopVoice(source) {
@@ -191,6 +243,7 @@ export class AudioSystem extends PlatformObject {
   }
 
   stop() {
+    this.stopRainbow();
     for (const source of this.voices) this.stopVoice(source);
     this.finishRepeats();
     for (const [name, source] of this.loops) {

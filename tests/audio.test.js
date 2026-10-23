@@ -22,6 +22,7 @@ function mockAudio({
   const context = {
     state,
     destination: {},
+    currentTime: 0,
     createGain: () => ({ gain: { value: 1 }, connect() {}, disconnect() {} }),
     async decodeAudioData(bytes) {
       assert.ok(bytes.byteLength > 44);
@@ -143,6 +144,8 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
     p.flush();
     return o;
   };
+  const crunchCount = () =>
+    sources.filter((source) => source.buffer === audio.buffers.get('crunch')).length;
   for (const rainbow of [false, true]) {
     add(new Firefly({ x: bird.x + bird.r * 1.6, y: bird.y, rainbow }));
     p.step(0);
@@ -151,15 +154,15 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
     assert.equal(sources.at(-1).offset, 0);
     p.step(0);
   }
-  assert.equal(sources.length, 2);
+  assert.equal(crunchCount(), 2);
   add(new BalloonGift({ x: bird.x, y: bird.y - bird.r * 1.25 * 1.3, suit: true }));
   p.step(0);
-  assert.equal(sources.length, 2);
+  assert.equal(crunchCount(), 2);
   bird.die('drown');
   p.dispatchEvents();
   add(new Firefly({ x: bird.x + bird.r * 1.6, y: bird.y }));
   p.step(0);
-  assert.equal(sources.length, 2);
+  assert.equal(crunchCount(), 2);
   p.dispose();
 });
 
@@ -466,4 +469,124 @@ test('lethal impacts, wrong armor and drowning do not play the surviving-hit sou
     assert.equal(sources.length, 0);
     p.dispose();
   }
+});
+
+test('rainbow mode starts one continuous source and refreshing boost never stacks or rewinds it', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player');
+  bird.body.enabled = false;
+  const pick = () => {
+    p.add(new Firefly({ x: bird.x + bird.r * 1.6, y: bird.y, rainbow: true }));
+    p.flush();
+    p.step(0);
+  };
+  assert.equal(audio.rainbowPlayback, null);
+  pick();
+  const first = audio.rainbowPlayback.source;
+  assert.equal(first.buffer, audio.buffers.get('rainbow'));
+  assert.equal(first.loop, true);
+  assert.equal(first.offset, 0);
+  bird.status.apply('boost', 1);
+  pick();
+  assert.equal(audio.rainbowPlayback.source, first);
+  assert.ok(bird.status.remaining('boost') > 7.9);
+  assert.equal(sources.filter((s) => s.buffer === audio.buffers.get('rainbow')).length, 1);
+  for (let i = 0; i < 8; i++) audio.play('crunch');
+  assert.equal(first.stopped, false, 'Pickup voice limit cannot stop the rainbow track');
+  bird.status.apply('boost', 0.01);
+  p.step(0.02);
+  assert.equal(first.stopped, true);
+  assert.equal(audio.rainbowPlayback, null);
+  p.dispose();
+});
+
+test('rainbow pauses and resumes its position, then clears on death, restart and disposal', async () => {
+  const host = new EventTarget();
+  host.document = new EventTarget();
+  const { audio, context } = mockAudio({ sounds: SOUND_EFFECTS, host });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  audio.buffers.get('rainbow').duration = 8;
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player');
+  bird.body.enabled = false;
+  bird.emitRainbow(8);
+  p.step(0);
+  const first = audio.rainbowPlayback.source;
+  context.currentTime = 2.25;
+  p.command('pause');
+  p.step(0);
+  assert.equal(first.stopped, true);
+  assert.equal(audio.rainbowPlayback.source, null);
+  assert.equal(audio.rainbowPlayback.offset, 2.25);
+  const remaining = bird.status.remaining('boost');
+  p.step(10);
+  assert.equal(bird.status.remaining('boost'), remaining);
+  p.command('pause');
+  p.step(0);
+  const second = audio.rainbowPlayback.source;
+  assert.equal(second.offset, 2.25);
+  assert.notEqual(second, first);
+  context.currentTime = 3;
+  host.document.hidden = true;
+  host.document.dispatchEvent(new Event('visibilitychange'));
+  assert.equal(second.stopped, true);
+  assert.equal(audio.rainbowPlayback.offset, 3);
+  p.step(0);
+  assert.equal(audio.rainbowPlayback.source, null);
+  host.document.hidden = false;
+  p.step(0);
+  assert.equal(audio.rainbowPlayback.source.offset, 3);
+  const third = audio.rainbowPlayback.source;
+  bird.die('drown');
+  p.dispatchEvents();
+  assert.equal(third.stopped, true);
+  assert.equal(audio.rainbowPlayback, null);
+  p.command('restart');
+  p.step(0);
+  bird.emitRainbow(8);
+  p.step(0);
+  assert.equal(audio.rainbowPlayback.source.offset, 0);
+  const fourth = audio.rainbowPlayback.source;
+  p.command('restart');
+  p.step(0);
+  assert.equal(fourth.stopped, true);
+  assert.equal(audio.rainbowPlayback, null);
+  bird.emitRainbow(8);
+  p.step(0);
+  const fifth = audio.rainbowPlayback.source;
+  p.stop();
+  assert.equal(fifth.stopped, true);
+  assert.equal(audio.rainbowPlayback.source, null);
+  p.step(0);
+  const sixth = audio.rainbowPlayback.source;
+  p.dispose();
+  assert.equal(sixth.stopped, true);
+  assert.equal(audio.rainbowPlayback, null);
+});
+
+test('rainbow obeys gesture unlock and missing recordings never affect boost gameplay', async () => {
+  const host = new EventTarget();
+  const { audio } = mockAudio({ host, state: 'suspended', sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  p.find('player').emitRainbow(8);
+  p.step(0);
+  assert.equal(audio.rainbowPlayback, null);
+  host.dispatchEvent(new Event('pointerdown'));
+  p.step(0);
+  assert.ok(audio.rainbowPlayback.source.started);
+  audio.stopRainbow();
+  audio.buffers.delete('rainbow');
+  p.step(0.02);
+  assert.equal(audio.rainbowPlayback, null);
+  assert.ok(p.find('player').status.has('boost'));
+  p.dispose();
 });

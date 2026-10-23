@@ -1,4 +1,5 @@
 export const SOUND_EFFECTS = {
+  rainbow: new URL('../../assets/audio/rainbow.wav', import.meta.url),
   hurt: new URL('../../assets/audio/bird-hurt.wav', import.meta.url),
   wingFlap: new URL('../../assets/audio/wing-flap.wav?v=2c87ebec', import.meta.url),
   // Identify the trimmed asset so cached copies of the old recording are not reused.
