@@ -38,7 +38,13 @@ function mockAudio({
         started: false,
         stopped: false,
         disconnected: false,
-        connect() {},
+        connect(output) {
+          this.output = output;
+        },
+        end() {
+          this.ended = true;
+          this.onended?.();
+        },
         start(when = 0, offset = 0) {
           this.started = true;
           this.when = when;
@@ -186,48 +192,68 @@ test('trimmed crunch stays compact and starts its audible bite within 15 ms', as
   assert.ok(onset >= 0 && onset <= 0.015, `Audible onset delayed ${onset * 1000} ms`);
 });
 
-test('wing sound loops with actual wing motion, including coast and idle flaps', async () => {
+test('flight rounds finish naturally, never overlap, and reuse the current round on re-press', async () => {
   const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
   const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
   await p.load();
   const bird = p.find('player');
-  bird.body.enabled = false;
-  const advance = (seconds) => {
-    for (let t = 0; t < seconds; t += 0.01) p.step(Math.min(0.01, seconds - t));
-  };
-  // Ready-screen automatic flap is driven by animation, without held input.
-  bird.animation.lazyTime = 0;
-  p.step(0.01);
-  assert.equal(audio.loops.size, 0);
-  p.step(0.01);
-  const idle = audio.loops.get('wingFlap');
-  assert.equal(idle.loop, true);
-  advance(0.8);
-  assert.equal(idle.stopped, true);
-  assert.equal(audio.loops.size, 0);
+  const input = p.get('input');
   p.command('restart');
   p.step(0);
   bird.body.enabled = false;
-  p.command('flap');
+  input.set('test', 'flap', true);
   p.step(0.02);
-  const held = audio.loops.get('wingFlap');
-  assert.equal(held.loop, true);
-  advance(0.05);
-  assert.equal(audio.loops.get('wingFlap'), held, 'Keep one source across frames');
-  p.command('release', { action: 'flap' });
-  p.step(0.01);
-  assert.equal(audio.loops.get('wingFlap'), held, 'Coast to rest with sound');
-  advance(0.4);
-  assert.equal(held.stopped, true);
-  assert.equal(audio.loops.size, 0);
+  const first = audio.loops.get('wingFlap');
+  assert.equal(first.loop, false);
+  for (let i = 0; i < 5; i++) p.step(0.02);
+  assert.equal(sources.length, 1);
+  first.end();
+  const second = audio.loops.get('wingFlap');
+  assert.notEqual(second, first);
   assert.equal(sources.length, 2);
+  assert.equal(first.stopped, false);
+  input.set('test', 'flap', false);
+  p.step(0.01);
+  assert.equal(
+    bird.animation.wingMoving,
+    true,
+    'Wings can finish their rotation independently',
+  );
+  assert.equal(audio.repeatRequests.has('wingFlap'), false);
+  assert.equal(second.stopped, false, 'Release must not cut the current recording');
+  input.set('test', 'flap', true);
+  p.step(0.01);
+  assert.equal(audio.loops.get('wingFlap'), second);
+  assert.equal(sources.length, 2, 'Re-press must reuse the source');
+  second.end();
+  const third = audio.loops.get('wingFlap');
+  assert.notEqual(third, second);
+  input.set('test', 'flap', false);
+  p.step(0.01);
+  third.end();
+  assert.equal(audio.loops.size, 0);
+  assert.equal(sources.length, 3);
+  for (let i = 0; i < 40; i++) p.step(0.01);
+  assert.equal(sources.length, 3, 'Coasting cannot request another sound round');
+  assert.ok(sources.every((source) => !source.stopped));
+  // Idle flaps still have sound and finish the current recording when they stop.
+  bird.animation.lazyTime = 0;
+  p.step(0.01);
+  p.step(0.01);
+  const idle = audio.loops.get('wingFlap');
+  assert.ok(idle?.started);
+  for (let i = 0; i < 80; i++) p.step(0.01);
+  assert.equal(audio.repeatRequests.size, 0);
+  assert.equal(idle.stopped, false);
+  idle.end();
+  assert.equal(audio.loops.size, 0);
   p.dispose();
 });
 
-test('wing loop stops on pause, death, restart, tab hiding, platform stop and disposal', async () => {
+test('pause, death, restart, hidden tabs and platform stop finish the current flight round', async () => {
   const host = new EventTarget();
   host.document = new EventTarget();
-  const { audio } = mockAudio({ sounds: SOUND_EFFECTS, host });
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS, host });
   const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
   await p.load();
   const bird = p.find('player');
@@ -235,49 +261,53 @@ test('wing loop stops on pause, death, restart, tab hiding, platform stop and di
     p.command('restart');
     p.step(0);
     bird.body.enabled = false;
-    p.command('flap');
+    p.get('input').set('test', 'flap', true);
     p.step(0.02);
     const source = audio.loops.get('wingFlap');
     assert.ok(source?.started);
     return source;
   };
-  let source = start();
-  p.command('pause');
-  p.step(0);
-  assert.equal(source.stopped, true);
-  assert.equal(audio.loops.size, 0);
-  p.command('pause');
-  p.step(0.02);
-  assert.ok(audio.loops.has('wingFlap'), 'Resume the remaining wing rotation');
-  bird.die('drown');
-  p.step(0);
-  assert.equal(audio.loops.size, 0);
-  source = start();
-  p.command('restart');
-  p.step(0);
-  assert.equal(source.stopped, true);
-  source = start();
-  p.get('session').setPhase('shop');
-  p.step(0);
-  assert.equal(source.stopped, true);
-  source = start();
-  host.document.hidden = true;
-  host.document.dispatchEvent(new Event('visibilitychange'));
-  assert.equal(source.stopped, true);
-  p.step(0.02);
-  assert.equal(audio.loops.size, 0);
-  host.document.hidden = false;
-  p.step(0.02);
-  assert.ok(audio.loops.has('wingFlap'));
-  p.stop();
-  assert.equal(audio.loops.size, 0);
-  source = start();
+  const actions = [
+    () => {
+      p.command('pause');
+      p.step(0);
+    },
+    () => {
+      bird.die('drown');
+      p.step(0);
+    },
+    () => {
+      p.command('restart');
+      p.step(0);
+    },
+    () => {
+      p.get('session').setPhase('shop');
+      p.step(0);
+    },
+    () => {
+      host.document.hidden = true;
+      host.document.dispatchEvent(new Event('visibilitychange'));
+    },
+    () => p.stop(),
+  ];
+  for (const action of actions) {
+    const source = start();
+    const count = sources.length;
+    action();
+    assert.equal(source.stopped, false);
+    assert.equal(audio.loops.get('wingFlap'), source);
+    source.end();
+    assert.equal(audio.loops.size, 0);
+    assert.equal(sources.length, count);
+    host.document.hidden = false;
+  }
+  const source = start();
   p.dispose();
-  assert.equal(source.stopped, true);
+  assert.equal(source.stopped, true, 'Disposal releases audio resources');
   assert.equal(audio.loops.size, 0);
 });
 
-test('wing loop retries after audio unlock and does not steal crunch voices', async () => {
+test('flight is 40 percent quieter without affecting crunch, unlock or voice limits', async () => {
   const host = new EventTarget();
   const { audio, context, sources } = mockAudio({
     sounds: SOUND_EFFECTS,
@@ -293,16 +323,21 @@ test('wing loop retries after audio unlock and does not steal crunch voices', as
   p.step(0.02);
   assert.equal(sources.length, 0);
   host.dispatchEvent(new Event('pointerdown'));
-  assert.equal(context.state, 'running');
   p.step(0.02);
   const wing = audio.loops.get('wingFlap');
   assert.ok(wing.started);
+  assert.equal(audio.output.gain.value, 0.6);
+  assert.equal(wing.output.gain.value, 0.6, 'Flight gain is 60 percent of the previous level');
   for (let i = 0; i < 8; i++) audio.play('crunch');
+  assert.equal(sources.at(-1).output, audio.output, 'Crunch uses the unchanged master output');
   assert.equal(wing.stopped, false);
   assert.equal(audio.voices.size, 4);
   assert.equal(audio.loops.get('wingFlap'), wing);
   context.state = 'suspended';
   p.step(0.02);
-  assert.equal(wing.stopped, true);
+  assert.equal(wing.stopped, false);
+  assert.equal(audio.repeatRequests.size, 0);
+  wing.end();
+  assert.equal(audio.loops.size, 0);
   p.dispose();
 });

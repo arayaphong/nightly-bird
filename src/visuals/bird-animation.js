@@ -21,6 +21,7 @@ export class BirdAnimation {
   reset() {
     this.wingAngle = WING_REST;
     this.wingMoving = false;
+    this.wingSoundRequested = false;
     this.stopAngle = WING_REST;
     this.spin = 0;
     this.lazyTime = 1.5;
@@ -84,6 +85,9 @@ export class BirdAnimation {
       }
     }
     this.wingMoving = this.wingAngle !== previousWingAngle;
+    // Releasing input ends sound repetition even while the wings coast to rest.
+    // Idle flaps still request sound for their own animation cycle.
+    this.wingSoundRequested = this.wingMoving && (flapping || this.spin === WING_LAZY_OMEGA);
     if (this.wingAngle > TAU * 50) {
       this.wingAngle -= TAU * 48;
       if (this.stopAngle !== null) this.stopAngle -= TAU * 48;

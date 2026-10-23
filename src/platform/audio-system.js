@@ -1,4 +1,5 @@
 import { PlatformObject } from '../core/object.js';
+import { SOUND_VOLUMES } from '../config/audio.js';
 
 /** Optional sound output. Simulation emits events and never waits for audio playback. */
 export class AudioSystem extends PlatformObject {
@@ -13,14 +14,18 @@ export class AudioSystem extends PlatformObject {
     fetcher = (url) => fetch(url),
     volume = 0.6,
     maxVoices = 4,
+    volumes = SOUND_VOLUMES,
   } = {}) {
     super({ id: 'audio' });
     Object.assign(this, { host, sounds, events, contextFactory, fetcher, volume, maxVoices });
+    this.volumes = volumes;
+    this.soundOutputs = new Map();
+    this.repeatRequests = new Set();
     this.buffers = new Map();
     this.voices = new Set();
     this.loops = new Map();
     this.onVisibilityChange = () => {
-      if (this.host?.document?.hidden) this.stop();
+      if (this.host?.document?.hidden) this.finishRepeats();
     };
     this.errors = [];
     this.disposed = false;
@@ -87,7 +92,7 @@ export class AudioSystem extends PlatformObject {
         this.stopVoice(this.voices.values().next().value);
       source = this.context.createBufferSource();
       source.buffer = buffer;
-      source.connect(this.output);
+      source.connect(this.outputFor(name));
       source.onended = () => {
         this.voices.delete(source);
         source.disconnect();
@@ -101,53 +106,77 @@ export class AudioSystem extends PlatformObject {
     }
   }
 
-  afterFrame() {
+  outputFor(name) {
+    if (this.volumes[name] === undefined) return this.output;
+    if (!this.soundOutputs.has(name)) {
+      const output = this.context.createGain();
+      output.gain.value = this.volumes[name];
+      output.connect(this.output);
+      this.soundOutputs.set(name, output);
+    }
+    return this.soundOutputs.get(name);
+  }
+
+  wingRequested() {
     const bird = this.platform?.find('player');
-    const active = !!(
+    return !!(
       bird?.alive &&
-      bird.animation.wingMoving &&
+      bird.animation.wingSoundRequested &&
       !this.platform.clock.paused &&
       !this.host?.document?.hidden
     );
-    this.setLoop('wingFlap', active);
+  }
+
+  afterFrame() {
+    this.setLoop('wingFlap', this.wingRequested());
   }
 
   setLoop(name, active) {
-    if (!active || this.disposed || this.context?.state !== 'running') {
-      this.stopLoop(name);
-      return false;
-    }
+    if (active && !this.disposed && this.context?.state === 'running')
+      this.repeatRequests.add(name);
+    else this.repeatRequests.delete(name);
+    // An in-flight recording always finishes naturally. Renewed requests reuse it.
     if (this.loops.has(name)) return true;
+    if (!this.repeatRequests.has(name)) return false;
+    return this.startRound(name);
+  }
+
+  startRound(name) {
     const buffer = this.buffers.get(name);
-    if (!buffer) return false;
+    if (this.disposed || !buffer || this.context?.state !== 'running') return false;
     let source;
     try {
       source = this.context.createBufferSource();
       source.buffer = buffer;
-      source.loop = true;
-      source.connect(this.output);
+      source.loop = false;
+      source.connect(this.outputFor(name));
       source.onended = () => {
-        if (this.loops.get(name) === source) this.loops.delete(name);
+        source.onended = null;
         source.disconnect();
+        if (this.loops.get(name) !== source) return;
+        this.loops.delete(name);
+        // Recheck live state: a hidden tab or paused game must not start a new round.
+        if (this.repeatRequests.has(name) && (name !== 'wingFlap' || this.wingRequested()))
+          this.startRound(name);
       };
       this.loops.set(name, source);
       source.start();
       return true;
     } catch {
-      this.stopLoop(name);
+      if (source) {
+        if (this.loops.get(name) === source) this.loops.delete(name);
+        this.stopVoice(source);
+      }
       return false;
     }
   }
 
-  stopLoop(name) {
-    const source = this.loops.get(name);
-    if (!source) return;
-    this.loops.delete(name);
-    this.stopVoice(source);
+  finishRepeats() {
+    this.repeatRequests.clear();
   }
 
   onStop() {
-    this.stop();
+    this.finishRepeats();
   }
 
   stopVoice(source) {
@@ -163,7 +192,11 @@ export class AudioSystem extends PlatformObject {
 
   stop() {
     for (const source of this.voices) this.stopVoice(source);
-    for (const name of this.loops.keys()) this.stopLoop(name);
+    this.finishRepeats();
+    for (const [name, source] of this.loops) {
+      this.loops.delete(name);
+      this.stopVoice(source);
+    }
   }
 
   detach() {
@@ -178,6 +211,8 @@ export class AudioSystem extends PlatformObject {
     this.disposed = true;
     this.stop();
     this.buffers.clear();
+    for (const output of this.soundOutputs.values()) output.disconnect();
+    this.soundOutputs.clear();
     this.output?.disconnect();
     try {
       this.context?.close().catch(() => {});
