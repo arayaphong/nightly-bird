@@ -307,7 +307,7 @@ test('pause, death, restart, hidden tabs and platform stop finish the current fl
   assert.equal(audio.loops.size, 0);
 });
 
-test('flight is reduced to one percent of the previous level without affecting other audio', async () => {
+test('flight uses thirty percent volume without affecting other audio', async () => {
   const host = new EventTarget();
   const { audio, context, sources } = mockAudio({
     sounds: SOUND_EFFECTS,
@@ -327,7 +327,7 @@ test('flight is reduced to one percent of the previous level without affecting o
   const wing = audio.loops.get('wingFlap');
   assert.ok(wing.started);
   assert.equal(audio.output.gain.value, 0.6);
-  assert.equal(wing.output.gain.value, 0.003, 'Flight gain is one percent of the previous 0.3 level');
+  assert.equal(wing.output.gain.value, 0.3, 'Flight gain is thirty percent of the initial level');
   for (let i = 0; i < 8; i++) audio.play('crunch');
   assert.equal(sources.at(-1).output, audio.output, 'Crunch uses the unchanged master output');
   assert.equal(wing.stopped, false);

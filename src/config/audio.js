@@ -5,4 +5,4 @@ export const SOUND_EFFECTS = {
 };
 
 // Relative to the existing master volume; crunch remains unchanged.
-export const SOUND_VOLUMES = { wingFlap: 0.003 };
+export const SOUND_VOLUMES = { wingFlap: 0.3 };
