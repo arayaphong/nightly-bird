@@ -20,6 +20,7 @@ export class BirdAnimation {
   }
   reset() {
     this.wingAngle = WING_REST;
+    this.wingMoving = false;
     this.stopAngle = WING_REST;
     this.spin = 0;
     this.lazyTime = 1.5;
@@ -57,6 +58,7 @@ export class BirdAnimation {
   }
 
   update(dt) {
+    const previousWingAngle = this.wingAngle;
     const flapping = this.bird.alive && this.bird.flapping && this.session.phase === 'play';
     if (flapping) {
       this.wingAngle += WING_OMEGA * dt;
@@ -81,6 +83,7 @@ export class BirdAnimation {
         }
       }
     }
+    this.wingMoving = this.wingAngle !== previousWingAngle;
     if (this.wingAngle > TAU * 50) {
       this.wingAngle -= TAU * 48;
       if (this.stopAngle !== null) this.stopAngle -= TAU * 48;

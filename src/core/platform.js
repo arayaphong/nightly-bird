@@ -189,6 +189,8 @@ export class Platform {
         // Attachments to animated anchors must use the pose rendered in this frame.
         this.physics.syncAttachments(objects);
       }
+      // Output systems observe the final frame, including transitions into pause.
+      for (const object of this.ordered()) object.afterFrame?.();
     } finally {
       this.stepping = false;
       this.flush();
@@ -212,6 +214,7 @@ export class Platform {
   }
   stop() {
     this.running = false;
+    for (const object of this.ordered()) object.onStop?.();
     if (this.frameId !== undefined) cancelAnimationFrame(this.frameId);
   }
   dispose() {

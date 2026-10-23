@@ -18,6 +18,10 @@ export class AudioSystem extends PlatformObject {
     Object.assign(this, { host, sounds, events, contextFactory, fetcher, volume, maxVoices });
     this.buffers = new Map();
     this.voices = new Set();
+    this.loops = new Map();
+    this.onVisibilityChange = () => {
+      if (this.host?.document?.hidden) this.stop();
+    };
     this.errors = [];
     this.disposed = false;
     this.unlock = () => {
@@ -65,6 +69,7 @@ export class AudioSystem extends PlatformObject {
     if (!this.context) return;
     this.host?.addEventListener('pointerdown', this.unlock, true);
     this.host?.addEventListener('keydown', this.unlock, true);
+    this.host?.document?.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   event(event) {
@@ -96,6 +101,55 @@ export class AudioSystem extends PlatformObject {
     }
   }
 
+  afterFrame() {
+    const bird = this.platform?.find('player');
+    const active = !!(
+      bird?.alive &&
+      bird.animation.wingMoving &&
+      !this.platform.clock.paused &&
+      !this.host?.document?.hidden
+    );
+    this.setLoop('wingFlap', active);
+  }
+
+  setLoop(name, active) {
+    if (!active || this.disposed || this.context?.state !== 'running') {
+      this.stopLoop(name);
+      return false;
+    }
+    if (this.loops.has(name)) return true;
+    const buffer = this.buffers.get(name);
+    if (!buffer) return false;
+    let source;
+    try {
+      source = this.context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(this.output);
+      source.onended = () => {
+        if (this.loops.get(name) === source) this.loops.delete(name);
+        source.disconnect();
+      };
+      this.loops.set(name, source);
+      source.start();
+      return true;
+    } catch {
+      this.stopLoop(name);
+      return false;
+    }
+  }
+
+  stopLoop(name) {
+    const source = this.loops.get(name);
+    if (!source) return;
+    this.loops.delete(name);
+    this.stopVoice(source);
+  }
+
+  onStop() {
+    this.stop();
+  }
+
   stopVoice(source) {
     source.onended = null;
     try {
@@ -109,11 +163,13 @@ export class AudioSystem extends PlatformObject {
 
   stop() {
     for (const source of this.voices) this.stopVoice(source);
+    for (const name of this.loops.keys()) this.stopLoop(name);
   }
 
   detach() {
     this.host?.removeEventListener('pointerdown', this.unlock, true);
     this.host?.removeEventListener('keydown', this.unlock, true);
+    this.host?.document?.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.stop();
     super.detach();
   }
