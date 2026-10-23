@@ -45,6 +45,7 @@ export class BalloonGift extends WorldObject {
   pop() {
     if (this.popped || this.removing) return false;
     this.popped = true;
+    this.platform.emit('balloon-popped', { balloon: this });
     this.platform.remove(this);
     return true;
   }

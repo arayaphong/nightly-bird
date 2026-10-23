@@ -881,3 +881,50 @@ test('drowning plays the sinking recording once despite repeated drown events an
   assert.equal(sinking().length, 1, 'Other deaths do not play the sinking sound');
   p.dispose();
 });
+
+test('balloon and gift-box contacts pop once, including overlapping colliders; removal and dead birds stay silent', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  const count = () =>
+    sources.filter((s) => s.buffer === audio.buffers.get('balloonPop')).length;
+  for (const part of ['balloon', 'box', 'both']) {
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player');
+    if (part === 'both') bird.r = 60;
+    const y =
+      part === 'balloon'
+        ? bird.y + bird.r * 1.25 * 1.6
+        : part === 'box'
+          ? bird.y - bird.r * 1.25 * 1.3
+          : bird.y;
+    const gift = new BalloonGift({ x: bird.x, y, suit: true });
+    p.add(gift);
+    p.flush();
+    const before = count();
+    p.step(0);
+    assert.equal(gift.popped, true, part);
+    assert.equal(count(), before + 1, part);
+    assert.equal(gift.pop(), false);
+    p.step(0);
+    assert.equal(count(), before + 1);
+  }
+  const before = count();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player');
+  bird.die('hawk');
+  p.dispatchEvents();
+  p.add(new BalloonGift({ x: bird.x, y: bird.y }));
+  p.add(new BalloonGift({ x: -100, y: bird.y }));
+  p.flush();
+  p.step(0);
+  assert.equal(count(), before);
+  const source = sources.find((s) => s.buffer === audio.buffers.get('balloonPop'));
+  assert.ok(!source.loop);
+  source.end();
+  assert.ok(source.disconnected);
+  assert.ok(!audio.voices.has(source));
+  p.dispose();
+});

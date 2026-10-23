@@ -1,4 +1,5 @@
 export const SOUND_EFFECTS = {
+  balloonPop: new URL('../../assets/audio/balloon-pop.wav', import.meta.url),
   sinking: new URL('../../assets/audio/bird-sinking.wav', import.meta.url),
   waterBounce: new URL('../../assets/audio/water-bounce.wav', import.meta.url),
   fishStrike: new URL('../../assets/audio/fish-strike.wav', import.meta.url),
@@ -16,6 +17,7 @@ export const SOUND_EFFECTS = {
 export const SOUND_VOLUMES = { wingFlap: 0.3 };
 
 export const SOUND_EVENTS = {
+  'balloon-popped': 'balloonPop',
   'water-bounce': 'waterBounce',
   'fish-strike': 'fishStrike',
   'lightning-strike': 'thunder',
