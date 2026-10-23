@@ -1,4 +1,5 @@
 export const SOUND_EFFECTS = {
+  sinking: new URL('../../assets/audio/bird-sinking.wav', import.meta.url),
   waterBounce: new URL('../../assets/audio/water-bounce.wav', import.meta.url),
   fishStrike: new URL('../../assets/audio/fish-strike.wav', import.meta.url),
   thunder: new URL('../../assets/audio/thunder.wav', import.meta.url),

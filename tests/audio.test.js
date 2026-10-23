@@ -299,13 +299,16 @@ test('pause, death, restart, hidden tabs and platform stop finish the current fl
   ];
   for (const action of actions) {
     const source = start();
-    const count = sources.length;
+    const count = sources.filter((s) => s.buffer === audio.buffers.get('wingFlap')).length;
     action();
     assert.equal(source.stopped, false);
     assert.equal(audio.loops.get('wingFlap'), source);
     source.end();
     assert.equal(audio.loops.size, 0);
-    assert.equal(sources.length, count);
+    assert.equal(
+      sources.filter((s) => s.buffer === audio.buffers.get('wingFlap')).length,
+      count,
+    );
     host.document.hidden = false;
   }
   const source = start();
@@ -470,7 +473,7 @@ test('lethal impacts, wrong armor and drowning do not play the surviving-hit sou
     combat.hit(bird, cause);
     p.dispatchEvents();
     assert.equal(bird.alive, false);
-    assert.equal(sources.length, 0);
+    assert.equal(sources.filter((s) => s.buffer === audio.buffers.get('hurt')).length, 0);
     p.dispose();
   }
 });
@@ -842,5 +845,39 @@ test('each successful water bounce splishes once, while drowning and underwater 
   assert.equal(bird.alive, false);
   p.step(0.02);
   assert.equal(count(), 3);
+  p.dispose();
+});
+
+test('drowning plays the sinking recording once despite repeated drown events and underwater frames', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    v = p.get('viewport');
+  const sinking = () => sources.filter((s) => s.buffer === audio.buffers.get('sinking'));
+  bird.skips = 0;
+  p.physics.place(bird, 144, v.waterY - bird.r * 0.55 - 0.1);
+  bird.vy = 200;
+  p.step(0.01);
+  assert.equal(bird.alive, false);
+  assert.equal(sinking().length, 1);
+  p.emit('drown', { bird });
+  p.emit('drown', { bird });
+  p.step(0.02);
+  p.physics.place(bird, 144, v.waterY + bird.r * 2);
+  p.step(0.02);
+  assert.equal(sinking().length, 1);
+  const source = sinking()[0];
+  assert.ok(!source.loop);
+  source.end();
+  assert.ok(source.disconnected);
+  assert.ok(!audio.voices.has(source));
+  p.command('restart');
+  p.step(0);
+  bird.die('hawk');
+  p.step(0);
+  assert.equal(sinking().length, 1, 'Other deaths do not play the sinking sound');
   p.dispose();
 });

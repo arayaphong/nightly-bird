@@ -83,7 +83,10 @@ export class AudioSystem extends PlatformObject {
   }
 
   event(event) {
-    if (event.type === 'bird-died') this.stopRainbow();
+    if (event.type === 'bird-died') {
+      this.stopRainbow();
+      if (event.cause === 'drown') this.play('sinking', { owner: event.bird });
+    }
     if (event.type === 'shot-fired' && event.target?.tags.has('hawk'))
       this.stopOwned('hawkStrike', event.target);
     const sound = this.events[event.type];
