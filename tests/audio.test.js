@@ -776,3 +776,42 @@ test('thunder plays once when the cloud strikes, whether the bolt hits or misses
     p.dispose();
   }
 });
+
+test('fish strike plays once at the leap transition, never during patrol, charge or repeated leap frames', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    fish = p.find('shark'),
+    v = p.get('viewport');
+  bird.body.enabled = false;
+  fish.respawn();
+  const count = () =>
+    sources.filter((s) => s.buffer === audio.buffers.get('fishStrike')).length;
+  p.step(0);
+  assert.equal(count(), 0);
+  p.physics.place(bird, 150, v.waterY - 60);
+  fish.charge(bird);
+  p.dispatchEvents();
+  assert.equal(count(), 0);
+  p.physics.place(fish, bird.x, v.waterY + fish.size * 0.25);
+  p.step(0);
+  assert.equal(fish.mode, 'leap');
+  assert.equal(count(), 1);
+  const first = sources.find((s) => s.buffer === audio.buffers.get('fishStrike'));
+  assert.equal(first.offset, 0);
+  fish.leap(fish.vx, fish.vy);
+  p.dispatchEvents();
+  p.step(0);
+  p.step(0);
+  assert.equal(count(), 1);
+  fish.recover();
+  p.dispatchEvents();
+  assert.equal(count(), 1);
+  fish.leap(200, -400);
+  p.dispatchEvents();
+  assert.equal(count(), 2, 'A new leap gets one new sound');
+  p.dispose();
+});

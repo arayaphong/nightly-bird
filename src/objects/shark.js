@@ -66,10 +66,12 @@ export class Shark extends WorldObject {
     this.chargeT = 0;
   }
   leap(vx, vy) {
+    const starting = this.mode !== 'leap';
     this.vx = vx;
     this.vy = vy;
     this.mode = 'leap';
     this.trail = [];
+    if (starting) this.platform.emit('fish-strike', { attacker: this, target: this.target });
   }
   recover(seconds = 0.55) {
     this.mode = 'recover';
