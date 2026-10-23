@@ -74,8 +74,7 @@ export function createBirdPainter(view, cx, assets) {
     });
   }
   function drawBird() {
-    if (bird.alive && (bird.inv > 0 || bird.zinv > 0) && Math.sin(session.time * 40) > 0.3)
-      return;
+    if (!bird.visible) return;
     const r = bird.r,
       angle = birdAng();
     cx.save();
@@ -109,7 +108,22 @@ export function createBirdPainter(view, cx, assets) {
         });
     cx.restore();
   }
+  function drawBeakForeground() {
+    if (!bird.visible || !bird.mouthfuls.size) return;
+    const chew = bird.animation.chewAmount(),
+      scale = (bird.r * 4.2) / BIRD_SPAN;
+    cx.save();
+    if (bird.y > viewport.waterY) cx.globalAlpha = 0.65;
+    cx.translate(bird.x, bird.y);
+    cx.rotate(bird.angle);
+    cx.scale(scale, scale);
+    cx.translate(-BIRD_ANCHOR[0], -BIRD_ANCHOR[1]);
+    sprite('bird', 'beak-upper').draw(cx, { angle: (-14 * chew * Math.PI) / 180 });
+    sprite('bird', 'beak-lower').draw(cx, { angle: (20 * chew * Math.PI) / 180 });
+    cx.restore();
+  }
   return {
     drawBird,
+    drawBeakForeground,
   };
 }

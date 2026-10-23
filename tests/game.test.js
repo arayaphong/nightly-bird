@@ -181,7 +181,9 @@ test('normal fireflies raise AGI and become worms at maximum AGI', () => {
   fly();
   p.step(0);
   assert.equal(bird.agi, AGI_START + AGI_STEP);
-  assert.equal(p.list('firefly').length, 0);
+  assert.equal(p.list('firefly').length, 1);
+  assert.equal(bird.mouthfuls.size, 1);
+  assert.equal(p.list('pickup').length, 0);
   assert.ok(bird.animation.chewTime > 0);
   bird.agi = AGI_MAX;
   fly();
@@ -492,4 +494,101 @@ test('bird instances own their animation channels and rainbow trail', async () =
   assert.equal(other.rainbow.points.length, 0);
   assert.equal(other.animation.blinkTime, 0);
   assert.notEqual(bird.animation.wingAngle, other.animation.wingAngle);
+});
+
+function advance(seconds) {
+  for (let left = seconds; left > 1e-9; left -= 0.01) p.step(Math.min(0.01, left));
+}
+
+test('eaten firefly stays at the rotated mouth, cannot be collected twice, and disappears when chewing ends', () => {
+  const food = fly();
+  p.step(0);
+  assert.equal(food.eaten, true);
+  assert.equal(food.eater, bird);
+  assert.equal(food.body.mode, 'attached');
+  assert.deepEqual(food.getColliders(), []);
+  const dx = food.x - bird.x,
+    dy = food.y - bird.y,
+    agi = bird.agi;
+  place(bird, 210, 380);
+  bird.vy = viewport.height * 0.7;
+  p.step(0);
+  assert.ok(
+    Math.abs(food.x - bird.x - (dx * Math.cos(bird.angle) - dy * Math.sin(bird.angle))) < 1e-9,
+  );
+  assert.ok(
+    Math.abs(food.y - bird.y - (dx * Math.sin(bird.angle) + dy * Math.cos(bird.angle))) < 1e-9,
+  );
+  assert.equal(bird.eat(food), false);
+  assert.equal(bird.agi, agi);
+  bird.vy = 0;
+  advance(0.5);
+  assert.equal(p.get(food.id), food);
+  assert.ok(bird.animation.chewTime > 0);
+  advance(0.06);
+  assert.equal(bird.animation.chewTime, 0);
+  assert.equal(p.get(food.id), undefined);
+  assert.equal(bird.mouthfuls.size, 0);
+});
+
+test('food follows the current jaw pose after animation updates and remains while paused', () => {
+  const food = fly({ rainbow: true });
+  p.step(0.02);
+  const expected = bird.mouthAnchor(food);
+  assert.equal(food.x, expected.x);
+  assert.equal(food.y, expected.y);
+  const time = bird.animation.chewTime,
+    position = { x: food.x, y: food.y };
+  p.command('pause');
+  p.step(0);
+  p.step(2);
+  assert.equal(bird.animation.chewTime, time);
+  assert.deepEqual({ x: food.x, y: food.y }, position);
+  assert.equal(p.get(food.id), food);
+  p.command('pause');
+  p.step(0);
+  advance(0.6);
+  assert.equal(p.get(food.id), undefined);
+});
+
+test('rapid pickups remain held through the newest chew and each reward is granted once', () => {
+  const first = fly();
+  p.step(0);
+  advance(0.3);
+  const second = fly({ rainbow: true });
+  p.step(0);
+  assert.equal(bird.mouthfuls.size, 2);
+  advance(0.3);
+  assert.equal(p.get(first.id), first);
+  assert.equal(p.get(second.id), second);
+  assert.equal(bird.agi, AGI_START + AGI_STEP);
+  advance(0.26);
+  assert.equal(bird.mouthfuls.size, 0);
+  assert.equal(p.get(first.id), undefined);
+  assert.equal(p.get(second.id), undefined);
+});
+
+test('death, restart and removal clear food attachments without carrying them into a revive', () => {
+  const first = fly();
+  p.step(0);
+  bird.die('drown');
+  p.dispatchEvents();
+  p.step(0);
+  assert.equal(p.get(first.id), undefined);
+  assert.equal(bird.mouthfuls.size, 0);
+  session.worms = 1;
+  session.showOver();
+  p.command('revive');
+  p.step(0);
+  const second = fly();
+  p.step(0);
+  assert.equal(bird.mouthfuls.size, 1);
+  p.command('restart');
+  p.step(0);
+  assert.equal(p.get(second.id), undefined);
+  assert.equal(bird.mouthfuls.size, 0);
+  const third = fly();
+  p.step(0);
+  p.remove(bird);
+  assert.equal(p.get(third.id), undefined);
 });

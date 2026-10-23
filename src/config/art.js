@@ -1,6 +1,7 @@
 // Coordinate anchors shared by animation and collision geometry.
 // Shapes and paint live in assets/svg/. Keep these anchors aligned when resizing art.
 export const BIRD_ANCHOR = [280, 318];
+export const BIRD_MOUTH = [475, 326];
 export const BIRD_SPAN = 487;
 export const HAWK_ANCHOR = [780, 760];
 export const HAWK_DIVE_ANCHOR = [700, 650];

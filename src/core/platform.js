@@ -186,6 +186,8 @@ export class Platform {
         this.dispatchEvents();
         this.physics.syncAttachments(objects);
         for (const object of objects) if (!object.removing) object.animate?.(dt);
+        // Attachments to animated anchors must use the pose rendered in this frame.
+        this.physics.syncAttachments(objects);
       }
     } finally {
       this.stepping = false;

@@ -1,6 +1,8 @@
 /** Read adapters for the existing artwork routines. Every value comes from its owning object. */
 export function createGameView(platform, owner = null) {
-  const bird = owner?.tags.has('player') ? owner : (owner?.target ?? platform.find('player'));
+  const bird = owner?.tags.has('player')
+    ? owner
+    : (owner?.eater ?? owner?.target ?? platform.find('player'));
   const effects = platform.get('effects');
   const enemies = {
     get fish() {

@@ -52,8 +52,7 @@ export class PickupRule extends Rule {
       effects = p.get('effects');
     if (s.phase !== 'play' || !bird.alive || object.removing) return true;
     if (pickup.group === 'firefly') {
-      if (!object.collect()) return true;
-      bird.chew();
+      if (!bird.eat(object)) return true;
       p.emit('firefly-eaten', { bird, firefly: object });
       if (object.rainbow) {
         bird.emitRainbow(BOOST_TIME);

@@ -8,6 +8,7 @@ export class Firefly extends WorldObject {
     super({ id, x, y, tags: ['firefly', 'pickup'], scope: 'run', order: 30 });
     Object.assign(this, { rainbow, ph, bl });
     this.eaten = false;
+    this.eater = null;
     this.pulled = false;
     this.tr = [];
     this.assetKeys = ['firefly'];
@@ -28,26 +29,46 @@ export class Firefly extends WorldObject {
     bird?.magnet.pull(this, dt, bird.r * 1.6);
   }
   plan(dt) {
+    if (this.eaten) return;
     this.flutter(dt);
   }
   afterPhysics() {
+    if (this.eaten) return;
     this.tr.push([this.x, this.y]);
     if (this.tr.length > 10) this.tr.shift();
     if (this.x < -30) this.platform.remove(this);
   }
-  collect() {
-    if (this.eaten || this.removing) return false;
+  collect(eater) {
+    if (this.eaten || this.removing || !eater?.alive || eater.platform !== this.platform)
+      return false;
     this.eaten = true;
-    this.platform.remove(this);
+    this.eater = eater;
+    this.tags.delete('pickup');
+    this.pulled = false;
+    this.tr = [];
+    this.platform.physics.attach(this, eater, (bird) => bird.mouthAnchor(this));
     return true;
+  }
+  animate() {
+    if (
+      this.eaten &&
+      (!this.eater?.alive || this.eater.removing || this.eater.animation.chewTime <= 0)
+    )
+      this.platform.remove(this);
   }
   getColliders() {
     return this.eaten ? [] : [circle(this, 'body', 'firefly', ['beak'], 4, { priority: 30 })];
   }
   renderEntries() {
-    return this.visual.entries();
+    if (this.eaten && !this.eater?.visible) return [];
+    return this.visual
+      .entries()
+      .map((entry) => (this.eaten ? { ...entry, layer: 101 } : entry));
   }
   detach() {
+    this.eater?.mouthfuls.delete(this);
+    this.eater = null;
+    this.platform.physics.detach(this);
     this.visual.dispose();
     super.detach();
   }

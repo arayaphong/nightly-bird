@@ -8,6 +8,7 @@ import { SvgVisual } from '../visuals/svg-visual.js';
 import { createBirdPainter } from '../visuals/bird-painter.js';
 import { createItemsPainter } from '../visuals/items-painter.js';
 import { RainbowTrail } from '../components/rainbow-trail.js';
+import { BIRD_ANCHOR, BIRD_MOUTH, BIRD_SPAN } from '../config/art.js';
 
 export class Redbird extends WorldObject {
   constructor({ id = 'player', ...options } = {}) {
@@ -17,7 +18,11 @@ export class Redbird extends WorldObject {
     this.status = new StatusEffects();
     this.magnet = new Magnet(this);
     this.rainbow = new RainbowTrail(this);
-    this.visual = new SvgVisual(this, createBirdPainter, [[100, 'drawBird']]);
+    this.mouthfuls = new Set();
+    this.visual = new SvgVisual(this, createBirdPainter, [
+      [100, 'drawBird'],
+      [102, 'drawBeakForeground'],
+    ]);
     this.itemVisual = new SvgVisual(this, createItemsPainter, [
       [80, 'drawMagnetField'],
       [90, 'drawBoostTrail'],
@@ -41,6 +46,13 @@ export class Redbird extends WorldObject {
   }
   get alive() {
     return this.lifeState === 'alive';
+  }
+  get visible() {
+    return !(
+      this.alive &&
+      (this.inv > 0 || this.zinv > 0) &&
+      Math.sin(this.session.time * 40) > 0.3
+    );
   }
   get helmet() {
     return this.equipment.has('helmet');
@@ -68,6 +80,7 @@ export class Redbird extends WorldObject {
       this.platform.physics.clamp(this, { left: this.r, right: viewport.width - this.r });
   }
   reset() {
+    this.clearMouth();
     this.platform.physics.detach(this);
     this.body.enabled = true;
     this.resize(this.viewport);
@@ -100,6 +113,29 @@ export class Redbird extends WorldObject {
   chew() {
     if (this.alive) this.animation.chew();
   }
+  eat(food) {
+    if (!this.alive || !food.collect(this)) return false;
+    this.mouthfuls.add(food);
+    this.chew();
+    return true;
+  }
+  mouthAnchor(food) {
+    const scale = (this.r * 4.2) / BIRD_SPAN;
+    const index = Math.max(0, [...this.mouthfuls].indexOf(food));
+    const spread = index ? (index % 2 ? -1 : 1) * Math.ceil(index / 2) * 1.25 : 0;
+    const x = (BIRD_MOUTH[0] - BIRD_ANCHOR[0]) * scale;
+    const y =
+      (BIRD_MOUTH[1] - BIRD_ANCHOR[1] + this.animation.chewAmount() * 3) * scale + spread;
+    const angle = this.angle;
+    return {
+      x: this.x + x * Math.cos(angle) - y * Math.sin(angle),
+      y: this.y + x * Math.sin(angle) + y * Math.cos(angle),
+    };
+  }
+  clearMouth() {
+    for (const food of this.mouthfuls) this.platform.remove(food);
+    this.mouthfuls.clear();
+  }
   emitRainbow(seconds) {
     this.status.apply('boost', seconds);
   }
@@ -109,12 +145,14 @@ export class Redbird extends WorldObject {
   die(cause) {
     if (!this.alive) return false;
     this.lifeState = 'dead';
+    this.clearMouth();
     this.rot = 0;
     this.glide();
     this.platform.emit('bird-died', { bird: this, cause });
     return true;
   }
   revive() {
+    this.clearMouth();
     this.platform.physics.detach(this);
     this.lifeState = 'alive';
     this.zapped = false;
@@ -186,6 +224,7 @@ export class Redbird extends WorldObject {
     return [...this.visual.entries(), ...this.itemVisual.entries()];
   }
   detach() {
+    this.clearMouth();
     this.visual.dispose();
     this.itemVisual.dispose();
     super.detach();

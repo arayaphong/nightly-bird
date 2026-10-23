@@ -36,8 +36,16 @@ export function createItemsPainter(view, cx, assets) {
     // glow shifts back and forth between lime green and yellow; dark body + light trail so they never read as stars
     const mix = (a, b, m) => a.map((v, k) => Math.round(v + (b[k] - v) * m)).join(',');
     for (const f of items.fireflies) {
+      cx.save();
+      if (f.eaten) {
+        cx.translate(f.x, f.y);
+        cx.rotate(f.eater.angle);
+        cx.scale(1, 1 - f.eater.animation.chewAmount() * 0.18);
+        cx.translate(-f.x, -f.y);
+        if (f.eater.y > f.eater.viewport.waterY) cx.globalAlpha = 0.65;
+      }
       const pulse = 0.6 + 0.4 * Math.sin(session.time * 5 + f.bl),
-        R = 16 + 8 * pulse,
+        R = (16 + 8 * pulse) * (f.eaten ? 0.45 : 1),
         m = 0.5 + 0.5 * Math.sin(session.time * 1.8 + f.ph);
       let core = mix([190, 255, 90], [255, 245, 120], m),
         mid = mix([110, 255, 30], [255, 220, 20], m),
@@ -102,6 +110,7 @@ export function createItemsPainter(view, cx, assets) {
         color,
       });
       cx.shadowBlur = 0;
+      cx.restore();
     }
   }
   function drawMagnetField() {
