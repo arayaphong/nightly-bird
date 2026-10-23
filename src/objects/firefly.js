@@ -60,11 +60,10 @@ export class Firefly extends WorldObject {
     return this.eaten ? [] : [circle(this, 'body', 'firefly', ['beak'], 4, { priority: 30 })];
   }
   renderEntries() {
-    if (this.eaten && !this.eater?.visible) return [];
-    return this.visual
-      .entries()
-      .map((entry) => (this.eaten ? { ...entry, layer: 101 } : entry));
+    // Redbird owns the separate, unlit eating pose once this pickup is caught.
+    return this.eaten ? [] : this.visual.entries();
   }
+
   detach() {
     this.eater?.mouthfuls.delete(this);
     this.eater = null;

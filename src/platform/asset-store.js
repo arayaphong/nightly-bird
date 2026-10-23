@@ -2,6 +2,7 @@
 // Decode each layer once; the render loop only draws cached images.
 const files = {
   bird: ['characters/bird.svg', true],
+  birdEating: ['characters/bird-eating.svg'],
   fish: ['characters/fish.svg', true],
   hawk: ['characters/hawk.svg'],
   hawkDive: ['characters/hawk-dive.svg'],

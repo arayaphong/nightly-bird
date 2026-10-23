@@ -13,16 +13,13 @@ import { BIRD_ANCHOR, BIRD_MOUTH, BIRD_SPAN } from '../config/art.js';
 export class Redbird extends WorldObject {
   constructor({ id = 'player', ...options } = {}) {
     super({ ...options, id, tags: ['player'], order: -90 });
-    this.assetKeys = ['bird', 'helmet', 'suit', 'gun', 'magnet'];
+    this.assetKeys = ['bird', 'birdEating', 'helmet', 'suit', 'gun', 'magnet'];
     this.equipment = new EquipmentRack(this);
     this.status = new StatusEffects();
     this.magnet = new Magnet(this);
     this.rainbow = new RainbowTrail(this);
     this.mouthfuls = new Set();
-    this.visual = new SvgVisual(this, createBirdPainter, [
-      [100, 'drawBird'],
-      [102, 'drawBeakForeground'],
-    ]);
+    this.visual = new SvgVisual(this, createBirdPainter, [[100, 'drawBird']]);
     this.itemVisual = new SvgVisual(this, createItemsPainter, [
       [80, 'drawMagnetField'],
       [90, 'drawBoostTrail'],

@@ -14,6 +14,7 @@ export function createBirdPainter(view, cx, assets) {
     const open = deadEyes ? 1 : blinkOpen();
     const chew = bird.alive ? chewAmount() : 0;
     const scorched = !!bird.zapped;
+    const eating = bird.alive && bird.mouthfuls.size > 0;
     const draw = (id, options = {}) =>
       sprite('bird', id).draw(cx, {
         scorched,
@@ -50,8 +51,8 @@ export function createBirdPainter(view, cx, assets) {
       if (open < 0.4) draw(eye + '-lid');
     }
     draw('eyebrows');
-    const up = (-14 * chew * Math.PI) / 180,
-      down = (20 * chew * Math.PI) / 180;
+    const up = ((eating ? -3 - 5 * chew : -14 * chew) * Math.PI) / 180,
+      down = ((eating ? 3 + 7 * chew : 20 * chew) * Math.PI) / 180;
     if (chew > 0.05) {
       // Stretch a loaded triangular mouth layer between the moving jaw tips.
       cx.save();
@@ -66,12 +67,23 @@ export function createBirdPainter(view, cx, assets) {
       draw('mouth');
       cx.restore();
     }
-    draw('beak-upper', {
-      angle: up,
-    });
-    draw('beak-lower', {
-      angle: down,
-    });
+    if (eating) {
+      // One composed mouthful silhouette even during rapid pickups. Both kinds
+      // use this matte, folded-wing pose; food lifetime stays with the objects.
+      sprite('birdEating', 'mouthful').draw(cx, {
+        y: 326 + chew * 3,
+        angle: -0.06 + chew * 0.12,
+        scaleY: 1 - chew * 0.12,
+      });
+    }
+    const beak = eating ? 'birdEating' : 'bird';
+    if (eating) {
+      sprite(beak, 'beak-lower').draw(cx, { angle: down, scorched });
+      sprite(beak, 'beak-upper').draw(cx, { angle: up, scorched });
+    } else {
+      draw('beak-upper', { angle: up });
+      draw('beak-lower', { angle: down });
+    }
   }
   function drawBird() {
     if (!bird.visible) return;
@@ -108,22 +120,5 @@ export function createBirdPainter(view, cx, assets) {
         });
     cx.restore();
   }
-  function drawBeakForeground() {
-    if (!bird.visible || !bird.mouthfuls.size) return;
-    const chew = bird.animation.chewAmount(),
-      scale = (bird.r * 4.2) / BIRD_SPAN;
-    cx.save();
-    if (bird.y > viewport.waterY) cx.globalAlpha = 0.65;
-    cx.translate(bird.x, bird.y);
-    cx.rotate(bird.angle);
-    cx.scale(scale, scale);
-    cx.translate(-BIRD_ANCHOR[0], -BIRD_ANCHOR[1]);
-    sprite('bird', 'beak-upper').draw(cx, { angle: (-14 * chew * Math.PI) / 180 });
-    sprite('bird', 'beak-lower').draw(cx, { angle: (20 * chew * Math.PI) / 180 });
-    cx.restore();
-  }
-  return {
-    drawBird,
-    drawBeakForeground,
-  };
+  return { drawBird };
 }

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="410 290 136 86" role="img" aria-labelledby="title">
+  <title id="title">นกแดงคาบแมลง — ปากงับและแมลงปีกพับ ไม่มีแสง</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Dedicated eating layers in bird coordinates; no flying firefly artwork or light effects.</desc>
+  <g id="mouthful" data-sprite="" transform="translate(490 326)">
+    <!-- Folded wings and little hooked legs keep the silhouette readable. -->
+    <path d="M4 4 L11 17 L18 18 M13 3 L22 13 L29 11 M-2 3 L0 15 L-5 19" fill="none" stroke="#39342a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-4 -3 Q8 -22 29 -18 Q24 -4 6 3 Z" fill="#b9b49a" stroke="#565644" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M1 -1 L23 -14" fill="none" stroke="#85836b" stroke-width="2"/>
+    <path d="M-2 -5 C4 -10 21 -9 28 -1 C33 6 24 12 14 11 L0 6 Z" fill="#7e8950" stroke="#393d2c" stroke-width="3"/>
+    <path d="M14 -6 Q19 1 17 10 M23 -3 Q27 2 24 7" fill="none" stroke="#59633a" stroke-width="2.5"/>
+    <ellipse cx="-4" cy="1" rx="9" ry="8" fill="#39342a"/>
+    <path d="M-8 -4 L-12 -12 M-2 -6 L0 -15" fill="none" stroke="#39342a" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <g id="beak-lower" data-sprite="" transform="translate(424 326)">
+    <path d="M6 4 Q36 5 69 3 Q64 16 25 22 Z" fill="#e8960e"/>
+    <path d="M16 9 Q40 12 58 8" fill="none" stroke="#c67910" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g id="beak-upper" data-sprite="" transform="translate(424 326)">
+    <path d="M-8 -26 Q33 -25 73 -8 Q78 -3 67 0 L6 5 Z" fill="#f8b51a"/>
+    <path d="M5 -18 Q33 -18 53 -10" fill="none" stroke="#ffcd50" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
