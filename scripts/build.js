@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const root = new URL('../', import.meta.url);
@@ -30,6 +30,35 @@ await writeFile(
   page,
   html.replace(marker, (_, open, close) => open + escapedLabel + close),
 );
+// Give the entry module and every ESM dependency the same deployment revision.
+// A fresh start-screen label must not accompany cached game/audio modules.
+if (run) {
+  const revision = encodeURIComponent(`${run}.${attempt}-${commit || 'build'}`);
+  const stamp = `?build=${revision}`;
+  const builtPage = await readFile(page, 'utf8');
+  await writeFile(
+    page,
+    builtPage.replace(
+      /src="(\.\/)?src\/main\.js"/,
+      (_, prefix = '') => `src="${prefix}src/main.js${stamp}"`,
+    ),
+  );
+  async function stampModules(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const url = new URL(entry.name + (entry.isDirectory() ? '/' : ''), directory);
+      if (entry.isDirectory()) await stampModules(url);
+      else if (entry.name.endsWith('.js')) {
+        const source = await readFile(url, 'utf8');
+        const revised = source.replace(
+          /(\b(?:from\s*|import\s*(?:\(\s*)?))(['"])(\.{1,2}\/[^'"]+\.js)\2/g,
+          (_, prefix, quote, specifier) => `${prefix}${quote}${specifier}${stamp}${quote}`,
+        );
+        await writeFile(url, revised);
+      }
+    }
+  }
+  await stampModules(new URL('src/', output));
+}
 await writeFile(new URL('.nojekyll', output), '');
 
 console.log(`Static site ready: ${fileURLToPath(output)}`);

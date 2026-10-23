@@ -158,3 +158,5 @@ Copyright (c) 2026 Arayaphong Traisopon
 บน GitHub Actions ใช้เลข run, เลข attempt และ commit 7 ตัวแรก เช่น
 `เวอร์ชัน 0.1.0 · build 42.1 · abc1234` จึงแยกการ deploy แต่ละครั้งได้แม้เวอร์ชันหลักเท่ากัน
 build บนเครื่องแสดง `local` ส่วนการเปิด source โดยตรงแสดง `เวอร์ชันพัฒนา`
+
+บน CI ทุกโมดูล ESM ใช้ query รหัส build เดียวกัน เพื่อให้เลข build ใหม่โหลดโค้ดและค่าเสียงชุดใหม่ด้วย
