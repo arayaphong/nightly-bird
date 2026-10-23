@@ -26,6 +26,7 @@ import { HUD } from '../ui/hud.js';
 import { MessageBox } from '../ui/message-box.js';
 import { ShopPanel } from '../ui/shop-panel.js';
 import { MAX_FRAME_DELTA } from '../config/game.js';
+import { AudioSystem } from '../platform/audio-system.js';
 
 /** Composition root. Import in tests without creating a DOM or starting a loop. */
 export function createGame({
@@ -37,6 +38,13 @@ export function createGame({
   pixelRatio = 1,
   assets = new AssetStore(),
   scoreStore = new ScoreStore(),
+  audio = host
+    ? new AudioSystem({
+        host,
+        sounds: { crunch: new URL('../../assets/audio/crunch.wav', import.meta.url) },
+        events: { 'firefly-eaten': 'crunch' },
+      })
+    : null,
   random,
   cosmeticRandom,
 } = {}) {
@@ -59,6 +67,7 @@ export function createGame({
     new WaterSurface(),
     new WindField(),
     effects,
+    ...(audio ? [audio] : []),
     new RuleSet([
       new RunRule(),
       new WaterRule(),

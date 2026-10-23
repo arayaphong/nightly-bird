@@ -115,6 +115,20 @@ contact ที่มีระดับเดียวกันเรียงต
 - สายฟ้าตรวจชนเฉพาะเฟรมเริ่มผ่า แต่ภาพอยู่ต่อ 0.28 วินาที
 - การ resize คำนวณขนาดนกและเขตใหม่; ไม่ทำให้ตำแหน่งพิกัดกลายเป็นหน่วย device pixels
 
+## เสียง
+
+`AudioSystem` เป็น PlatformObject ที่รับ `firefly-eaten` แล้วเล่น `assets/audio/crunch.wav`
+PickupRule ส่งเหตุการณ์หลังเก็บหิ่งห้อยสำเร็จครั้งเดียว ใช้ทั้งหิ่งห้อยปกติและสายรุ้ง
+การเคี้ยวหรือวาดภาพเพียงอย่างเดียวไม่เล่นเสียง ของขวัญไม่ส่งเหตุการณ์นี้
+
+Web Audio โหลด/decode buffer ครั้งเดียวและสร้าง source แยกต่อเสียง จำกัดเสียงซ้อนสูงสุด 4 เสียง
+resume AudioContext จาก pointerdown/keydown โดยตรงเพื่อรองรับนโยบาย autoplay
+เสียงที่เกิดขณะยังปลดล็อกไม่ได้จะไม่ค้างรอไปดังภายหลัง โหลดเสียงล้มเหลวไม่ทำให้เริ่มเกมไม่ได้
+เมื่อลบหรือ dispose ระบบจะหยุดเสียง ถอน listener และปิด context
+
+`createGame({ audio })` รับระบบเสียงที่ฉีดเข้ามาได้ หรือใช้ `audio: null` เพื่อปิดเสียง
+เมื่อสร้างเกมแบบไม่มี host จะไม่สร้าง AudioContext จึงยังทดสอบ simulation ใน Node ได้
+
 ## สถานะและเวลา
 
 `GameSession.phase` คือ ready/play/dead/shop/paused ส่วน `Redbird.lifeState` คือ alive/dead

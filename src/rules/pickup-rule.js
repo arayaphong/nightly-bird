@@ -54,6 +54,7 @@ export class PickupRule extends Rule {
     if (pickup.group === 'firefly') {
       if (!object.collect()) return true;
       bird.chew();
+      p.emit('firefly-eaten', { bird, firefly: object });
       if (object.rainbow) {
         bird.emitRainbow(BOOST_TIME);
         effects.label(`ความเร็ว ×${BOOST_MULT}!`, '#fff', {
