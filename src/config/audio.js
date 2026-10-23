@@ -6,7 +6,7 @@ export const SOUND_EFFECTS = {
   laser: new URL('../../assets/audio/laser-pew.wav', import.meta.url),
   hawkStrike: new URL('../../assets/audio/hawk-strike.wav', import.meta.url),
   rainbow: new URL('../../assets/audio/rainbow.wav', import.meta.url),
-  hurt: new URL('../../assets/audio/bird-hurt.wav', import.meta.url),
+  hurt: new URL('../../assets/audio/bird-hurt.wav?v=2d263203', import.meta.url),
   wingFlap: new URL('../../assets/audio/wing-flap.wav?v=2c87ebec', import.meta.url),
   // Identify the trimmed asset so cached copies of the old recording are not reused.
   crunch: new URL('../../assets/audio/crunch.wav?v=7caaaa09', import.meta.url),

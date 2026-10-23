@@ -190,7 +190,7 @@ metadata ถูกล้างทั้งเมื่อเสียงจบ�
 
 `CombatRule.hit()` ส่ง `bird-armor-hit` เฉพาะเมื่อ `EquipmentRack.absorb()` ใช้หมวกหรือชุดกันฟ้า
 รับการโจมตีจริง `SOUND_EVENTS` จับคู่เหตุการณ์นี้กับเสียง `bird-hurt.wav` จากไฟล์
-`bird_hurt_squawk.wav` ความยาว 0.32 วินาที เล่นครั้งเดียวตอนรับการโจมตี
+`bird_hurt_short.wav` ความยาว 0.26 วินาที เล่นครั้งเดียวตอนรับการโจมตี
 ช่วงคุ้มกันหลังโดนโจมตี การโจมตีพลาด และการตายไม่ส่งเหตุการณ์นี้
 
 `AudioSystem` เป็น PlatformObject ที่รับ `firefly-eaten` แล้วเล่น `assets/audio/crunch.wav`
