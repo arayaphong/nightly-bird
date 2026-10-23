@@ -42,10 +42,9 @@ export class AudioSystem extends PlatformObject {
         this.output.connect(this.context.destination);
       }
       await Promise.all(
-        Object.entries(this.sounds).map(async ([name, definition]) => {
+        Object.entries(this.sounds).map(async ([name, url]) => {
           if (this.buffers.has(name)) return;
           try {
-            const url = definition.url ?? definition;
             const response = await this.fetcher(url);
             if (!response.ok)
               throw new Error(`Sound load failed (${response.status}): ${name}`);
@@ -89,7 +88,7 @@ export class AudioSystem extends PlatformObject {
         source.disconnect();
       };
       this.voices.add(source);
-      source.start(0, this.sounds[name]?.offset ?? 0);
+      source.start();
       return true;
     } catch {
       if (source) this.stopVoice(source);

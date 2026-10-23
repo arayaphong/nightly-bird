@@ -39,7 +39,7 @@ function mockAudio({
         stopped: false,
         disconnected: false,
         connect() {},
-        start(when, offset) {
+        start(when = 0, offset = 0) {
           this.started = true;
           this.when = when;
           this.offset = offset;
@@ -140,7 +140,7 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
     p.step(0);
     assert.ok(bird.animation.chewTime > 0);
     assert.equal(sources.at(-1).when, 0);
-    assert.equal(sources.at(-1).offset, SOUND_EFFECTS.crunch.offset);
+    assert.equal(sources.at(-1).offset, 0);
     p.step(0);
   }
   assert.equal(sources.length, 2);
@@ -155,8 +155,9 @@ test('normal and rainbow fireflies each crunch once; gifts and dead birds do not
   p.dispose();
 });
 
-test('configured crunch starts within 15 ms of its audible bite instead of after chewing ends', async () => {
-  const bytes = await readFile(SOUND_EFFECTS.crunch.url);
+test('trimmed crunch stays compact and starts its audible bite within 15 ms', async () => {
+  const bytes = await readFile(SOUND_EFFECTS.crunch);
+  assert.ok(bytes.length < 70000, 'The quiet prefix must be removed from the deployed file');
   assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
   let format, pcm;
   for (let pos = 12; pos + 8 <= bytes.length;) {
@@ -170,7 +171,8 @@ test('configured crunch starts within 15 ms of its audible bite instead of after
   assert.equal(format.readUInt16LE(14), 16);
   const channels = format.readUInt16LE(2),
     rate = format.readUInt32LE(4);
-  const firstFrame = Math.floor(SOUND_EFFECTS.crunch.offset * rate);
+  assert.ok(pcm.length / (channels * 2 * rate) < 0.4);
+  const firstFrame = 0;
   let onset = Infinity;
   for (let frame = firstFrame; frame < pcm.length / (channels * 2); frame++) {
     for (let channel = 0; channel < channels; channel++) {
