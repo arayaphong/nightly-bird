@@ -815,3 +815,32 @@ test('fish strike plays once at the leap transition, never during patrol, charge
   assert.equal(count(), 2, 'A new leap gets one new sound');
   p.dispose();
 });
+
+test('each successful water bounce splishes once, while drowning and underwater motion do not', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    v = p.get('viewport');
+  const count = () =>
+    sources.filter((s) => s.buffer === audio.buffers.get('waterBounce')).length;
+  for (let contact = 1; contact <= 4; contact++) {
+    p.physics.place(bird, 144, v.waterY - bird.r * 0.55 - 0.1);
+    bird.vy = 200;
+    p.step(0.01);
+    assert.equal(count(), Math.min(contact, 3));
+    if (contact < 4) {
+      assert.equal(bird.alive, true);
+      assert.ok(bird.vy < 0);
+      assert.equal(bird.skips, 3 - contact);
+      p.step(0.01);
+      assert.equal(count(), contact);
+    }
+  }
+  assert.equal(bird.alive, false);
+  p.step(0.02);
+  assert.equal(count(), 3);
+  p.dispose();
+});

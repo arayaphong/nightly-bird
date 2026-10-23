@@ -19,6 +19,7 @@ export class WaterRule extends Rule {
             p.physics.place(bird, bird.x, v.waterY - foot, { resetPrevious: false });
             bird.vy = -Math.sqrt(2 * v.height * 1.5 * bird.agi * height);
             bird.skips--;
+            p.emit('water-bounce', { bird });
             water.splash(bird.x, 10, v.height * 0.24);
           } else {
             water.splash(bird.x, 16, v.height * 0.3);
