@@ -13,6 +13,7 @@ export function createBirdPainter(view, cx, assets) {
     const deadEyes = !bird.alive && ['storm', 'drown', 'hawk'].includes(session.deathBy);
     const open = deadEyes ? 1 : blinkOpen();
     const chew = bird.alive ? chewAmount() : 0;
+    const swallow = bird.alive ? bird.animation.swallowAmount() : 0;
     const scorched = !!bird.zapped;
     const eating = bird.alive && bird.mouthfuls.size > 0;
     const draw = (id, options = {}) =>
@@ -40,8 +41,8 @@ export function createBirdPainter(view, cx, assets) {
     draw('crest');
     draw('cheek', {
       y: 282 + chew * 3,
-      scaleX: 1 + chew * 0.05,
-      scaleY: 1 + chew * 0.05,
+      scaleX: 1 + chew * 0.055,
+      scaleY: 1 + chew * 0.055,
     });
     if (bird.suit && bird.alive) sprite('suit', 'hood').draw(cx);
     for (const eye of ['eye-left', 'eye-right']) {
@@ -51,16 +52,16 @@ export function createBirdPainter(view, cx, assets) {
       if (open < 0.4) draw(eye + '-lid');
     }
     draw('eyebrows');
-    const up = ((eating ? -3 - 5 * chew : -14 * chew) * Math.PI) / 180,
-      down = ((eating ? 3 + 7 * chew : 20 * chew) * Math.PI) / 180;
-    if (chew > 0.05) {
+    const up = ((eating ? -2 - 14 * chew : -14 * chew) * Math.PI) / 180,
+      down = ((eating ? 2 + 23 * chew : 20 * chew) * Math.PI) / 180;
+    if (eating || chew > 0.05) {
       // Stretch a loaded triangular mouth layer between the moving jaw tips.
       cx.save();
       cx.transform(
-        (4 + 70 * Math.cos(up)) / 100,
-        (-8 + 70 * Math.sin(up)) / 100,
-        (4 + 66 * Math.cos(down)) / 100,
-        (6 + 66 * Math.sin(down)) / 100,
+        (4 + (eating ? 72 : 70) * Math.cos(up)) / 100,
+        ((eating ? 0 : -8) + (eating ? 72 : 70) * Math.sin(up)) / 100,
+        (4 + (eating ? 69 : 66) * Math.cos(down)) / 100,
+        ((eating ? 0 : 6) + (eating ? 69 : 66) * Math.sin(down)) / 100,
         420,
         326,
       );
@@ -71,9 +72,11 @@ export function createBirdPainter(view, cx, assets) {
       // One composed mouthful silhouette even during rapid pickups. Both kinds
       // use this matte, folded-wing pose; food lifetime stays with the objects.
       sprite('birdEating', 'mouthful').draw(cx, {
-        y: 326 + chew * 3,
-        angle: -0.06 + chew * 0.12,
-        scaleY: 1 - chew * 0.12,
+        x: 490 - swallow * 46,
+        y: 326 + chew * 5,
+        angle: ((-4 + chew * 12) * Math.PI) / 180,
+        scaleX: 1 - swallow * 0.8,
+        scaleY: (1 - swallow * 0.8) * (1 - chew * 0.2),
       });
     }
     const beak = eating ? 'birdEating' : 'bird';

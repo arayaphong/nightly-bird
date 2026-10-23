@@ -1,6 +1,8 @@
 import {
   BLINK_DUR,
   CHEW_BITES,
+  CHEW_BITE_TIME,
+  CHEW_SWALLOW_TIME,
   CHEW_TIME,
   TAU,
   WING_LAZY_OMEGA,
@@ -42,9 +44,18 @@ export class BirdAnimation {
   }
   chewAmount() {
     if (this.chewTime <= 0) return 0;
-    const progress = 1 - this.chewTime / CHEW_TIME;
-    return Math.abs(Math.sin(progress * Math.PI * CHEW_BITES)) * (1 - progress * 0.45);
+    const elapsed = CHEW_TIME - this.chewTime;
+    if (elapsed >= CHEW_BITE_TIME) return 0;
+    return (1 - Math.cos((elapsed / CHEW_BITE_TIME) * TAU * CHEW_BITES)) / 2;
   }
+  swallowAmount() {
+    if (this.chewTime <= 0) return 0;
+    return Math.max(
+      0,
+      Math.min(1, (CHEW_TIME - this.chewTime - CHEW_BITE_TIME) / CHEW_SWALLOW_TIME),
+    );
+  }
+
   update(dt) {
     const flapping = this.bird.alive && this.bird.flapping && this.session.phase === 'play';
     if (flapping) {

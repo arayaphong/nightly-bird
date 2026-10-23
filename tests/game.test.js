@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createGame } from '../src/game/create-game.js';
 import { AssetStore } from '../src/platform/asset-store.js';
 import { ScoreStore } from '../src/platform/score-store.js';
+import { CHEW_TIME, CHEW_BITE_TIME } from '../src/config/animation.js';
 import { Firefly } from '../src/objects/firefly.js';
 import { BalloonGift } from '../src/objects/balloon-gift.js';
 import { Hawk } from '../src/objects/hawk.js';
@@ -522,7 +523,8 @@ test('eaten firefly stays at the rotated mouth, cannot be collected twice, and d
   assert.equal(bird.eat(food), false);
   assert.equal(bird.agi, agi);
   bird.vy = 0;
-  advance(0.5);
+  bird.body.enabled = false;
+  advance(CHEW_TIME - 0.05);
   assert.equal(p.get(food.id), food);
   assert.ok(bird.animation.chewTime > 0);
   advance(0.06);
@@ -534,6 +536,7 @@ test('eaten firefly stays at the rotated mouth, cannot be collected twice, and d
 test('food follows the current jaw pose after animation updates and remains while paused', () => {
   const food = fly({ rainbow: true });
   p.step(0.02);
+  bird.body.enabled = false;
   const expected = bird.mouthAnchor(food);
   assert.equal(food.x, expected.x);
   assert.equal(food.y, expected.y);
@@ -547,13 +550,14 @@ test('food follows the current jaw pose after animation updates and remains whil
   assert.equal(p.get(food.id), food);
   p.command('pause');
   p.step(0);
-  advance(0.6);
+  advance(CHEW_TIME);
   assert.equal(p.get(food.id), undefined);
 });
 
 test('rapid pickups remain held through the newest chew and each reward is granted once', () => {
   const first = fly();
   p.step(0);
+  bird.body.enabled = false;
   advance(0.3);
   const second = fly({ rainbow: true });
   p.step(0);
@@ -562,7 +566,7 @@ test('rapid pickups remain held through the newest chew and each reward is grant
   assert.equal(p.get(first.id), first);
   assert.equal(p.get(second.id), second);
   assert.equal(bird.agi, AGI_START + AGI_STEP);
-  advance(0.26);
+  advance(CHEW_TIME - 0.3 + 0.01);
   assert.equal(bird.mouthfuls.size, 0);
   assert.equal(p.get(first.id), undefined);
   assert.equal(p.get(second.id), undefined);
@@ -591,4 +595,24 @@ test('death, restart and removal clear food attachments without carrying them in
   p.step(0);
   p.remove(bird);
   assert.equal(p.get(third.id), undefined);
+});
+
+test('approved eating timing has three full jaw cycles before a separate swallow', () => {
+  const animation = bird.animation;
+  animation.chew();
+  const bite = CHEW_BITE_TIME / 3;
+  for (let i = 0; i < 3; i++) {
+    assert.ok(Math.abs(animation.chewAmount()) < 1e-9);
+    animation.update(bite / 2);
+    assert.ok(Math.abs(animation.chewAmount() - 1) < 1e-9);
+    assert.equal(animation.swallowAmount(), 0);
+    animation.update(bite / 2);
+  }
+  assert.ok(Math.abs(animation.chewAmount()) < 1e-9);
+  animation.update((CHEW_TIME - CHEW_BITE_TIME) / 2);
+  assert.equal(animation.chewAmount(), 0);
+  assert.ok(Math.abs(animation.swallowAmount() - 0.5) < 1e-9);
+  animation.chew();
+  assert.equal(animation.swallowAmount(), 0);
+  assert.equal(animation.chewAmount(), 0);
 });

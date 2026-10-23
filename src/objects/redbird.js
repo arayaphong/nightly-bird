@@ -120,9 +120,9 @@ export class Redbird extends WorldObject {
     const scale = (this.r * 4.2) / BIRD_SPAN;
     const index = Math.max(0, [...this.mouthfuls].indexOf(food));
     const spread = index ? (index % 2 ? -1 : 1) * Math.ceil(index / 2) * 1.25 : 0;
-    const x = (BIRD_MOUTH[0] - BIRD_ANCHOR[0]) * scale;
+    const x = (490 - this.animation.swallowAmount() * 46 - BIRD_ANCHOR[0]) * scale;
     const y =
-      (BIRD_MOUTH[1] - BIRD_ANCHOR[1] + this.animation.chewAmount() * 3) * scale + spread;
+      (BIRD_MOUTH[1] - BIRD_ANCHOR[1] + this.animation.chewAmount() * 5) * scale + spread;
     const angle = this.angle;
     return {
       x: this.x + x * Math.cos(angle) - y * Math.sin(angle),
