@@ -103,6 +103,7 @@ export class StormCloud extends WorldObject {
     }
     points.push([ex, ey]);
     this.lightning = this.platform.add(new LightningBolt({ points, cloud: this }));
+    this.platform.emit('lightning-strike', { cloud: this, bolt: this.lightning });
     this.coolDown();
     this.platform.get('effects').flash = 1;
   }

@@ -9,7 +9,7 @@ import { Firefly } from '../src/objects/firefly.js';
 import { Hawk } from '../src/objects/hawk.js';
 import { WeaponRule } from '../src/rules/weapon-rule.js';
 import { CombatRule } from '../src/rules/combat-rule.js';
-import { LightningBolt } from '../src/objects/storm-cloud.js';
+import { LightningBolt, StormCloud } from '../src/objects/storm-cloud.js';
 import { BalloonGift } from '../src/objects/balloon-gift.js';
 import { SOUND_EFFECTS, SOUND_EVENTS } from '../src/config/audio.js';
 
@@ -743,4 +743,36 @@ test('invalid shot requests stay silent and an automatic gun response leaves no 
     0,
   );
   p.dispose();
+});
+
+test('thunder plays once when the cloud strikes, whether the bolt hits or misses', async () => {
+  for (const outcome of ['miss', 'armored', 'lethal']) {
+    const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+    const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+    await p.load();
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player');
+    bird.body.enabled = false;
+    const cloud = p.add(new StormCloud({ x: bird.x, y: bird.y - 100 }));
+    p.flush();
+    cloud.beginCharge(bird);
+    p.dispatchEvents();
+    assert.equal(sources.length, 0, 'Charging is silent');
+    if (outcome === 'miss') p.physics.place(bird, bird.x + 250, bird.y);
+    if (outcome === 'armored') bird.equip('suit');
+    cloud.strike();
+    p.dispatchEvents();
+    p.flush();
+    p.step(0);
+    const count = (name) => sources.filter((s) => s.buffer === audio.buffers.get(name)).length;
+    assert.equal(count('thunder'), 1);
+    assert.equal(count('hurt'), outcome === 'armored' ? 1 : 0);
+    assert.equal(bird.alive, outcome !== 'lethal');
+    p.step(0.02);
+    p.step(0.02);
+    p.dispatchEvents();
+    assert.equal(count('thunder'), 1, 'Visible bolt frames must not retrigger');
+    p.dispose();
+  }
 });
