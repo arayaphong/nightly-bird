@@ -6,8 +6,10 @@ import { AudioSystem } from '../src/platform/audio-system.js';
 import { AssetStore } from '../src/platform/asset-store.js';
 import { createGame } from '../src/game/create-game.js';
 import { Firefly } from '../src/objects/firefly.js';
+import { CombatRule } from '../src/rules/combat-rule.js';
+import { LightningBolt } from '../src/objects/storm-cloud.js';
 import { BalloonGift } from '../src/objects/balloon-gift.js';
-import { SOUND_EFFECTS } from '../src/config/audio.js';
+import { SOUND_EFFECTS, SOUND_EVENTS } from '../src/config/audio.js';
 
 const crunch = new URL('../assets/audio/crunch.wav', import.meta.url);
 function mockAudio({
@@ -65,7 +67,7 @@ function mockAudio({
     host,
     contextFactory: () => context,
     sounds,
-    events: { 'firefly-eaten': 'crunch' },
+    events: SOUND_EVENTS,
     fetcher: async (url) => ({
       ok: !fail,
       status: fail ? 503 : 200,
@@ -327,7 +329,11 @@ test('flight uses thirty percent volume without affecting other audio', async ()
   const wing = audio.loops.get('wingFlap');
   assert.ok(wing.started);
   assert.equal(audio.output.gain.value, 0.6);
-  assert.equal(wing.output.gain.value, 0.3, 'Flight gain is thirty percent of the initial level');
+  assert.equal(
+    wing.output.gain.value,
+    0.3,
+    'Flight gain is thirty percent of the initial level',
+  );
   for (let i = 0; i < 8; i++) audio.play('crunch');
   assert.equal(sources.at(-1).output, audio.output, 'Crunch uses the unchanged master output');
   assert.equal(wing.stopped, false);
@@ -340,4 +346,124 @@ test('flight uses thirty percent volume without affecting other audio', async ()
   wing.end();
   assert.equal(audio.loops.size, 0);
   p.dispose();
+});
+
+test('a surviving helmet or lightning-suit impact squawks once; protected repeats are silent', async () => {
+  for (const [cause, armor] of [
+    ['hawk', 'helmet'],
+    ['fish', 'helmet'],
+    ['storm', 'suit'],
+  ]) {
+    const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+    const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+    await p.load();
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player');
+    const combat = p.get('rules').rules.find((rule) => rule instanceof CombatRule);
+    bird.equip(armor);
+    combat.hit(bird, cause);
+    p.dispatchEvents();
+    assert.equal(bird.alive, true);
+    assert.equal(bird.equipment.has(armor), false);
+    assert.equal(sources.length, 1);
+    assert.equal(sources[0].buffer, audio.buffers.get('hurt'));
+    assert.equal(sources[0].loop, undefined);
+    assert.equal(sources[0].offset, 0);
+    combat.hit(bird, cause);
+    p.dispatchEvents();
+    assert.equal(sources.length, 1, 'Protection cannot produce a second squawk');
+    p.dispose();
+  }
+});
+
+test('predators and lightning that miss are silent; a real armored contact squawks', async () => {
+  for (const tag of ['hawk', 'shark']) {
+    const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+    const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+    await p.load();
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player'),
+      enemy = p.find(tag),
+      viewport = p.get('viewport');
+    bird.equip('helmet');
+    const y = tag === 'hawk' ? viewport.highY - 20 : viewport.dangerY + 20;
+    p.physics.place(bird, 150, y);
+    p.physics.place(enemy, 350, y);
+    enemy.locked = false;
+    if (tag === 'hawk') enemy.attack(bird);
+    p.step(0);
+    assert.equal(sources.length, 0);
+    assert.equal(bird.helmet, true);
+    p.physics.place(enemy, bird.x, bird.y);
+    p.step(0);
+    assert.equal(bird.alive, true);
+    assert.equal(bird.helmet, false);
+    assert.equal(sources.length, 1);
+    assert.equal(sources[0].buffer, audio.buffers.get('hurt'));
+    p.step(0);
+    assert.equal(sources.length, 1);
+    p.dispose();
+  }
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player');
+  bird.equip('suit');
+  p.add(
+    new LightningBolt({
+      points: [
+        [0, 0],
+        [40, 0],
+      ],
+      cloud: null,
+    }),
+  );
+  p.flush();
+  p.step(0);
+  assert.equal(sources.length, 0);
+  assert.equal(bird.suit, true);
+  p.add(
+    new LightningBolt({
+      points: [
+        [bird.x - 20, bird.y],
+        [bird.x + 20, bird.y],
+      ],
+      cloud: null,
+    }),
+  );
+  p.flush();
+  p.step(0);
+  assert.equal(sources.length, 1);
+  assert.equal(bird.alive, true);
+  assert.equal(bird.suit, false);
+  p.step(0);
+  assert.equal(sources.length, 1);
+  p.dispose();
+});
+
+test('lethal impacts, wrong armor and drowning do not play the surviving-hit sound', async () => {
+  for (const [cause, armor] of [
+    ['hawk', null],
+    ['fish', 'suit'],
+    ['storm', 'helmet'],
+    ['drown', 'helmet'],
+  ]) {
+    const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+    const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+    await p.load();
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player');
+    if (armor) bird.equip(armor);
+    const combat = p.get('rules').rules.find((rule) => rule instanceof CombatRule);
+    combat.hit(bird, cause);
+    p.dispatchEvents();
+    assert.equal(bird.alive, false);
+    assert.equal(sources.length, 0);
+    p.dispose();
+  }
 });

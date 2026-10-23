@@ -22,6 +22,7 @@ export class CombatRule extends Rule {
     if (cause !== 'drown' && bird.status.has(protection)) return false;
     const armor = bird.equipment.absorb(cause);
     if (armor) {
+      p.emit('bird-armor-hit', { bird, cause, armor, attacker });
       bird.status.apply(protection, 1);
       effects.flash = armor === 'suit' ? 0.6 : 0.4;
       effects.feathersAt(bird.x, bird.y, {
