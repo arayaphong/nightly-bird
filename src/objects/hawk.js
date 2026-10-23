@@ -64,6 +64,7 @@ export class Hawk extends WorldObject {
     this.travel = 0;
     this.attackSpeed = Math.max(0, this.vx * this.lock.dx + this.vy * this.lock.dy) * 0.3;
     this.platform.emit('attack-started', { attacker: this, target });
+    this.platform.emit('hawk-strike', { attacker: this, target });
     return true;
   }
   stun(seconds) {

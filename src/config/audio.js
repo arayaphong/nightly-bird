@@ -1,4 +1,5 @@
 export const SOUND_EFFECTS = {
+  hawkStrike: new URL('../../assets/audio/hawk-strike.wav', import.meta.url),
   rainbow: new URL('../../assets/audio/rainbow.wav', import.meta.url),
   hurt: new URL('../../assets/audio/bird-hurt.wav', import.meta.url),
   wingFlap: new URL('../../assets/audio/wing-flap.wav?v=2c87ebec', import.meta.url),
@@ -10,6 +11,7 @@ export const SOUND_EFFECTS = {
 export const SOUND_VOLUMES = { wingFlap: 0.3 };
 
 export const SOUND_EVENTS = {
+  'hawk-strike': 'hawkStrike',
   'firefly-eaten': 'crunch',
   'bird-armor-hit': 'hurt',
 };

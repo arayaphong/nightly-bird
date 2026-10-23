@@ -380,13 +380,15 @@ test('a surviving helmet or lightning-suit impact squawks once; protected repeat
   }
 });
 
-test('predators and lightning that miss are silent; a real armored contact squawks', async () => {
+test('predator and lightning misses never hurt-squawk; real armored contacts do', async () => {
   for (const tag of ['hawk', 'shark']) {
     const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
     const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
     await p.load();
     p.command('restart');
     p.step(0);
+    const hurtCount = () =>
+      sources.filter((source) => source.buffer === audio.buffers.get('hurt')).length;
     const bird = p.find('player'),
       enemy = p.find(tag),
       viewport = p.get('viewport');
@@ -397,16 +399,16 @@ test('predators and lightning that miss are silent; a real armored contact squaw
     enemy.locked = false;
     if (tag === 'hawk') enemy.attack(bird);
     p.step(0);
-    assert.equal(sources.length, 0);
+    assert.equal(hurtCount(), 0);
     assert.equal(bird.helmet, true);
     p.physics.place(enemy, bird.x, bird.y);
     p.step(0);
     assert.equal(bird.alive, true);
     assert.equal(bird.helmet, false);
-    assert.equal(sources.length, 1);
-    assert.equal(sources[0].buffer, audio.buffers.get('hurt'));
+    assert.equal(hurtCount(), 1);
+    assert.ok(sources.some((source) => source.buffer === audio.buffers.get('hurt')));
     p.step(0);
-    assert.equal(sources.length, 1);
+    assert.equal(hurtCount(), 1);
     p.dispose();
   }
   const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
@@ -588,5 +590,48 @@ test('rainbow obeys gesture unlock and missing recordings never affect boost gam
   p.step(0.02);
   assert.equal(audio.rainbowPlayback, null);
   assert.ok(p.find('player').status.has('boost'));
+  p.dispose();
+});
+
+test('hawk strike sounds once per dive, never for patrol, rejected attacks or shark attacks', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    hawk = p.find('hawk'),
+    shark = p.find('shark');
+  const strikeCount = () =>
+    sources.filter((source) => source.buffer === audio.buffers.get('hawkStrike')).length;
+  assert.equal(hawk.attack(bird), false);
+  p.dispatchEvents();
+  assert.equal(strikeCount(), 0);
+  hawk.respawn();
+  p.physics.place(hawk, 350, 100);
+  assert.equal(hawk.mode, 'patrol');
+  assert.equal(strikeCount(), 0);
+  assert.equal(hawk.attack(bird), true);
+  p.dispatchEvents();
+  assert.equal(strikeCount(), 1);
+  assert.equal(hawk.mode, 'dive');
+  assert.equal(sources.at(-1).offset, 0);
+  assert.equal(hawk.attack(bird), false);
+  p.dispatchEvents();
+  p.step(0.01);
+  p.step(0.01);
+  assert.equal(strikeCount(), 1, 'Diving frames do not retrigger the sound');
+  hawk.returnToPatrol();
+  hawk.stunTime = 1;
+  assert.equal(hawk.attack(bird), false);
+  p.dispatchEvents();
+  assert.equal(strikeCount(), 1);
+  hawk.stunTime = 0;
+  assert.equal(hawk.attack(bird), true);
+  p.dispatchEvents();
+  assert.equal(strikeCount(), 2);
+  p.emit('attack-started', { attacker: shark, target: bird });
+  p.dispatchEvents();
+  assert.equal(strikeCount(), 2);
   p.dispose();
 });
