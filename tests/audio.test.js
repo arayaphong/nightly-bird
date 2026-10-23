@@ -6,6 +6,8 @@ import { AudioSystem } from '../src/platform/audio-system.js';
 import { AssetStore } from '../src/platform/asset-store.js';
 import { createGame } from '../src/game/create-game.js';
 import { Firefly } from '../src/objects/firefly.js';
+import { Hawk } from '../src/objects/hawk.js';
+import { WeaponRule } from '../src/rules/weapon-rule.js';
 import { CombatRule } from '../src/rules/combat-rule.js';
 import { LightningBolt } from '../src/objects/storm-cloud.js';
 import { BalloonGift } from '../src/objects/balloon-gift.js';
@@ -633,5 +635,112 @@ test('hawk strike sounds once per dive, never for patrol, rejected attacks or sh
   p.emit('attack-started', { attacker: shark, target: bird });
   p.dispatchEvents();
   assert.equal(strikeCount(), 2);
+  p.dispose();
+});
+
+test('laser plays once per accepted shot at hawk or shark, never again on impact', async () => {
+  for (const tag of ['hawk', 'shark']) {
+    const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+    const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+    await p.load();
+    p.command('restart');
+    p.step(0);
+    const bird = p.find('player'),
+      target = p.find(tag);
+    target.respawn();
+    p.physics.place(target, 350, 100);
+    bird.equip('gun');
+    const gun = bird.equipment.get('gun');
+    assert.equal(gun.shoot(bird, target), true);
+    p.dispatchEvents();
+    p.flush();
+    const laserCount = () =>
+      sources.filter((s) => s.buffer === audio.buffers.get('laser')).length;
+    assert.equal(laserCount(), 1);
+    assert.equal(p.list('projectile').length, 1);
+    assert.equal(gun.shoot(bird, target), false);
+    p.dispatchEvents();
+    assert.equal(laserCount(), 1);
+    const projectile = p.list('projectile')[0];
+    const weapon = p.get('rules').rules.find((rule) => rule instanceof WeaponRule);
+    weapon.onContact({
+      phase: 'enter',
+      a: { group: 'projectile', owner: projectile },
+      b: { group: 'enemy', owner: target },
+    });
+    p.dispatchEvents();
+    assert.ok(target.gone > 0);
+    assert.equal(laserCount(), 1);
+    p.dispose();
+    assert.equal(audio.voiceInfo.size, 0);
+  }
+});
+
+test('shooting one hawk cuts only its strike, while another hawk and rainbow keep playing', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    target = p.find('hawk');
+  target.respawn();
+  const other = p.add(new Hawk({ id: 'other-hawk' }));
+  p.flush();
+  other.respawn();
+  p.physics.place(target, 350, 100);
+  p.physics.place(other, 350, 200);
+  target.attack(bird);
+  other.attack(bird);
+  p.dispatchEvents();
+  const strikeFor = (owner) =>
+    [...audio.voices].find(
+      (s) =>
+        audio.voiceInfo.get(s)?.name === 'hawkStrike' &&
+        audio.voiceInfo.get(s)?.owner === owner,
+    );
+  const first = strikeFor(target),
+    second = strikeFor(other);
+  assert.ok(first && second);
+  bird.emitRainbow(8);
+  audio.syncRainbow();
+  const rainbow = audio.rainbowPlayback.source;
+  bird.equip('gun');
+  bird.equipment.get('gun').shoot(bird, target);
+  p.dispatchEvents();
+  assert.equal(first.stopped, true);
+  assert.equal(audio.voiceInfo.has(first), false);
+  assert.equal(second.stopped, false);
+  assert.equal(rainbow.stopped, false);
+  assert.equal(sources.filter((s) => s.buffer === audio.buffers.get('laser')).length, 1);
+  const laser = [...audio.voices].find((s) => s.buffer === audio.buffers.get('laser'));
+  laser.end();
+  assert.equal(audio.voiceInfo.has(laser), false);
+  p.dispose();
+});
+
+test('invalid shot requests stay silent and an automatic gun response leaves no hawk-strike playing', async () => {
+  const { audio, sources } = mockAudio({ sounds: SOUND_EFFECTS });
+  const p = createGame({ assets: new AssetStore({ loader: async () => [] }), audio });
+  await p.load();
+  p.command('restart');
+  p.step(0);
+  const bird = p.find('player'),
+    hawk = p.find('hawk');
+  hawk.respawn();
+  p.physics.place(hawk, 350, 100);
+  hawk.gone = 1;
+  p.emit('shot-requested', { shooter: bird, target: hawk });
+  p.dispatchEvents();
+  assert.equal(sources.length, 0);
+  hawk.gone = 0;
+  bird.equip('gun');
+  hawk.attack(bird);
+  p.dispatchEvents();
+  assert.equal(sources.filter((s) => s.buffer === audio.buffers.get('laser')).length, 1);
+  assert.equal(
+    [...audio.voices].filter((s) => s.buffer === audio.buffers.get('hawkStrike')).length,
+    0,
+  );
   p.dispose();
 });

@@ -22,7 +22,8 @@ export class WeaponRule extends Rule {
     }
     if (event.type === 'shot-requested') {
       if (event.target.removing || event.target.gone > 0 || !event.shooter.alive) return true;
-      p.add(new Projectile(event));
+      const projectile = p.add(new Projectile(event));
+      p.emit('shot-fired', { shooter: event.shooter, target: event.target, projectile });
       effects.feathersAt(event.shooter.x, event.shooter.y, {
         count: 6,
         colors: ['#ffd27a'],

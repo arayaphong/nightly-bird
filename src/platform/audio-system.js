@@ -23,6 +23,7 @@ export class AudioSystem extends PlatformObject {
     this.repeatRequests = new Set();
     this.buffers = new Map();
     this.voices = new Set();
+    this.voiceInfo = new Map();
     this.loops = new Map();
     this.rainbowPlayback = null;
     this.onVisibilityChange = () => {
@@ -83,11 +84,13 @@ export class AudioSystem extends PlatformObject {
 
   event(event) {
     if (event.type === 'bird-died') this.stopRainbow();
+    if (event.type === 'shot-fired' && event.target?.tags.has('hawk'))
+      this.stopOwned('hawkStrike', event.target);
     const sound = this.events[event.type];
-    if (sound) this.play(sound);
+    if (sound) this.play(sound, { owner: event.attacker ?? null });
   }
 
-  play(name) {
+  play(name, { owner = null } = {}) {
     const buffer = this.buffers.get(name);
     if (this.disposed || !buffer || this.context?.state !== 'running') return false;
     let source;
@@ -100,9 +103,11 @@ export class AudioSystem extends PlatformObject {
       source.connect(this.outputFor(name));
       source.onended = () => {
         this.voices.delete(source);
+        this.voiceInfo.delete(source);
         source.disconnect();
       };
       this.voices.add(source);
+      this.voiceInfo.set(source, { name, owner });
       source.start();
       return true;
     } catch {
@@ -231,6 +236,13 @@ export class AudioSystem extends PlatformObject {
     this.stopRainbow(false);
   }
 
+  stopOwned(name, owner) {
+    for (const source of this.voices) {
+      const info = this.voiceInfo.get(source);
+      if (info?.name === name && info.owner === owner) this.stopVoice(source);
+    }
+  }
+
   stopVoice(source) {
     source.onended = null;
     try {
@@ -240,6 +252,7 @@ export class AudioSystem extends PlatformObject {
     }
     source.disconnect();
     this.voices.delete(source);
+    this.voiceInfo.delete(source);
   }
 
   stop() {
