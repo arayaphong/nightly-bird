@@ -1,0 +1,28 @@
+[project]
+title = Nightly Bird - Defold Hello World
+version = 0.1.0
+
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[display]
+width = 960
+height = 640
+high_dpi = 1
+
+[input]
+game_binding = /input/game.input_bindingc
+
+[script]
+shared_state = 1
+
+[render]
+clear_color_red = 0.035
+clear_color_green = 0.055
+clear_color_blue = 0.10
+clear_color_alpha = 1.0
+
+[html5]
+scale_mode = fit
+custom_heap_size = 1
+heap_size = 64

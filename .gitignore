@@ -1,2 +1,7 @@
 node_modules/
 dist/
+.cache/
+defold/build/
+defold/.internal/
+defold/.externalToolBuilders/
+defold/.settings/

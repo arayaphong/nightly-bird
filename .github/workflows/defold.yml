@@ -1,0 +1,37 @@
+name: Build Defold HTML5 example
+
+on:
+  push:
+    branches: [defold/development]
+    paths:
+      - 'defold/**'
+      - 'scripts/defold.py'
+      - '.github/workflows/defold.yml'
+  pull_request:
+    paths:
+      - 'defold/**'
+      - 'scripts/defold.py'
+      - '.github/workflows/defold.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  html5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build HTML5 without the editor
+        run: python3 scripts/defold.py build
+      - name: Upload HTML5 bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: defold-hello-html5
+          path: dist/defold/*/
+          if-no-files-found: error

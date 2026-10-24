@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Build or serve the isolated Defold HTML5 example without the GUI editor."""
+
+import argparse
+import functools
+import hashlib
+import http.server
+import os
+from pathlib import Path
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import urllib.parse
+import urllib.request
+
+ROOT = Path(__file__).resolve().parent.parent
+PROJECT = ROOT / "defold"
+OUTPUT = ROOT / "dist" / "defold"
+VERSION = "1.14.0"
+BOB_SHA256 = "d8cbe667757ca1c5f4dfd251bc98660c35e7a65ac84bf0207ccef7607de6d1a1"
+BOB_URL = f"https://github.com/defold/defold/releases/download/{VERSION}/bob.jar"
+
+
+def checksum(path):
+    with path.open("rb") as source:
+        return hashlib.file_digest(source, "sha256").hexdigest()
+
+
+def build():
+    java = os.environ.get("DEFOLD_JAVA") or shutil.which("java")
+    if not java:
+        raise RuntimeError("Install Java 25+, or set DEFOLD_JAVA to its java executable.")
+    result = subprocess.run([java, "-version"], capture_output=True, text=True, check=True)
+    version = re.search(r'version "(\d+)', result.stderr + result.stdout)
+    if not version or int(version[1]) < 25:
+        raise RuntimeError("Bob 1.14.0 requires Java 25+. Set DEFOLD_JAVA to Java 25.")
+
+    bob = Path(os.environ.get("DEFOLD_BOB_JAR", ROOT / ".cache" / "defold" / VERSION / "bob.jar"))
+    if not bob.exists():
+        bob.parent.mkdir(parents=True, exist_ok=True)
+        temporary = bob.with_suffix(".download")
+        print(f"Downloading Defold Bob {VERSION} (about 219 MiB)...", flush=True)
+        try:
+            with urllib.request.urlopen(BOB_URL, timeout=120) as response, temporary.open("wb") as target:
+                shutil.copyfileobj(response, target)
+            if checksum(temporary) != BOB_SHA256:
+                raise RuntimeError("Bob download checksum mismatch.")
+            temporary.replace(bob)
+        finally:
+            temporary.unlink(missing_ok=True)
+    if checksum(bob) != BOB_SHA256:
+        raise RuntimeError(f"Expected the official Bob {VERSION} checksum; check {bob}.")
+
+    options = shlex.split(os.environ.get("DEFOLD_JAVA_OPTS", ""))
+    # Java does not automatically honor the HTTP(S)_PROXY used by cloud runners.
+    for protocol in ("http", "https"):
+        proxy = os.environ.get(f"{protocol.upper()}_PROXY")
+        if proxy:
+            parsed = urllib.parse.urlparse(proxy)
+            if parsed.hostname:
+                options += [f"-D{protocol}.proxyHost={parsed.hostname}",
+                            f"-D{protocol}.proxyPort={parsed.port or 80}"]
+    subprocess.run([
+        java, *options, "-jar", str(bob.resolve()),
+        "--root", str(PROJECT), "--archive", "--platform", "wasm-web",
+        "--architectures", "wasm-web", "--variant", "release",
+        "--bundle-output", str(OUTPUT), "resolve", "build", "bundle",
+    ], check=True, cwd=ROOT)
+    index = next(OUTPUT.glob("*/index.html"), None)
+    if not index:
+        raise RuntimeError("Build finished without an HTML5 index.html.")
+    print(f"HTML5 bundle: {index.parent.relative_to(ROOT)}", flush=True)
+    print("Preview: python3 scripts/defold.py serve", flush=True)
+
+
+def serve(port):
+    index = next(OUTPUT.glob("*/index.html"), None)
+    if not index:
+        raise RuntimeError("Build first: python3 scripts/defold.py build")
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(index.parent))
+    with http.server.ThreadingHTTPServer(("127.0.0.1", port), handler) as server:
+        print(f"Preview: http://127.0.0.1:{port}", flush=True)
+        server.serve_forever()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("build", "serve"))
+    parser.add_argument("--port", type=int, default=8080)
+    args = parser.parse_args()
+    try:
+        if args.command == "build":
+            build()
+        else:
+            serve(args.port)
+    except KeyboardInterrupt:
+        pass
+    except (RuntimeError, OSError, subprocess.CalledProcessError) as error:
+        print(f"Defold: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
