@@ -44,8 +44,8 @@ def build(target):
         temporary = bob.with_suffix(".download")
         print(f"Downloading Defold Bob {VERSION} (about 219 MiB)...", flush=True)
         try:
-            with urllib.request.urlopen(BOB_URL, timeout=120) as response, temporary.open("wb") as target:
-                shutil.copyfileobj(response, target)
+            with urllib.request.urlopen(BOB_URL, timeout=120) as response, temporary.open("wb") as destination:
+                shutil.copyfileobj(response, destination)
             if checksum(temporary) != BOB_SHA256:
                 raise RuntimeError("Bob download checksum mismatch.")
             temporary.replace(bob)
