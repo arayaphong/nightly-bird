@@ -1,4 +1,4 @@
-name: Build Defold Web and deploy Pages
+name: Build Defold Web
 
 on:
   push:
@@ -6,13 +6,6 @@ on:
     paths:
       - 'defold/**'
       - 'scripts/defold.py'
-      - 'scripts/defold_pages.py'
-      - '.github/workflows/defold.yml'
-  pull_request:
-    paths:
-      - 'defold/**'
-      - 'scripts/defold.py'
-      - 'scripts/defold_pages.py'
       - '.github/workflows/defold.yml'
   workflow_dispatch:
 
@@ -20,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: defold-pages-${{ github.ref }}
+  group: defold-web-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -31,46 +24,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
-      # The original build cleans dist/, so run it before the Defold builds.
-      - name: Build the existing JavaScript game
-        run: npm run build
       - name: Build Defold HTML5 without the editor
         run: python3 scripts/defold.py build
-      - name: Assemble the Pages site
-        run: python3 scripts/defold_pages.py
       - name: Upload HTML5 bundle
         uses: actions/upload-artifact@v4
         with:
           name: defold-hello-html5
           path: dist/defold/*/
           if-no-files-found: error
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/defold/development'
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist/pages
-
-  deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/defold/development'
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

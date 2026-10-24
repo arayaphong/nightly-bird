@@ -19,7 +19,7 @@ jobs:
   check-and-build:
     name: Check, test, and build
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Check out source
         uses: actions/checkout@v7
@@ -42,11 +42,30 @@ jobs:
       - name: Build static site
         run: npm run build
 
+      - name: Set up Java for Defold
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Build Defold HTML5 without the editor
+        run: python3 scripts/defold.py build
+
+      - name: Assemble the Pages site
+        run: python3 scripts/defold_pages.py
+
+      - name: Upload Defold HTML5 bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: defold-hello-html5
+          path: dist/defold/*/
+          if-no-files-found: error
+
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/development'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: dist/pages
 
   deploy:
     name: Deploy to GitHub Pages

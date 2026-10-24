@@ -72,11 +72,21 @@ Defold are not needed to play an already-built bundle.
 
 Double-clicking `index.html` opens a `file://` URL and cannot run this game.
 
-The Defold GitHub Actions workflow builds Web on `defold/development`, uploads
-the `defold-hello-html5` artifact, and deploys one combined GitHub Pages site.
+The **Build Defold Web** workflow checks Web builds on `defold/development` and
+uploads the `defold-hello-html5` artifact. It does not deploy.
+
+Merge `defold/development` into `development` to publish. The **Check and deploy
+GitHub Pages** workflow checks the original game, builds both web apps, and deploys
+the combined `dist/pages/` site only from `development`. Pull requests validate
+the build without publishing. The existing `github-pages` environment rules stay
+unchanged.
+
 The original JavaScript game stays at the site root and the Defold demo is at
-`/nightly-bird/defold/`. Android APK builds remain a local command; GitHub Actions
-does not build or upload APKs, and the Pages site does not include them.
+`/nightly-bird/defold/`. Android APK builds remain a local command; no GitHub
+Actions workflow builds or uploads APKs, and Pages does not include them.
+
+The pre-migration `development` commit is preserved on
+`backup/development-before-defold-2026-10-24`.
 
 To reproduce the combined site locally, build in this order (the first command
 cleans `dist/`):
