@@ -14,6 +14,7 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+import zipfile
 
 from defold_test import run as test_rules
 from defold_rive_plugin import prepare as prepare_rive_plugin
@@ -89,6 +90,11 @@ def build(target):
         apk = next(output.glob("*/*.apk"), None)
         if not apk:
             raise RuntimeError("Build finished without an APK.")
+        # The pinned Rive Android renderer supports GLES. A dual-backend APK
+        # adds VkQuality, which can select an unsupported Vulkan adapter.
+        with zipfile.ZipFile(apk) as package:
+            if any(name.endswith('/libvkquality.so') for name in package.namelist()):
+                raise RuntimeError("Rive Android APK must be GLES-only; VkQuality was bundled.")
         print(f"Android test APK: {apk.relative_to(ROOT)}", flush=True)
         print("Uses a generated debug signing key; not a Play Store release.", flush=True)
         return

@@ -15,8 +15,13 @@ platforms:
       libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
   arm64-android:
     context:
-      excludeLibs: [font]
-      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+      # This Rive pin ships an OpenGL ES renderer on Android. Prevent
+      # VkQuality from selecting a Vulkan adapter it cannot render with.
+      excludeLibs: [font, graphics_vulkan, dmglfw_vulkan]
+      excludeSymbols: [GraphicsAdapterVulkan]
+      symbols: [GraphicsAdapterOpenGLES]
+      excludeDynamicLibs: [vulkan]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi, graphics_opengles, dmglfw]
   x86_64-android:
     context:
       excludeLibs: [font]
