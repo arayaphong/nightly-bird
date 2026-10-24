@@ -1,0 +1,13 @@
+image: "/assets/game.png"
+tile_width: 256
+tile_height: 256
+tile_margin: 0
+tile_spacing: 0
+animations { id: "flap" start_tile: 1 end_tile: 8 playback: PLAYBACK_LOOP_FORWARD fps: 28 }
+animations { id: "idle" start_tile: 9 end_tile: 9 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "dead" start_tile: 10 end_tile: 10 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "blink" start_tile: 11 end_tile: 11 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "chew" start_tile: 12 end_tile: 12 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "fly" start_tile: 13 end_tile: 13 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "circle" start_tile: 15 end_tile: 15 playback: PLAYBACK_NONE fps: 1 }
+animations { id: "quad" start_tile: 16 end_tile: 16 playback: PLAYBACK_NONE fps: 1 }

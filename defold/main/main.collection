@@ -1,8 +1,6 @@
 name: "main"
-embedded_instances {
-  id: "hello"
-  data: "components {\n"
-  "  id: \"gui\"\n"
-  "  component: \"/main/hello.gui\"\n"
-  "}\n"
-}
+instances { id: "scene" prototype: "/objects/scene.go" position { x: 240 y: 400 z: -0.9 } scale3 {x: 1 y: 1 z: 1} }
+instances { id: "scenery" prototype: "/game/scenery.go" position { x: 0 y: 0 z: 0 } scale3 {x: 1 y: 1 z: 1} }
+instances { id: "bird" prototype: "/objects/bird.go" position { x: 144 y: 464 z: 0.2 } scale3 {x: 1 y: 1 z: 1} }
+instances { id: "game" prototype: "/game/controller.go" position { x: 0 y: 0 z: 0 } scale3 {x: 1 y: 1 z: 1} }
+instances { id: "ui" prototype: "/main/ui.go" position { x: 0 y: 0 z: 0 } scale3 {x: 1 y: 1 z: 1} }

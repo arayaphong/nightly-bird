@@ -1,8 +1,4 @@
-key_trigger {
-  input: KEY_SPACE
-  action: "activate"
-}
-mouse_trigger {
-  input: MOUSE_BUTTON_LEFT
-  action: "pointer"
-}
+key_trigger { input: KEY_SPACE action: "activate" }
+key_trigger { input: KEY_P action: "pause" }
+key_trigger { input: KEY_ESC action: "escape" }
+mouse_trigger { input: MOUSE_BUTTON_LEFT action: "pointer" }

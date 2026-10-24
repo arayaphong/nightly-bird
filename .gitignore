@@ -7,3 +7,7 @@ defold/.externalToolBuilders/
 defold/.settings/
 defold/debug.keystore
 defold/debug.keystore.pass.txt
+
+# Python CLI caches
+__pycache__/
+*.py[cod]

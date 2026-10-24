@@ -1,0 +1,52 @@
+go.property('rainbow', false)
+go.property('phase', 0)
+local state = require('game.state')
+local rules = require('game.rules')
+
+function init(self)
+    self.generation = state.generation
+    self.collected = false
+    self.origin_y = go.get_position().y
+    self.clock = 0
+    if self.rainbow then
+        go.set('#sprite', 'tint', vmath.vector4(1, .65, .95, 1))
+    end
+end
+
+function fixed_update(self, dt)
+    if self.generation ~= state.generation or state.phase == 'over' then
+        go.delete()
+        return
+    end
+    if self.collected and state.phase == 'dead' then go.delete(); return end
+    if state.phase ~= 'play' then return end
+    if self.collected then
+        self.clock = self.clock + dt
+        local t = math.min(1, self.clock / 1.48)
+        go.set_position(vmath.vector3(state.x + 26 - t * 7, state.y - 1, .3))
+        go.set_scale(1 - t * .75)
+        if t >= 1 then go.delete() end
+        return
+    end
+    local p = go.get_position()
+    p.x = p.x + (-state.speed * .8 + math.sin(state.time * 2.3 + self.phase) * 22) * dt
+    p.y = self.origin_y + math.sin(state.time * 1.9 + self.phase * 1.3) * 14
+    go.set_position(p)
+    if self.rainbow then
+        go.set('#sprite', 'tint', vmath.vector4(
+            .65 + .35 * math.sin(state.time * 5), .7 + .3 * math.sin(state.time * 5 + 2), 1, 1))
+    end
+    if p.x < -30 then go.delete() end
+end
+
+function on_message(self, message_id, message)
+    if message_id == hash('trigger_response') and message.enter and not self.collected
+        and self.generation == state.generation and state.phase == 'play' then
+        self.collected = true -- A trigger can arrive more than once in one frame.
+        msg.post('#collision', 'disable')
+        if rules.collect(state, self.rainbow) then
+            go.set('#sprite', 'tint', vmath.vector4(1, 1, 1, 1))
+            msg.post('/game#controller', 'collected', {rainbow = self.rainbow})
+        end
+    end
+end

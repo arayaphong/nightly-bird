@@ -1,0 +1,3 @@
+sound: "/assets/audio/bird-sinking.wav"
+looping: 0
+gain: 0.5

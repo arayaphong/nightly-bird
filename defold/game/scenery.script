@@ -1,0 +1,27 @@
+local state = require('game.state')
+function init(self)
+    self.waves, self.reflections = {}, {}
+    for i = 0, 59 do
+        local id = factory.create('#quad', vmath.vector3(i * 8 + 4, 160, .1))
+        go.set_scale(vmath.vector3(8.5 / 256, 1.7 / 256, 1), id)
+        go.set(msg.url(nil, id, 'sprite'), 'tint', vmath.vector4(.66, .84, 1, .55))
+        self.waves[i + 1] = id
+    end
+    for i = 0, 13 do
+        local id = factory.create('#quad', vmath.vector3(384, 152 - i * 11, .05))
+        go.set(msg.url(nil, id, 'sprite'), 'tint', vmath.vector4(1, .93, .78, .28 * (1 - i / 14)))
+        self.reflections[i + 1] = id
+    end
+end
+function update(self, dt)
+    for i, id in ipairs(self.waves) do
+        local x = (i - 1) * 8 + 4
+        go.set_position(vmath.vector3(x, 160 - math.sin(x * .03 + state.time * 2.4) * 2.2
+            - math.sin(x * .011 - state.time * 1.3) * 1.5, .1), id)
+    end
+    for i, id in ipairs(self.reflections) do
+        local width = 18 + math.sin(state.time * 2 + i) * 8 + i * 1.5
+        go.set_scale(vmath.vector3(width / 256, 2 / 256, 1), id)
+        go.set_position(vmath.vector3(384 + math.sin(state.time * 1.7 + i * 1.3) * 6, 152 - (i - 1) * 11, .05), id)
+    end
+end

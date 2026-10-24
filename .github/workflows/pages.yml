@@ -57,7 +57,7 @@ jobs:
       - name: Upload Defold HTML5 bundle
         uses: actions/upload-artifact@v4
         with:
-          name: defold-hello-html5
+          name: nightly-bird-defold-html5
           path: dist/defold/*/
           if-no-files-found: error
 

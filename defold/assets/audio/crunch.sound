@@ -1,0 +1,3 @@
+sound: "/assets/audio/crunch.wav"
+looping: 0
+gain: 0.65

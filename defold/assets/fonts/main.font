@@ -1,0 +1,8 @@
+font: "/assets/fonts/Mitr-Regular.ttf"
+material: "/builtins/fonts/font-df.material"
+size: 32
+antialias: 1
+alpha: 1
+shadow_alpha: 0
+output_format: TYPE_DISTANCE_FIELD
+characters: " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฻฼฽฾฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛×·"

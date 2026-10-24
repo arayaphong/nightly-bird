@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble the existing web game and Defold demo into one Pages site."""
+"""Assemble the existing web game and Defold game into one Pages site."""
 
 from pathlib import Path
 import shutil
@@ -24,7 +24,7 @@ def main():
     shutil.copytree(web.parent, SITE / "defold",
                     ignore=shutil.ignore_patterns("*.py", "*.cmd", "README-PLAY.txt"))
     print("GitHub Pages site:", SITE)
-    print("Web demo: /defold/")
+    print("Defold game: /defold/")
 
 
 if __name__ == "__main__":

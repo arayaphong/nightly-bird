@@ -1,95 +1,109 @@
-# Defold Web and Android Hello World
+# Nightly Bird — Defold migration
 
-An isolated smoke test before migrating Nightly Bird. The JavaScript game remains
-at the repository root. This example uses real Defold GUI nodes and Lua input
-handling; the HTML page only hosts the WebAssembly engine.
+The first playable migration replaces the Hello World. Game objects, sprite
+flipbooks, Box2D trigger collisions, sound, input and GUI run inside Defold. The
+HTML file only hosts its WebAssembly engine. The original HTML/JS game remains at
+the repository root as the behavior reference.
 
-## Build without the Defold editor
+## Play and build without the editor
 
-Requirements: Python 3.11+ and Java 25+. No Python packages, npm packages, or GUI
-editor are required. Use the normal HTTPS proxy and trusted certificates, if any.
-
-From the repository root:
+Requirements: Python 3.11+ and Java 25+. No GUI editor, npm dependency, Python
+package or separately installed Lua interpreter is required for normal builds.
 
 ```sh
 python3 scripts/defold.py build
 python3 scripts/defold.py serve
 ```
 
-Open <http://127.0.0.1:8080>. Click/tap **SAY HELLO** or press **Space**. The counter
-must increase once per press. Refreshing resets the counter.
+Open <http://127.0.0.1:8080>. Hold the screen or **Space** to climb, release to
+fall. Collect fireflies to increase AGI. Rainbow fireflies give eight seconds of
+4x speed. Water allows three diminishing bounces; climb back to safety to refill
+them. The fourth water contact ends the flight. Use the on-screen pause button,
+**P**, or **Escape** to pause/resume. Losing window focus automatically pauses and
+clears held input. Best distance is saved through Defold's `sys.save`.
 
-The build command downloads the official Bob **1.14.0** into `.cache/defold/`,
-verifies its SHA-256, and creates a release `wasm-web` bundle under `dist/defold/`.
-The first build may download additional engine resources. Native extensions, if
-added later, may also require access to Defold's build service.
+The logical play area is currently **480 × 800**, fitted with its aspect ratio
+preserved on other screen sizes. Thai text uses the bundled Mitr font under its
+OFL license, so no web font service or DOM layout is involved.
 
-Optional environment variables:
+The builder downloads/checksums official Bob **1.14.0**, runs the Lua rule tests
+using Bob's bundled LuaJIT, then builds the release HTML5 bundle in
+`dist/defold/Nightly Bird/`. An existing bundle for that target is replaced.
 
-- `DEFOLD_JAVA`: path to the Java 25+ executable when the default Java is older.
-- `DEFOLD_BOB_JAR`: path to an existing official Bob 1.14.0 JAR (checksum verified).
-- `DEFOLD_JAVA_OPTS`: Java options, for example a trusted certificate store required
-  by your organization's HTTPS proxy. Keep certificate verification enabled.
+Optional environment variables: `DEFOLD_JAVA`, `DEFOLD_BOB_JAR`,
+`DEFOLD_JAVA_OPTS`. See `scripts/defold.py` for the pinned Bob SHA-256. A normal
+HTTPS proxy and trusted Java certificate store can be supplied with these
+options. Native extensions, if added later, may need Defold's build service.
 
-`serve --port 8090` selects another local port. Serve the entire generated bundle
-over HTTP(S); opening `index.html` with `file://` does not work. Hosts must serve
-`.wasm` files as `application/wasm`. This non-threaded build does not require
-cross-origin isolation headers.
+`serve --port 8090` selects another port. Serve the full generated folder over
+HTTP(S); opening `index.html` as `file://` cannot run the WASM game. `.wasm` must
+be served as `application/wasm`. This non-threaded build needs no cross-origin
+isolation headers.
 
-## Files
+## Current migration scope
 
-- `game.project`: 960 x 640 reference resolution, 64 MiB initial Web heap.
-- `main/main.collection`: one object with the GUI component.
-- `main/hello.gui`: built-in font and GUI material references.
-- `main/hello.gui_script`: creates the screen and handles click/touch/keyboard input.
-- `input/game.input_binding`: mouse/primary touch and Space mappings.
+| System | First playable status |
+| --- | --- |
+| Flight, gravity, ceiling, held input | Ported using the original constants, with upward-positive Y |
+| Water bounces, recharge, drowning, restart | Ported |
+| Fireflies, AGI cap, worm overflow, rainbow speed | Ported; native trigger collision, collection guarded once |
+| Night scene, bird, wings, blink, eating pose, water reflections | Original art/palette; native sprite components and flipbooks |
+| HUD, Thai labels, pause, focus loss, best-distance save | Ported with Defold GUI and persistence |
+| Flap, water, crunch, sinking sounds | Original WAVs through Defold sound components |
+| Fish, hawk, storms, wind progression | Next milestone |
+| Balloon gifts, magnet, armor, gun, projectiles | Next milestone |
+| Shop, revive, predator death animations | Next milestone |
+| Full animation/particle parity, dynamic viewport layout | Follow-up after gameplay parity |
 
-This example has no sound, physics, or migrated gameplay. Build
-size and memory usage are a baseline, not estimates for the finished game.
+This is a flight/pickup slice, **not the completed migration**. Enemy distance
+unlocks are not active yet. Existing JS tests remain the detailed specification
+for later milestones; `tests/defold/rules.lua` covers the rules already ported.
 
-## Android test APK
+## Code and assets
+
+- `game/rules.lua`: plain Lua flight, water, score and pickup rules; no renderer,
+  custom collision engine, scene graph or browser API.
+- `game/controller.script`: Defold lifecycle, factories, sound, bird presentation,
+  focus events and persistence.
+- `objects/firefly.*`: native factory/sprite/Box2D trigger and its Lua behavior.
+- `game/scenery.script`: native sprite instances for water waves/reflections.
+- `main/game.gui_script`: GUI and input; UI taps are consumed before flight input.
+- `assets/game.png`, `assets/scene.png`: committed runtime textures.
+- `scripts/defold_assets.py`: optional artwork regeneration from the original SVGs.
+
+To regenerate artwork only, install **Inkscape** and Python **Pillow**, then run
+`python3 scripts/defold_assets.py`. Runtime builds use the committed PNGs and do
+not need either dependency. Bird flipbook frames are generated from the named
+SVG layers, preserving the repository's original source artwork and license.
+`assets/fonts/OFL.txt` covers Mitr; the repository license covers original art/audio.
+
+Standalone Lua rule tests can also run with Lua 5.1/LuaJIT:
+`lua tests/defold/rules.lua` from the repository root.
+
+## Android test APK — manual only
 
 ```sh
 python3 scripts/defold.py build --target android
 ```
 
-This creates a universal ARMv7/ARM64 APK under `dist/android/`. Bob generates a
-local debug signing key for testing. This is not a Play Store release; signing
-keys are ignored by Git. Builds made on another machine may use a different key,
-in which case Android requires uninstalling the earlier test app before installing
-the new build. Playing the APK requires no Python, Java, or Defold installation.
+This creates a universal ARMv7/ARM64 APK under `dist/android/`. The generated local
+debug signing key is ignored by Git. It is a test APK; another machine's key may
+require uninstalling an older build. The application ID stays
+`com.arayaphong.nightlybird.defoldhello` so this build can update the earlier demo
+when signed with the same local key. Version code is now 2.
 
-Application ID: `com.arayaphong.nightlybird.defoldhello`.
+**GitHub Actions never builds or uploads APKs.**
 
-## Play a downloaded HTML5 ZIP
+## Deploy and preview
 
-Extract the entire ZIP, including `archive/`. On Windows, double-click
-`START-WINDOWS.cmd`. On macOS or Linux, run `python3 start_preview.py` from the
-extracted folder. The launcher requires Python 3 (no extra packages), opens the
-browser automatically, selects a free local port, and serves WebAssembly with
-the correct MIME type. Keep its terminal window open while playing. Java and
-Defold are not needed to play an already-built bundle.
-
-Double-clicking `index.html` opens a `file://` URL and cannot run this game.
-
-The **Build Defold Web** workflow checks Web builds on `defold/development` and
-uploads the `defold-hello-html5` artifact. It does not deploy.
-
-Merge `defold/development` into `development` to publish. The **Check and deploy
-GitHub Pages** workflow checks the original game, builds both web apps, and deploys
-the combined `dist/pages/` site only from `development`. Pull requests validate
-the build without publishing. The existing `github-pages` environment rules stay
-unchanged.
-
-The original JavaScript game stays at the site root and the Defold demo is at
-`/nightly-bird/defold/`. Android APK builds remain a local command; no GitHub
-Actions workflow builds or uploads APKs, and Pages does not include them.
-
-The pre-migration `development` commit is preserved on
+The **Build Defold Web** workflow checks `defold/development` and uploads the
+`nightly-bird-defold-html5` artifact. Merge into `development` to deploy through
+**Check and deploy GitHub Pages**. The `github-pages` environment rules stay
+unchanged. The original JS game stays at `/nightly-bird/`; the migrated game is
+at `/nightly-bird/defold/`. The original development commit is preserved on
 `backup/development-before-defold-2026-10-24`.
 
-To reproduce the combined site locally, build in this order (the first command
-cleans `dist/`):
+To assemble both sites locally (the first command cleans `dist/`):
 
 ```sh
 npm run build
@@ -97,5 +111,10 @@ python3 scripts/defold.py build
 python3 scripts/defold_pages.py
 ```
 
-Upload only `dist/pages/` to Pages. Future deployments from another branch must
-also include the Defold path if they are to preserve the demo.
+Upload only `dist/pages/`. APKs and local preview launchers are excluded.
+
+For a downloaded HTML5 ZIP, extract everything including `archive/`. On Windows
+run `START-WINDOWS.cmd`; on macOS/Linux run `python3 start_preview.py`. The
+launcher needs Python 3, opens a browser and serves WASM with the correct MIME
+type. Keep its terminal open. Android users should install the APK or play the
+deployed HTTPS site.

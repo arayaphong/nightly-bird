@@ -1,13 +1,13 @@
 [project]
-title = Nightly Bird - Defold Hello World
-version = 0.1.0
+title = Nightly Bird
+version = 0.2.0
 
 [bootstrap]
 main_collection = /main/main.collectionc
 
 [display]
-width = 960
-height = 640
+width = 480
+height = 800
 high_dpi = 1
 
 [input]
@@ -29,5 +29,14 @@ heap_size = 64
 
 [android]
 package = com.arayaphong.nightlybird.defoldhello
-version_code = 1
+version_code = 2
 input_method = HiddenInputField
+
+[physics]
+type = 2D
+gravity_y = 0
+scale = 0.01
+use_fixed_timestep = 1
+
+[engine]
+fixed_update_frequency = 60

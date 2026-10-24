@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Defold example for Web or Android, or serve its HTML5 bundle."""
+"""Build Nightly Bird in Defold for Web or Android, or serve its HTML5 bundle."""
 
 import argparse
 import functools
@@ -14,6 +14,8 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+
+from defold_test import run as test_rules
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT / "defold"
@@ -54,6 +56,8 @@ def build(target):
     if checksum(bob) != BOB_SHA256:
         raise RuntimeError(f"Expected the official Bob {VERSION} checksum; check {bob}.")
 
+    test_rules(bob)
+
     options = shlex.split(os.environ.get("DEFOLD_JAVA_OPTS", ""))
     # Java does not automatically honor the HTTP(S)_PROXY used by cloud runners.
     for protocol in ("http", "https"):
@@ -67,6 +71,8 @@ def build(target):
     architectures = "wasm-web" if target == "web" else "armv7-android,arm64-android"
     output = OUTPUT if target == "web" else ANDROID_OUTPUT
     extra = [] if target == "web" else ["--bundle-format", "apk"]
+    # Avoid selecting an old bundle after the project title changes.
+    shutil.rmtree(output, ignore_errors=True)
     subprocess.run([
         java, *options, "-jar", str(bob.resolve()),
         "--root", str(PROJECT), "--archive", "--platform", platform,
