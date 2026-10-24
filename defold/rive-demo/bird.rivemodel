@@ -1,0 +1,5 @@
+scene: "/rive-demo/bird.rivescene"
+artboard: "NightlyBird"
+default_state_machine: "Bird"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

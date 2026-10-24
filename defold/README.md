@@ -1,164 +1,117 @@
-# Nightly Bird — Defold migration
+# Nightly Bird — Defold / Rive vector proof
 
-The first playable migration replaces the Hello World. Game objects, sprite
-flipbooks, Box2D trigger collisions, sound, input and GUI run inside Defold. The
-HTML file only hosts its WebAssembly engine. The original HTML/JS game remains at
-the repository root as the behavior reference.
+Version 0.3.0 is an isolated, interactive Rive bird proof. The bird is drawn from
+real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
+for it. The original SVG remains the artwork source. The earlier flight slice
+is retained under `game/`, `objects/` and `main/` for later migration work.
 
-## Play and build without the editor
+## Try it
 
-Requirements: Python 3.11+ and Java 25+. No GUI editor, npm dependency, Python
-package or separately installed Lua interpreter is required for normal builds.
+- Hold the screen or **Space** to flap. Release to finish the current revolution
+  and settle at the same rest angle as the original JavaScript bird.
+- Press **Blink** / **B** to blink once, and **Chew** / **C** to chew three times.
+- Wing, eye and mouth channels can run together. On touch devices, keep one
+  finger held and use another to press the blink/chew buttons.
+- The original wing WAV starts when flapping begins. Each recording finishes
+  naturally; continued input repeats it without overlap. Releasing stops renewal.
+- Losing focus clears held input and stops sound.
+
+Autonomous idle flaps and random blinks are deliberately disabled in this manual
+proof. Motion equations, pivots, rotations, compression, blink timing and three
+chewing cycles otherwise follow the JS reference. The UI shows flapping,
+finishing-the-cycle and resting states.
+
+## Build without the editor
+
+Use Python 3.11+ and a **Java 25 JDK** (including `javac`):
 
 ```sh
 python3 scripts/defold.py build
 python3 scripts/defold.py serve
-```
-
-Open <http://127.0.0.1:8080>. Hold the screen or **Space** to climb, release to
-fall. Collect fireflies to increase AGI. Rainbow fireflies give eight seconds of
-4x speed. Water allows three diminishing bounces; climb back to safety to refill
-them. The fourth water contact ends the flight. Use the on-screen pause button,
-**P**, or **Escape** to pause/resume. Losing window focus automatically pauses and
-clears held input. Best distance is saved through Defold's `sys.save`.
-
-The logical play area is currently **480 × 800**, fitted with its aspect ratio
-preserved on other screen sizes. Thai text uses the bundled Mitr font under its
-OFL license, so no web font service or DOM layout is involved.
-
-The builder downloads/checksums official Bob **1.14.0**, runs the Lua rule tests
-using Bob's bundled LuaJIT, then builds the release HTML5 bundle in
-`dist/defold/Nightly Bird/`. An existing bundle for that target is replaced.
-
-Optional environment variables: `DEFOLD_JAVA`, `DEFOLD_BOB_JAR`,
-`DEFOLD_JAVA_OPTS`, `DEFOLD_BUILD_SERVER` (optional build-server URL). See `scripts/defold.py` for the pinned Bob SHA-256. A normal
-HTTPS proxy and trusted Java certificate store can be supplied with these
-options. Full text layout requires the Defold build service to link the engine with
-HarfBuzz/SkriBidi. Bob caches these engine builds. Game Lua, sprites, audio, fonts
-and Android signing keys are bundled locally; this project has no native source
-extensions to upload. Engine configuration, standard platform manifests and
-default Android icons are the build-service inputs.
-
-`serve --port 8090` selects another port. Serve the full generated folder over
-HTTP(S); opening `index.html` as `file://` cannot run the WASM game. `.wasm` must
-be served as `application/wasm`. This non-threaded build needs no cross-origin
-isolation headers.
-
-## Current migration scope
-
-| System | First playable status |
-| --- | --- |
-| Flight, gravity, ceiling, held input | Ported using the original constants, with upward-positive Y |
-| Water bounces, recharge, drowning, restart | Ported |
-| Fireflies, AGI cap, worm overflow, rainbow speed | Ported; native trigger collision, collection guarded once |
-| Night scene, bird, wings, blink, eating pose, water reflections | Original art/palette; native sprite components and flipbooks |
-| HUD, Thai labels, pause, focus loss, best-distance save | Ported with Defold GUI and persistence |
-| Flap, water, crunch, sinking sounds | Original WAVs through Defold sound components |
-| Fish, hawk, storms, wind progression | Next milestone |
-| Balloon gifts, magnet, armor, gun, projectiles | Next milestone |
-| Shop, revive, predator death animations | Next milestone |
-| Full animation/particle parity, dynamic viewport layout | Follow-up after gameplay parity |
-
-This is a flight/pickup slice, **not the completed migration**. Enemy distance
-unlocks are not active yet. Existing JS tests remain the detailed specification
-for later milestones; `tests/defold/rules.lua` covers the rules already ported.
-
-## Code and assets
-
-- `game/rules.lua`: plain Lua flight, water, score and pickup rules; no renderer,
-  custom collision engine, scene graph or browser API.
-- `game/controller.script`: Defold lifecycle, factories, sound, bird presentation,
-  focus events and persistence.
-- `objects/firefly.*`: native factory/sprite/Box2D trigger and its Lua behavior.
-- `game/scenery.script`: native sprite instances for water waves/reflections.
-- `main/game.gui_script`: GUI and input; UI taps are consumed before flight input.
-- `assets/game.png`, `assets/scene.png`: committed runtime textures.
-- `scripts/defold_assets.py`: optional artwork regeneration from the original SVGs.
-
-To regenerate artwork only, install **Inkscape** and Python **Pillow**, then run
-`python3 scripts/defold_assets.py`. Runtime builds use the committed PNGs and do
-not need either dependency. Bird flipbook frames are generated from the named
-SVG layers, preserving the repository's original source artwork and license.
-`assets/fonts/OFL.txt` covers Mitr; the repository license covers original art/audio.
-
-Standalone Lua rule tests can also run with Lua 5.1/LuaJIT:
-`lua tests/defold/rules.lua` from the repository root.
-
-## Android test APK — manual only
-
-```sh
 python3 scripts/defold.py build --target android
 ```
 
-This creates a universal ARMv7/ARM64 APK under `dist/android/`. Release Android
-bundles strip engine debug symbols before signing, including custom text-layout
-engines. The generated local
-debug signing key is ignored by Git. It is a test APK; another machine's key may
-require uninstalling an older build. The application ID stays
-`com.arayaphong.nightlybird.defoldhello` so this build can update the earlier demo
-when signed with the same local key. Version code is now 3 (version 0.2.1).
+The first build downloads/checksums Bob 1.14.0 (about 219 MiB) and downloads the
+pinned official Rive dependency archive (about 211 MiB). The engine is linked by
+Defold's build service and cached locally. Normal builds use the committed `.riv`
+and need neither a Rive GUI editor nor Python packages.
 
-**GitHub Actions never builds or uploads APKs.**
+Optional environment variables: `DEFOLD_JAVA`, `DEFOLD_BOB_JAR`,
+`DEFOLD_JAVA_OPTS`, `DEFOLD_BUILD_SERVER`. Keep HTTPS certificate verification
+on when configuring a proxy/trust store. Bob's native build uploads engine flags,
+standard manifests/default icons and the public Rive extension sources/libraries.
+Game Lua, SVG/RIV artwork, fonts, audio and signing keys are bundled locally.
 
-## Deploy and preview
+The pinned extension's shipped Java pipeline builders use an older protobuf
+method descriptor. `scripts/defold_rive_plugin.py` recompiles its three public
+Java builder classes against the pinned Bob in the ignored local dependency
+cache. The native extension sources/libraries are unchanged. This compatibility
+step runs after dependency resolution, and is repeated for a fresh archive.
 
-The **Build Defold Web** workflow checks `defold/development` and uploads the
-`nightly-bird-defold-html5` artifact. Send a manual APK to Arayaphong for testing
-and wait for explicit approval before opening a PR into `development` or merging.
-After approval, merge into `development` to deploy through
-**Check and deploy GitHub Pages**. The `github-pages` environment rules stay
-unchanged. The original JS game stays at `/nightly-bird/`; the migrated game is
-at `/nightly-bird/defold/`. The original development commit is preserved on
+Outputs:
+
+- Web: `dist/defold/Nightly Bird - Rive Demo/`. Serve the full directory over
+  HTTP(S); opening `index.html` as `file://` cannot run WASM. The downloaded ZIP
+  includes a Python preview launcher and a Windows launcher.
+- Android: `dist/android/NightlyBirdRiveDemo/NightlyBirdRiveDemo.apk`.
+  **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
+  are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
+  version code 4, so the same local signing key can update the earlier test app.
+
+Web needs WebGL2. The Rive extension is pinned to commit
+`0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
+
+## How it works
+
+- `rive-demo/bird.riv`: original SVG cubic geometry, colors, layers and pivot
+  nodes, with a `BirdControls` view model and a `Bird` state machine.
+- `rive-demo/motion.lua`: continuous JS-derived phase/timing, including coasting
+  after release and immediate continuation on a renewed press.
+- `rive-demo/demo.script`: sends numeric channel values through the official
+  `rive.cmd.setViewModelInstanceNumber` API, and handles native sound callbacks.
+- `rive-demo/demo.gui_script`: independent touch/keyboard input and native GUI.
+- `rive-demo/demo.render_script`: Rive pass followed by GUI, explicitly restoring
+  stencil/color/blend state so the native vector pass does not hide the controls.
+
+Rive applies bound properties and renders vectors each frame. Lua preserves the
+original procedural animation equations rather than resampling them into an
+image sequence or resetting a timeline when input changes. There are no baked
+raster bird frames in this proof. The renderer's framebuffer is a per-frame GPU
+render target, not pre-rasterized source artwork.
+
+The Thai UI retains runtime SDF Mitr + HarfBuzz/SkriBidi. Both
+`font.runtime_generation` and the full-layout app manifest must remain enabled.
+The native Thai font proof and its visual regression checker remain available
+under `tests/font-proof.*` and `../tests/defold/check_font_proof.py`.
+
+## Regenerate and verify
+
+Artwork regeneration is optional and requires Python `fontTools`:
+
+```sh
+python3 scripts/defold_rive_bird.py
+```
+
+It parses the named SVG layers and their affine transforms, converts SVG arcs to
+cubic Beziers, and writes the public Rive 7 runtime object/property format. The
+SVG and generation code are the editable source; the `.riv` is the generated
+runtime asset. The original art's repository license applies; Mitr's OFL license
+is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
+licenses.
+
+Normal builds run both `tests/defold/rules.lua` and `rive-motion.lua` with Bob's
+bundled LuaJIT. An additional 300-frame comparison runs the original JS animation
+and Lua model with the same mixed time steps, press/release/repress and triggers:
+
+```sh
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
+```
+
+## Review and deployment
+
+Work stays on `defold/development`. Send a **manual APK** to Arayaphong for testing
+and wait for explicit approval before creating a PR into `development` or merging.
+GitHub Actions builds only Web artifacts; it never builds/uploads APKs.
+`development` currently retains the pre-Defold HTML/JS game and publishes that to
+GitHub Pages. The original commit is also kept at
 `backup/development-before-defold-2026-10-24`.
-
-To assemble both sites locally (the first command cleans `dist/`):
-
-```sh
-npm run build
-python3 scripts/defold.py build
-python3 scripts/defold_pages.py
-```
-
-Upload only `dist/pages/`. APKs and local preview launchers are excluded.
-
-For a downloaded HTML5 ZIP, extract everything including `archive/`. On Windows
-run `START-WINDOWS.cmd`; on macOS/Linux run `python3 start_preview.py`. The
-launcher needs Python 3, opens a browser and serves WASM with the correct MIME
-type. Keep its terminal open. Android users should install the APK or play the
-deployed HTTPS site.
-
-## Thai text shaping (0.2.1)
-
-`font.runtime_generation = 1` and `app.appmanifest` enable Defold 1.14.0's full
-text layout system (HarfBuzz/SkriBidi) on supported platforms. Keep both enabled:
-runtime rasterization alone does not position Thai combining marks. Mitr's
-OpenType substitutions and anchors position vowels and tones in context; there
-are no manual per-character vertical offsets or substituted Unicode characters.
-The font's prewarm text includes real UI clusters as well as the character set.
-
-The optional `tests/font-proof.collection` is a native GUI proof sheet, separate
-from the game bootstrap. It covers plain vowels/tones, stacked marks, sara am,
-tall consonants, lower forms, real UI strings, small labels and mixed digits.
-
-Using the same pinned Bob/Java as the normal builder, add these arguments to a
-Web debug build from the repository root:
-
-- `--settings defold/tests/font-proof-legacy.settings` for the old offline layout.
-- `--settings defold/tests/font-proof.settings` for the corrected runtime layout.
-- Use different `--bundle-output` directories for the two captures.
-
-Do not pass a settings path outside the Defold project root: Bob 1.14.0 expects
-it to be available as a project resource during the build. The normal game build
-passes neither proof setting, so the proof page is not included in its bundle.
-
-Capture each proof's canvas at viewport 480×840, device scale factor 2. With
-optional Pillow installed, verify the unchanged simple-mark positions and the
-separated stacked marks:
-
-```sh
-python3 tests/defold/check_font_proof.py before.png after.png
-```
-
-This checks the native rendered ink: single vowels and single tones retain their
-positions; stacked marks separate while the vowel and consonant stay in place.
-Keep visual review of the full sheet alongside this focused regression check.

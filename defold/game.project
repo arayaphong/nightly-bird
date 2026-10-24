@@ -1,14 +1,17 @@
 [project]
-title = Nightly Bird
-version = 0.2.1
+title = Nightly Bird - Rive Demo
+dependencies#0 = https://github.com/defold/extension-rive/archive/0283d4ecb604953057385ca5a4fae7130c776ae9.zip
+version = 0.3.0
 
 [bootstrap]
-main_collection = /main/main.collectionc
+main_collection = /rive-demo/main.collectionc
+render = /rive-demo/demo.renderc
 
 [display]
 width = 480
 height = 800
 high_dpi = 1
+samples = 0
 
 [input]
 game_binding = /input/game.input_bindingc
@@ -29,7 +32,7 @@ heap_size = 64
 
 [android]
 package = com.arayaphong.nightlybird.defoldhello
-version_code = 3
+version_code = 4
 input_method = HiddenInputField
 
 [physics]
@@ -46,3 +49,13 @@ runtime_generation = 1
 
 [native_extension]
 app_manifest = /app.appmanifest
+
+[graphics]
+opengl_version_hint = 0
+vulkan_version_minor = 3
+
+[shader]
+output_spirv = 1
+
+[rive]
+render_to_texture = 1

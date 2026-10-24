@@ -16,6 +16,7 @@ import urllib.parse
 import urllib.request
 
 from defold_test import run as test_rules
+from defold_rive_plugin import prepare as prepare_rive_plugin
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT / "defold"
@@ -67,19 +68,22 @@ def build(target):
             if parsed.hostname:
                 options += [f"-D{protocol}.proxyHost={parsed.hostname}",
                             f"-D{protocol}.proxyPort={parsed.port or 80}"]
-    platform = "wasm-web" if target == "web" else "armv7-android"
-    architectures = "wasm-web" if target == "web" else "armv7-android,arm64-android"
+    platform = "wasm-web" if target == "web" else "arm64-android"
+    architectures = "wasm-web" if target == "web" else "arm64-android"
     output = OUTPUT if target == "web" else ANDROID_OUTPUT
     extra = [] if target == "web" else ["--bundle-format", "apk", "--strip-executable"]
     if build_server := os.environ.get("DEFOLD_BUILD_SERVER"):
         extra += ["--build-server", build_server]
     # Avoid selecting an old bundle after the project title changes.
     shutil.rmtree(output, ignore_errors=True)
+    subprocess.run([java, *options, "-jar", str(bob.resolve()),
+                    "--root", str(PROJECT), "resolve"], check=True, cwd=ROOT)
+    prepare_rive_plugin(PROJECT, bob, java)
     subprocess.run([
         java, *options, "-jar", str(bob.resolve()),
         "--root", str(PROJECT), "--archive", "--platform", platform,
         "--architectures", architectures, "--variant", "release", *extra,
-        "--bundle-output", str(output), "resolve", "build", "bundle",
+        "--bundle-output", str(output), "build", "bundle",
     ], check=True, cwd=ROOT)
     if target == "android":
         apk = next(output.glob("*/*.apk"), None)
