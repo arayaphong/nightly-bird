@@ -27,7 +27,8 @@ function init(self)
     text("button_label", "SAY HELLO", 250, 0.8, INK)
     self.counter = text("counter", "Hellos: 0", 184, 0.8, WHITE)
     text("hint", "Click / tap the button, or press Space", 138, 0.6, MUTED)
-    text("footer", "Defold 1.14.0  |  HTML5 / WebAssembly", 48, 0.5, MUTED)
+    local platform = sys.get_sys_info().system_name
+    text("footer", "Defold 1.14.0  |  " .. platform, 48, 0.5, MUTED)
     print("HELLO_READY")
 end
 

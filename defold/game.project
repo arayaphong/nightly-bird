@@ -26,3 +26,8 @@ clear_color_alpha = 1.0
 scale_mode = fit
 custom_heap_size = 1
 heap_size = 64
+
+[android]
+package = com.arayaphong.nightlybird.defoldhello
+version_code = 1
+input_method = HiddenInputField

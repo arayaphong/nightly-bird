@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build or serve the isolated Defold HTML5 example without the GUI editor."""
+"""Build the Defold example for Web or Android, or serve its HTML5 bundle."""
 
 import argparse
 import functools
@@ -18,6 +18,7 @@ import urllib.request
 ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT / "defold"
 OUTPUT = ROOT / "dist" / "defold"
+ANDROID_OUTPUT = ROOT / "dist" / "android"
 VERSION = "1.14.0"
 BOB_SHA256 = "d8cbe667757ca1c5f4dfd251bc98660c35e7a65ac84bf0207ccef7607de6d1a1"
 BOB_URL = f"https://github.com/defold/defold/releases/download/{VERSION}/bob.jar"
@@ -28,7 +29,7 @@ def checksum(path):
         return hashlib.file_digest(source, "sha256").hexdigest()
 
 
-def build():
+def build(target):
     java = os.environ.get("DEFOLD_JAVA") or shutil.which("java")
     if not java:
         raise RuntimeError("Install Java 25+, or set DEFOLD_JAVA to its java executable.")
@@ -62,12 +63,23 @@ def build():
             if parsed.hostname:
                 options += [f"-D{protocol}.proxyHost={parsed.hostname}",
                             f"-D{protocol}.proxyPort={parsed.port or 80}"]
+    platform = "wasm-web" if target == "web" else "armv7-android"
+    architectures = "wasm-web" if target == "web" else "armv7-android,arm64-android"
+    output = OUTPUT if target == "web" else ANDROID_OUTPUT
+    extra = [] if target == "web" else ["--bundle-format", "apk"]
     subprocess.run([
         java, *options, "-jar", str(bob.resolve()),
-        "--root", str(PROJECT), "--archive", "--platform", "wasm-web",
-        "--architectures", "wasm-web", "--variant", "release",
-        "--bundle-output", str(OUTPUT), "resolve", "build", "bundle",
+        "--root", str(PROJECT), "--archive", "--platform", platform,
+        "--architectures", architectures, "--variant", "release", *extra,
+        "--bundle-output", str(output), "resolve", "build", "bundle",
     ], check=True, cwd=ROOT)
+    if target == "android":
+        apk = next(output.glob("*/*.apk"), None)
+        if not apk:
+            raise RuntimeError("Build finished without an APK.")
+        print(f"Android test APK: {apk.relative_to(ROOT)}", flush=True)
+        print("Uses a generated debug signing key; not a Play Store release.", flush=True)
+        return
     index = next(OUTPUT.glob("*/index.html"), None)
     if not index:
         raise RuntimeError("Build finished without an HTML5 index.html.")
@@ -89,11 +101,12 @@ def serve(port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("build", "serve"))
+    parser.add_argument("--target", choices=("web", "android"), default="web")
     parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
     try:
         if args.command == "build":
-            build()
+            build(args.target)
         else:
             serve(args.port)
     except KeyboardInterrupt:

@@ -5,3 +5,5 @@ defold/build/
 defold/.internal/
 defold/.externalToolBuilders/
 defold/.settings/
+defold/debug.keystore
+defold/debug.keystore.pass.txt

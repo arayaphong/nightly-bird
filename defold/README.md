@@ -1,4 +1,4 @@
-# Defold HTML5 Hello World
+# Defold Web and Android Hello World
 
 An isolated smoke test before migrating Nightly Bird. The JavaScript game remains
 at the repository root. This example uses real Defold GUI nodes and Lua input
@@ -44,8 +44,22 @@ cross-origin isolation headers.
 - `main/hello.gui_script`: creates the screen and handles click/touch/keyboard input.
 - `input/game.input_binding`: mouse/primary touch and Space mappings.
 
-This example has no sound, physics, migrated gameplay, or publishing step. Build
+This example has no sound, physics, or migrated gameplay. Build
 size and memory usage are a baseline, not estimates for the finished game.
+
+## Android test APK
+
+```sh
+python3 scripts/defold.py build --target android
+```
+
+This creates a universal ARMv7/ARM64 APK under `dist/android/`. Bob generates a
+local debug signing key for testing. This is not a Play Store release; signing
+keys are ignored by Git. Builds made on another machine may use a different key,
+in which case Android requires uninstalling the earlier test app before installing
+the new build. Playing the APK requires no Python, Java, or Defold installation.
+
+Application ID: `com.arayaphong.nightlybird.defoldhello`.
 
 ## Play a downloaded HTML5 ZIP
 
@@ -58,7 +72,21 @@ Defold are not needed to play an already-built bundle.
 
 Double-clicking `index.html` opens a `file://` URL and cannot run this game.
 
-The **Build Defold HTML5 example** GitHub Actions workflow also builds this folder
-on `defold/development` and uploads the `defold-hello-html5` artifact. Download and
-extract it, then serve the folder containing `index.html` with an HTTP server.
-It does not replace or deploy the existing JavaScript game's GitHub Pages site.
+The Defold GitHub Actions workflow builds Web and Android on `defold/development`,
+uploads `defold-hello-html5` and `defold-hello-android` artifacts, and deploys one
+combined GitHub Pages site. The original JavaScript game stays at the site root;
+the Defold demo is at `/nightly-bird/defold/` and the APK is at
+`/nightly-bird/downloads/nightly-bird-defold-hello.apk`.
+
+To reproduce the combined site locally, build in this order (the first command
+cleans `dist/`):
+
+```sh
+npm run build
+python3 scripts/defold.py build
+python3 scripts/defold.py build --target android
+python3 scripts/defold_pages.py
+```
+
+Upload only `dist/pages/` to Pages. Future deployments from another branch must
+also include these paths if they are to preserve the Defold demo and APK.
