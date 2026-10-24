@@ -1,6 +1,6 @@
 [project]
 title = Nightly Bird
-version = 0.2.0
+version = 0.2.1
 
 [bootstrap]
 main_collection = /main/main.collectionc
@@ -29,7 +29,7 @@ heap_size = 64
 
 [android]
 package = com.arayaphong.nightlybird.defoldhello
-version_code = 2
+version_code = 3
 input_method = HiddenInputField
 
 [physics]
@@ -40,3 +40,9 @@ use_fixed_timestep = 1
 
 [engine]
 fixed_update_frequency = 60
+
+[font]
+runtime_generation = 1
+
+[native_extension]
+app_manifest = /app.appmanifest

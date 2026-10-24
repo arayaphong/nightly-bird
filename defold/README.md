@@ -31,9 +31,13 @@ using Bob's bundled LuaJIT, then builds the release HTML5 bundle in
 `dist/defold/Nightly Bird/`. An existing bundle for that target is replaced.
 
 Optional environment variables: `DEFOLD_JAVA`, `DEFOLD_BOB_JAR`,
-`DEFOLD_JAVA_OPTS`. See `scripts/defold.py` for the pinned Bob SHA-256. A normal
+`DEFOLD_JAVA_OPTS`, `DEFOLD_BUILD_SERVER` (optional build-server URL). See `scripts/defold.py` for the pinned Bob SHA-256. A normal
 HTTPS proxy and trusted Java certificate store can be supplied with these
-options. Native extensions, if added later, may need Defold's build service.
+options. Full text layout requires the Defold build service to link the engine with
+HarfBuzz/SkriBidi. Bob caches these engine builds. Game Lua, sprites, audio, fonts
+and Android signing keys are bundled locally; this project has no native source
+extensions to upload. Engine configuration, standard platform manifests and
+default Android icons are the build-service inputs.
 
 `serve --port 8090` selects another port. Serve the full generated folder over
 HTTP(S); opening `index.html` as `file://` cannot run the WASM game. `.wasm` must
@@ -86,18 +90,22 @@ Standalone Lua rule tests can also run with Lua 5.1/LuaJIT:
 python3 scripts/defold.py build --target android
 ```
 
-This creates a universal ARMv7/ARM64 APK under `dist/android/`. The generated local
+This creates a universal ARMv7/ARM64 APK under `dist/android/`. Release Android
+bundles strip engine debug symbols before signing, including custom text-layout
+engines. The generated local
 debug signing key is ignored by Git. It is a test APK; another machine's key may
 require uninstalling an older build. The application ID stays
 `com.arayaphong.nightlybird.defoldhello` so this build can update the earlier demo
-when signed with the same local key. Version code is now 2.
+when signed with the same local key. Version code is now 3 (version 0.2.1).
 
 **GitHub Actions never builds or uploads APKs.**
 
 ## Deploy and preview
 
 The **Build Defold Web** workflow checks `defold/development` and uploads the
-`nightly-bird-defold-html5` artifact. Merge into `development` to deploy through
+`nightly-bird-defold-html5` artifact. Send a manual APK to Arayaphong for testing
+and wait for explicit approval before opening a PR into `development` or merging.
+After approval, merge into `development` to deploy through
 **Check and deploy GitHub Pages**. The `github-pages` environment rules stay
 unchanged. The original JS game stays at `/nightly-bird/`; the migrated game is
 at `/nightly-bird/defold/`. The original development commit is preserved on
@@ -118,3 +126,39 @@ run `START-WINDOWS.cmd`; on macOS/Linux run `python3 start_preview.py`. The
 launcher needs Python 3, opens a browser and serves WASM with the correct MIME
 type. Keep its terminal open. Android users should install the APK or play the
 deployed HTTPS site.
+
+## Thai text shaping (0.2.1)
+
+`font.runtime_generation = 1` and `app.appmanifest` enable Defold 1.14.0's full
+text layout system (HarfBuzz/SkriBidi) on supported platforms. Keep both enabled:
+runtime rasterization alone does not position Thai combining marks. Mitr's
+OpenType substitutions and anchors position vowels and tones in context; there
+are no manual per-character vertical offsets or substituted Unicode characters.
+The font's prewarm text includes real UI clusters as well as the character set.
+
+The optional `tests/font-proof.collection` is a native GUI proof sheet, separate
+from the game bootstrap. It covers plain vowels/tones, stacked marks, sara am,
+tall consonants, lower forms, real UI strings, small labels and mixed digits.
+
+Using the same pinned Bob/Java as the normal builder, add these arguments to a
+Web debug build from the repository root:
+
+- `--settings defold/tests/font-proof-legacy.settings` for the old offline layout.
+- `--settings defold/tests/font-proof.settings` for the corrected runtime layout.
+- Use different `--bundle-output` directories for the two captures.
+
+Do not pass a settings path outside the Defold project root: Bob 1.14.0 expects
+it to be available as a project resource during the build. The normal game build
+passes neither proof setting, so the proof page is not included in its bundle.
+
+Capture each proof's canvas at viewport 480×840, device scale factor 2. With
+optional Pillow installed, verify the unchanged simple-mark positions and the
+separated stacked marks:
+
+```sh
+python3 tests/defold/check_font_proof.py before.png after.png
+```
+
+This checks the native rendered ink: single vowels and single tones retain their
+positions; stacked marks separate while the vowel and consonant stay in place.
+Keep visual review of the full sheet alongside this focused regression check.

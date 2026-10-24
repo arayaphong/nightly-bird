@@ -70,7 +70,9 @@ def build(target):
     platform = "wasm-web" if target == "web" else "armv7-android"
     architectures = "wasm-web" if target == "web" else "armv7-android,arm64-android"
     output = OUTPUT if target == "web" else ANDROID_OUTPUT
-    extra = [] if target == "web" else ["--bundle-format", "apk"]
+    extra = [] if target == "web" else ["--bundle-format", "apk", "--strip-executable"]
+    if build_server := os.environ.get("DEFOLD_BUILD_SERVER"):
+        extra += ["--build-server", build_server]
     # Avoid selecting an old bundle after the project title changes.
     shutil.rmtree(output, ignore_errors=True)
     subprocess.run([

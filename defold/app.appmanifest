@@ -1,0 +1,51 @@
+# Full text layout, matching Defold 1.14.0 editor's font-setting.
+# Required with runtime fonts so HarfBuzz positions Thai marks from OpenType.
+platforms:
+  arm64-ios:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  arm64_sim-ios:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  armv7-android:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  arm64-android:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  x86_64-android:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  arm64-osx:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  x86_64-osx:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  x86_64-linux:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  arm64-linux:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  x86_64-win32:
+    context:
+      excludeLibs: [libfont]
+      libs: [libfont_skribidi, libharfbuzz, libsheenbidi, libunibreak, libskribidi]
+  wasm-web:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
+  wasm_pthread-web:
+    context:
+      excludeLibs: [font]
+      libs: [font_skribidi, harfbuzz, sheenbidi, unibreak, skribidi]
