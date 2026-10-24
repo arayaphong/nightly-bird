@@ -72,11 +72,11 @@ Defold are not needed to play an already-built bundle.
 
 Double-clicking `index.html` opens a `file://` URL and cannot run this game.
 
-The Defold GitHub Actions workflow builds Web and Android on `defold/development`,
-uploads `defold-hello-html5` and `defold-hello-android` artifacts, and deploys one
-combined GitHub Pages site. The original JavaScript game stays at the site root;
-the Defold demo is at `/nightly-bird/defold/` and the APK is at
-`/nightly-bird/downloads/nightly-bird-defold-hello.apk`.
+The Defold GitHub Actions workflow builds Web on `defold/development`, uploads
+the `defold-hello-html5` artifact, and deploys one combined GitHub Pages site.
+The original JavaScript game stays at the site root and the Defold demo is at
+`/nightly-bird/defold/`. Android APK builds remain a local command; GitHub Actions
+does not build or upload APKs, and the Pages site does not include them.
 
 To reproduce the combined site locally, build in this order (the first command
 cleans `dist/`):
@@ -84,9 +84,8 @@ cleans `dist/`):
 ```sh
 npm run build
 python3 scripts/defold.py build
-python3 scripts/defold.py build --target android
 python3 scripts/defold_pages.py
 ```
 
 Upload only `dist/pages/` to Pages. Future deployments from another branch must
-also include these paths if they are to preserve the Defold demo and APK.
+also include the Defold path if they are to preserve the demo.

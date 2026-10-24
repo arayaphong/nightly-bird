@@ -1,4 +1,4 @@
-name: Build Defold Web and Android and deploy Pages
+name: Build Defold Web and deploy Pages
 
 on:
   push:
@@ -43,8 +43,6 @@ jobs:
         run: npm run build
       - name: Build Defold HTML5 without the editor
         run: python3 scripts/defold.py build
-      - name: Build universal Android test APK
-        run: python3 scripts/defold.py build --target android
       - name: Assemble the Pages site
         run: python3 scripts/defold_pages.py
       - name: Upload HTML5 bundle
@@ -52,12 +50,6 @@ jobs:
         with:
           name: defold-hello-html5
           path: dist/defold/*/
-          if-no-files-found: error
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: defold-hello-android
-          path: dist/android/*/*.apk
           if-no-files-found: error
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/defold/development'
