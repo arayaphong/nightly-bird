@@ -2,6 +2,7 @@ local gestures=require('rive-demo.gestures')
 local WHITE=vmath.vector4(.97,.97,1,1)
 local MUTED=vmath.vector4(.62,.72,.85,1)
 local ACCENT=vmath.vector4(.74,1,.35,1)
+local DOT_INACTIVE=vmath.vector4(.25,.34,.46,1)
 local ITEMS={'magnet','gun','helmet','suit'}
 local LABELS={'แม่เหล็ก','ปืนเลเซอร์','หมวกนิรภัย','ชุดกันฟ้าผ่า'}
 local function text(x,y,value,size,color)
@@ -27,10 +28,19 @@ local function send(id,data) msg.post('/demo#script',id,data or {}) end
 local function clear_input(self)
     self.keyboard=false;self.fingers={};self.gestures=gestures.new()
 end
+local function update_page_dots(self)
+    local selected=self.page=='bird' and 1 or 2
+    for i,node in ipairs(self.page_dots) do
+        local diameter=i==selected and 10 or 8
+        gui.set_size(node,vmath.vector3(diameter,diameter,0))
+        gui.set_color(node,i==selected and ACCENT or DOT_INACTIVE)
+    end
+end
 local function set_page(self,page)
     if self.page==page then return end
     self.page=page;clear_input(self)
     gui.set_enabled(self.bird_root,page=='bird');gui.set_enabled(self.fish_root,page=='fish')
+    update_page_dots(self)
     send('page',{name=page})
 end
 function init(self)
@@ -70,6 +80,14 @@ function init(self)
         text(240,53,'Space: กลับตัว · ลูกศร: เปลี่ยนหน้า',13,MUTED)
         gui.set_enabled(self.fish_root,false)
     end
+    self.page_dots={}
+    for i=1,2 do
+        local dot=gui.new_pie_node(vmath.vector3(230+(i-1)*20,12,0),vmath.vector3(8,8,0))
+        gui.set_fill_angle(dot,360);gui.set_inner_radius(dot,0)
+        gui.set_perimeter_vertices(dot,32)
+        self.page_dots[i]=dot
+    end
+    update_page_dots(self)
     local platform=sys.get_sys_info().system_name
     self.touch_device=platform=='Android' or platform=='iPhone OS'
     if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end

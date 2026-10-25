@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.5.0 is an interactive Rive bird/equipment and swimming-fish proof. Artwork is drawn from
+Version 0.5.1 is an interactive Rive bird/equipment and swimming-fish proof. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -8,6 +8,8 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
 ## Try it
 
 - Swipe **left** from the bird to open the fish test; swipe **right** to return.
+  Two vector dots at the bottom show the current page: left for bird, right for
+  fish. The current dot is larger and lime green; the other is muted.
   Mouse drags and the Right/Left arrow keys also navigate. The fish page has
   exactly one action button, **กลับตัว** (turn), also available on **Space**.
   The fish swims automatically: tail, fin, gill and body wobble follow the JS
@@ -83,7 +85,7 @@ Outputs:
   the VkQuality automatic backend selector.
   **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
   are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
-  version code 12, so the same local signing key can update the earlier test app.
+  version code 13, so the same local signing key can update the earlier test app.
 
 Web needs WebGL2. The Rive extension is pinned to commit
 `0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
