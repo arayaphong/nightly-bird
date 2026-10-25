@@ -1,5 +1,5 @@
 local rig=require('shared.objects.rain_cloud.rig')
-local M={charge_duration=.5,bolt_duration=.28}
+local M={charge_duration=.2,bolt_duration=.28}
 M.strike_duration=M.charge_duration+M.bolt_duration
 local function random(s,low,high)
     -- Local Park–Miller generator: no global random seed or per-frame changes.
@@ -55,6 +55,7 @@ function M.step(s,dt)
     if s.remaining==0 then return false end
     local before=s.elapsed
     s.elapsed=math.min(M.strike_duration,s.elapsed+dt)
+    if math.abs(s.elapsed-M.charge_duration)<1e-9 then s.elapsed=M.charge_duration end
     s.remaining=math.max(0,M.strike_duration-s.elapsed)
     -- A one-shot event at the exact boundary; even a long frame crosses it once.
     return before<M.charge_duration and s.elapsed>=M.charge_duration
@@ -67,7 +68,7 @@ function M.values(s,page)
     if (page==nil or page=='cloud') and s.remaining>0 then
         local age=s.elapsed
         if age<M.charge_duration then
-            local phase=math.floor(age/(M.charge_duration/4))
+            local phase=math.floor(age/(M.charge_duration/4)+1e-9)
             if phase%2==0 then v.dark_alpha=.9 else v.flash_alpha=1 end
         else
             -- Restore the original cloud before showing the bolt. No cloud or

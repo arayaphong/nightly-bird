@@ -95,7 +95,7 @@ legacy/              # frozen original HTML/JS application/reference
   per single chew sound; magnet/gun/helmet/suit toggles and drawing order.
 - Fish swimming and turning; hawk flight and three-second dive with one sound.
 - Firefly glow/wings, balloon motion and design-A vector rain cloud.
-- Cloud: four silent dark/bright flashes in 0.5 s, original color restored before
+- Cloud: four silent dark/bright flashes in 0.2 s, original color restored before
   bolt/thunder start together; whole-screen or explicit targets in every direction.
 - Touch/mouse/keyboard controls, swipe/tap distinction, page indicators, returning
   to menus, focus-loss/route-exit cancellation, and install-over signing identity.
@@ -169,3 +169,7 @@ Verification:
 
 Checkpoints: plan `e3fcf75`, stage 1 `fce51ec`, stage 2 `4e4703d`; this stage is
 committed separately after verification. No PR or merge into development.
+
+Post-refactor tuning: the charge was shortened from 0.5 s to 0.2 s at
+Arayaphong's request. The bolt still follows immediately with thunder; its
+0.28-second duration and targeting behavior are unchanged.
