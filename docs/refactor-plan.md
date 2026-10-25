@@ -39,14 +39,14 @@ PR into `development` or merge until Arayaphong explicitly approves the APK.
 
 ## 2. Remove the old Defold sprite implementation
 
-- [ ] Remove the abandoned sprite-based game entry point, object factories,
+- [x] Remove the abandoned sprite-based game entry point, object factories,
   controllers, sprite scenery, sprite resources/atlases/tilesources/textures,
   raster-generation scripts and references that are exclusive to that prototype.
-- [ ] Retain useful rendering-independent rule logic and its tests, giving it
+- [x] Retain useful rendering-independent rule logic and its tests, giving it
   a clear shared home in stage 3. Remove prototype-only state/glue if unused.
-- [ ] Preserve current Rive artwork, vector motion/actions/equipment, Thai fonts,
+- [x] Preserve current Rive artwork, vector motion/actions/equipment, Thai fonts,
   audio in use, and the complete HTML/JS snapshot under `legacy/`.
-- [ ] Check that the active Defold project contains no sprite implementation
+- [x] Check that the active Defold project contains no sprite implementation
   or missing resource references. Verify the Web build and existing checks,
   then commit this stage separately.
 
@@ -116,3 +116,15 @@ Verification: root Web build and all Lua checks pass; legacy syntax/imports,
 3 Node test files and static build pass; bird 300-frame and fish/hawk 3600-frame
 JS/Lua parity pass. Regenerating all Rive assets produced identical bytes. Pages
 assembly puts Defold at `/` and the complete original application at `/legacy/`.
+
+### Stage 2 completed
+
+Removed the abandoned sprite entry collection/UI, controller/scenery, object
+factories/collisions, sprite sheets/atlas/tilesource and raster generator. Removed
+the unused prototype session singleton and two prototype-only audio components
+and recordings. The originals remain in legacy. Pure flight rules and their
+tests remain; there is no retained sprite runtime.
+
+Verification: root Web build and all Lua tests pass. `scripts/check_project.py`
+checks active resource/Lua references and rejects sprite APIs/resources or PNG
+artwork; it is now a normal build prerequisite. Current Rive artwork is unchanged.

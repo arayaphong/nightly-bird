@@ -2,8 +2,8 @@
 
 Version 0.7.3 opens with a six-character vector gallery. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
-for it. The original SVG remains the artwork source. The earlier flight slice
-is retained under `game/`, `objects/` and `main/` for later migration work.
+for it. The original SVG remains the artwork source. The abandoned sprite-based Defold prototype has been removed.
+Rendering-independent flight rules and their tests remain for later reuse.
 
 ## Try it
 

@@ -17,6 +17,7 @@ import urllib.request
 import zipfile
 
 from defold_test import run as test_rules
+from check_project import check as check_project
 from defold_rive_plugin import prepare as prepare_rive_plugin
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -58,6 +59,7 @@ def build(target):
     if checksum(bob) != BOB_SHA256:
         raise RuntimeError(f"Expected the official Bob {VERSION} checksum; check {bob}.")
 
+    check_project()
     test_rules(bob)
 
     options = shlex.split(os.environ.get("DEFOLD_JAVA_OPTS", ""))

@@ -14,6 +14,7 @@ on:
       - 'input/**'
       - 'preview/**'
       - 'scripts/defold*.py'
+      - 'scripts/check_project.py'
       - 'scripts/check_rive_parity.mjs'
       - 'scripts/check_fish_parity.mjs'
       - 'scripts/check_hawk_parity.mjs'
