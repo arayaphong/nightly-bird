@@ -4,7 +4,15 @@ on:
   push:
     branches: [defold/development]
     paths:
-      - 'defold/**'
+      - 'game.project'
+      - 'app.appmanifest'
+      - 'assets/**'
+      - 'rive-demo/**'
+      - 'game/**'
+      - 'main/**'
+      - 'objects/**'
+      - 'input/**'
+      - 'preview/**'
       - 'scripts/defold*.py'
       - 'scripts/check_rive_parity.mjs'
       - 'scripts/check_fish_parity.mjs'

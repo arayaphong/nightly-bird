@@ -23,18 +23,18 @@ PR into `development` or merge until Arayaphong explicitly approves the APK.
 
 ## 1. Make Defold the root project
 
-- [ ] Move the Defold project from `defold/` to the repository root, including
+- [x] Move the Defold project from `defold/` to the repository root, including
   `game.project`, native-extension settings, resources and runtime entry point.
-- [ ] Move the original HTML/JS application, its package/scripts/tests/docs and
+- [x] Move the original HTML/JS application, its package/scripts/tests/docs and
   complete reference assets into `legacy/`. Keep it runnable and available as
   a behavioral/art reference. Active vector sources belong to the Defold project;
   copies inside legacy are a frozen reference of the old implementation.
-- [ ] Update build/code-generation/test/parity tools, resource paths, docs,
+- [x] Update build/code-generation/test/parity tools, resource paths, docs,
   Git ignores and Web workflows for the new locations. Preserve local build
   caches/signing files without committing secrets or generated build outputs.
-- [ ] Make Defold the Pages site at `/`, with the legacy application at `/legacy/`.
+- [x] Make Defold the Pages site at `/`, with the legacy application at `/legacy/`.
   Do not deploy or change `development` as part of this branch refactor.
-- [ ] Verify the root Defold Web build, Lua tests, legacy tests/build, parity
+- [x] Verify the root Defold Web build, Lua tests, legacy tests/build, parity
   tools and assembled Pages paths before committing this stage.
 
 ## 2. Remove the old Defold sprite implementation
@@ -104,3 +104,15 @@ legacy/              # frozen original HTML/JS application/reference
 
 Implementation has not started at the time this plan is first committed.
 Record each stage's result and meaningful verification here as it is completed.
+
+### Stage 1 completed
+
+Defold now opens from root `game.project`. HTML/JS, its package/tools/tests/docs
+and complete reference assets are isolated in `legacy/`. Root `assets/svg/`
+contains the active vector sources. Local caches and signing identity moved
+without entering Git. Web/Pages tools and workflows use the new paths.
+
+Verification: root Web build and all Lua checks pass; legacy syntax/imports,
+3 Node test files and static build pass; bird 300-frame and fish/hawk 3600-frame
+JS/Lua parity pass. Regenerating all Rive assets produced identical bytes. Pages
+assembly puts Defold at `/` and the complete original application at `/legacy/`.

@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local m=require('rive-demo.fish-motion')
 local function near(a,b) assert(math.abs(a-b)<1e-9,a..' != '..b) end
 local s=m.new();local time=0

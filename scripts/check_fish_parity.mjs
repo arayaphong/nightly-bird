@@ -1,7 +1,7 @@
 // Optional comparison with the actual JS painter and heading interpolation.
 import { execFileSync } from 'node:child_process';
-import { createFishPainter } from '../src/visuals/fish-painter.js';
-import { Shark } from '../src/objects/shark.js';
+import { createFishPainter } from '../legacy/src/visuals/fish-painter.js';
+import { Shark } from '../legacy/src/objects/shark.js';
 const fish = { size: 100, x: 200, y: 400, sw: 0, ang: 0, bob: 0,
   vx: 1, vy: 0, dir: 1, mode: 'patrol', body: { enabled: true }, viewport: {} };
 const session = { time: 0 };
@@ -21,7 +21,7 @@ for (let i = 0; i < 3600; i++) {
   expected.push([pose.tail.angle, pose.fin.angle, pose.gill.scaleX, pose.gill.scaleY,
     angles[0], scales.reduce((sign, [, y]) => sign * (y < 0 ? -1 : 1), 1)]);
 }
-const lua = `package.path='./defold/?.lua;'..package.path
+const lua = `package.path='./?.lua;'..package.path
 local m=require('rive-demo.fish-motion');local s=m.new()
 for i=0,3599 do
  if i==30 or i==110 or i==116 or i==190 then m.turn(s) end

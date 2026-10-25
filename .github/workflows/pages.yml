@@ -35,12 +35,15 @@ jobs:
       # The project uses Node.js built-ins and has no npm dependencies.
       - name: Check syntax and imports
         run: npm run check
+        working-directory: legacy
 
       - name: Test game rules
         run: npm test
+        working-directory: legacy
 
       - name: Build static site
         run: npm run build
+        working-directory: legacy
 
       - name: Set up Java for Defold
         uses: actions/setup-java@v4

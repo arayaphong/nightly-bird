@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local equipment=require('rive-demo.equipment')
 local motion=require('rive-demo.motion')
 local function near(a,b) assert(math.abs(a-b)<1e-8,a..' != '..b) end

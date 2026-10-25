@@ -1,192 +1,230 @@
-# นกแดงราตรี · Nightly Bird
+# Nightly Bird — Defold / Rive vector proof
 
-เกมนกบินบน Canvas 2D เขียนด้วย JavaScript ES modules (`import` / `export`)
-เบราว์เซอร์โหลดโมดูลโดยตรง ไม่ต้อง bundle และไม่มี runtime dependency
+Version 0.7.3 opens with a six-character vector gallery. Artwork is drawn from
+real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
+for it. The original SVG remains the artwork source. The earlier flight slice
+is retained under `game/`, `objects/` and `main/` for later migration work.
 
-## เริ่มเล่นในเครื่อง
+## Try it
 
-ใช้ Node.js 22 ขึ้นไป:
+- The first screen is a **3 × 2 icon grid**: red bird, fish, hawk, firefly,
+  balloon and rain cloud. Tap a card (or press **1–6**) to open that preview.
+  Every preview has a **หน้ารวม** button at the top left; **Esc** returns too.
+- Swipe **left** through those six previews; swipe **right** to go back.
+  Six vector dots show the current character. The gallery itself hides them.
+  The current dot is larger and lime green; the others are muted.
+  Mouse drags and the Right/Left arrow keys also navigate. The fish page has
+  exactly one action button, **กลับตัว** (turn), also available on **Space**.
+  The fish swims automatically: tail, fin, gill and body wobble follow the JS
+  cruise pose. Turning follows the original smoothed heading and belly-down
+  rendering rule, without restarting the swim phase. It stays centered for inspection.
+- The hawk page has one **พุ่งตัว** (dive) button, also available on **Space**.
+  It switches to the original dive SVG for **3 seconds**, plays the original
+  `hawk-strike.wav` once, and shows a disabled countdown on the button.
+  Flight and the ready button return automatically. Repeated input cannot
+  restart or extend a dive. Leaving the page or losing focus cancels it and
+  stops its sound. Wing phase continues through the action.
+- Firefly and balloon pages show complementary wings and a pulsing lamp, and
+  a floating pink balloon. The rain cloud uses **design A**: one asymmetric
+  silhouette with broad flowing shadow bands, shared by its gallery thumbnail
+  and preview. The original blue-purple palette and falling rain remain.
+- The cloud's **ฟ้าแลบ** button (or **Space**) first flashes the cloud
+  **dark → bright → dark → bright** in exactly **0.5 seconds**, without a bolt
+  or thunder. At 0.5 seconds the original cloud color returns and the vector
+  bolt and original `thunder.wav` start together. The bolt lasts 0.28 seconds.
+  Each action samples a new endpoint across the **whole 480 × 800 screen**,
+  including above/beside the cloud, and a new jagged path/branch. Its geometry
+  stays fixed throughout that action.
+  A local random generator varies strikes without resetting global randomness.
+  Thunder plays once after charging. The button pauses during
+  the action and returns automatically; repeated input cannot extend it.
+  Leaving the page or losing focus cancels the flash and stops thunder.
+- Bird input/audio stops when leaving its page; equipment stays equipped on return.
+  Button taps activate on release; a horizontal swipe over a button does not
+  activate it. Multitouch stays dedicated to the bird's independent controls.
+- Hold the screen or **Space** to flap. Release to finish the current revolution
+  and settle at the same rest angle as the original JavaScript bird.
+- Press **Blink** / **B** to blink once, and **Chew** / **C** to chew three times.
+- Chewing plays the original `crunch.wav` once when the three-bite animation
+  starts. Restarting chewing replaces the old sound; losing focus stops it.
+- Wing, eye and mouth channels can run together. On touch devices, keep one
+  finger held and use another to press the blink/chew buttons.
+- The original wing WAV starts when flapping begins. Each recording finishes
+  naturally; continued input repeats it without overlap. Releasing stops renewal.
+- Losing focus clears held input and stops sound.
+- Toggle the four vector icon cards (or **1–4**) to equip/remove a foot-held
+  magnet with three inward-pulsing field rings, a slung laser gun, a yellow
+  safety helmet, and the lightning suit (coat + hood). All 16 combinations work
+  independently of flapping, blinking and chewing. A second finger can toggle
+  equipment while the first holds flight. Green frames and เปิด/ปิด show state.
+- The magnet has no additional painted toes. It renders under the original
+  bird body/feet, so the existing foot paths overlap its grip.
+- The lightning suit has a plain blue hood without red crest decorations.
+  Either the safety helmet or hood hides the bird's crest. Removing both
+  restores the original crest; removing just one keeps it hidden.
 
-```sh
-npm start
-```
+Equipment stays equipped until toggled off. This preview does not apply pickup
+timers, attraction to collectibles, laser firing or damage protection yet.
 
-เปิด <http://localhost:8080> แตะค้าง หรือกด Space / ลูกศรขึ้นค้างเพื่อบินขึ้น ปล่อยเพื่อร่อนลง
-เปลี่ยนพอร์ตได้ด้วย `PORT=3000 npm start`
+Autonomous idle flaps and random blinks are deliberately disabled in this manual
+proof. Motion equations, pivots, rotations, compression, blink timing and three
+chewing cycles otherwise follow the JS reference. The UI shows flapping,
+finishing-the-cycle and resting states.
 
-ต้องเปิดผ่าน HTTP server เพราะเบราว์เซอร์จำกัดการโหลด ESM ผ่าน `file://`
-สามารถใช้ static server อื่นแทนได้ โดยเสิร์ฟไฟล์ `.js` ด้วย JavaScript MIME type
-ฟอนต์ Mitr โหลดจาก Google Fonts หากโหลดไม่ได้จะใช้ฟอนต์สำรองของเครื่อง
+## Build without the editor
 
-## โครงสร้าง
-
-เกมประกอบจาก `Platform` และวัตถุที่มีสถานะของตัวเอง เช่น `Redbird`, `Shark`, `Hawk`,
-`Firefly`, `BalloonGift`, `MessageBox`, `HIDTap` และ `RuleSet`
-รายละเอียดหน้าที่ ความสัมพันธ์ lifecycle และตัวอย่างอยู่ใน [เอกสารสถาปัตยกรรม](./docs/architecture.md)
-
-| ตำแหน่ง                    | หน้าที่                                                 |
-| -------------------------- | ------------------------------------------------------- |
-| `src/main.js`              | หน้าโหลด ปุ่มลองใหม่ และเริ่ม loop                      |
-| `src/game/create-game.js`  | จุดประกอบ Platform, วัตถุ, input, UI และกฎ              |
-| `src/core/`                | Platform, lifecycle, physics, collision และ RuleSet     |
-| `src/objects/`             | นก ปลา เหยี่ยว หิ่งห้อย ของขวัญ กระสุน เมฆ น้ำ และฉาก   |
-| `src/components/`          | อุปกรณ์ สถานะชั่วคราว และสายรุ้งที่มีเจ้าของเป็นนก      |
-| `src/rules/`               | รอบเกม ผิวน้ำ การต่อสู้ รางวัล อาวุธ การเกิด และร้านค้า |
-| `src/visuals/`             | แอนิเมชันและตัววาดภาพที่ผูกกับวัตถุแต่ละตัว             |
-| `src/input/`               | รวม input และ adapter สัมผัส/คีย์บอร์ด/ตัวเลือก gamepad |
-| `src/platform/`            | โหลด SVG/เสียง, viewport, renderer และบันทึกสถิติ       |
-| `src/effects/`             | อนุภาคและเอฟเฟกต์                                       |
-| `src/ui/`                  | HUD, MessageBox และ ShopPanel                           |
-| `src/config/`, `src/math/` | ค่าปรับเกม จุดยึดภาพ และฟังก์ชันคำนวณ                   |
-| `assets/svg/`              | ภาพ SVG ที่เกมโหลดจริง                                  |
-| `assets/gallery.html`      | หน้ารวมภาพ SVG                                          |
-| `tests/`                   | ทดสอบกติกาและ lifecycle โดยไม่ต้องมี DOM                |
-
-## หลักการทำงาน
-
-- Platform รับผิดชอบตำแหน่งจริงและการชน วัตถุระบุความเร็ว/แรงและดูแลพฤติกรรมตัวเอง
-- กฎตัดสินผลข้ามวัตถุ เช่น ของซ้ำกลายเป็นหนอนหรืออุปกรณ์ป้องกันการโจมตี
-- นกที่ถูกปลาคาบใช้ attachment และหยุดการเคลื่อนที่อิสระจนกว่าจะถูกปล่อย
-- ไม่มีสถานะเกมแบบ singleton ในโมดูล สร้างหลาย instance ได้
-- ภาพ SVG โหลดร่วมกันผ่าน AssetStore ส่วนแอนิเมชันและอุปกรณ์แยกต่อวัตถุ
-- การวาดไม่แก้สถานะ simulation และ UI ส่งคำสั่งผ่าน Platform
-- ร้านค้าและ pause หยุดเวลาเกม แต่เวลา UI เดินต่อ; ใช้ P/Escape เพื่อพักหรือเล่นต่อ
-- input รวมการกดค้างจากหลายอุปกรณ์ และไม่รับการกดปุ่มเมนูเป็นการกระพือ
-- ยังคง JavaScript ESM และค่า delta สูงสุดเดิม ไม่มี bundler หรือ runtime dependency
-
-ค่าปรับสมดุลอยู่ใน `src/config/game.js` ตัวเลือกทดลองใน `src/config/debug.js`
-และข้อมูลจุดยึดภาพอยู่ใน `src/config/art.js`
-`HIDGamepad` เป็น adapter เสริม ยังไม่ได้เปิดในเกมเริ่มต้นและยังไม่มีการเลือกเมนูด้วย gamepad
-
-## งานภาพ SVG
-
-เปิด [หน้ารวมภาพ](./assets/gallery.html) ผ่าน `npm start` ที่ <http://localhost:8080/assets/gallery.html>
-หรือเปิดไฟล์ใน `assets/svg/` ด้วยเบราว์เซอร์หรือโปรแกรมวาดเวกเตอร์ได้โดยตรง
-
-เกมใช้ไฟล์เหล่านี้เป็นต้นฉบับจริง ไม่มีสำเนารูปทรงตัวละครใน JavaScript:
-
-- `characters/bird.svg`: ลำตัว ปีก ขนปีก ตาแต่ละแบบ แก้ม และปาก
-- `characters/fish.svg`: ลำตัว หาง ครีบ และเหงือก
-- `characters/hawk.svg`, `characters/hawk-dive.svg`: ท่าบินและท่าพุ่ง พร้อมขนปีกแยกชิ้น
-- `items/`: อุปกรณ์ ของขวัญ ลูกโป่ง หิ่งห้อย และไอคอน HUD; ชุดกันฟ้าแยกเสื้อกับฮู้ด
-
-`src/platform/asset-store.js` โหลด SVG และถอด `<g data-sprite>` แต่ละชิ้นเป็นภาพที่เบราว์เซอร์ decode เพียงครั้งเดียว
-จากนั้น Canvas วาดด้วย `drawImage` โดย JavaScript คุมเฉพาะตำแหน่ง การหมุน การย่อขยาย และสีแสง
-ไม่มีการ fetch หรือ decode SVG ในวงรอบเกม ภาพที่ใช้แสดงสถานะไหม้เก็บสีไว้ใน `data-scorched-fill` / `data-scorched-stroke`
-ส่วนแสงเรือง สีตา และแสงหิ่งห้อยเปลี่ยนสีจากหน้ากากภาพที่โหลดไว้และ cache แบบจำกัดจำนวน
-
-เมื่อแก้ภาพ ให้แก้ path, สี หรือ gradient ใน SVG โดยรักษา `id`, `data-sprite` และข้อมูลจุดหมุน `data-*`
-ของชิ้นส่วนไว้ `transform` ของกลุ่มกำหนดท่าพื้นฐาน ชิ้นส่วนที่มี `display="none"` เป็นท่าทางทางเลือก เช่น ตาตาย
-ไม่ควรรวมทุกชิ้นเป็น path เดียว เพราะเกมต้องขยับปีก ตา ปาก หาง และครีบแยกกัน
-หากเปลี่ยนระบบพิกัดหรือขนาดตัวละคร ให้ปรับ anchor ใน `src/config/art.js` และตรวจตำแหน่งการชนด้วย
-แก้ SVG แล้วรีโหลดหน้าเกมเพื่อโหลดภาพใหม่ ไม่ต้องสร้างรูปจาก JavaScript หรือรันตัวสร้างภาพ
-
-หน้าเริ่มเกมรอให้โหลดภาพครบ หากโหลดไม่ได้จะแสดงปุ่มลองอีกครั้ง
-เอฟเฟกต์ที่สร้างตามสถานะ เช่น แสง น้ำ เมฆ สายฟ้า อนุภาค และเส้นเชื่อมลูกโป่งยังวาดด้วย Canvas
-ไฟล์ไอคอนใน CSS และภาพทั้งหมดอยู่ใน `assets/` จึงถูกรวมใน `npm run build` และ GitHub Pages ด้วย
-
-เมื่อกินหิ่งห้อย ตัวหิ่งห้อยจะหายจากภาพทันที และนกขยับปากเคี้ยว 3 จังหวะ
-ไม่มีภาพแมลงอยู่ในปาก ใช้ทั้งแบบปกติและสายรุ้ง
-หากกินหลายตัวติดกันจะเริ่มจังหวะเคี้ยวใหม่ และล้างวัตถุที่ซ่อนไว้เมื่อจบรอบล่าสุด
-
-## เสียง
-
-`assets/audio/wing-flap.wav` ใช้เสียงจาก `pigeon_squeak_single.wav` ระดับเสียงตั้งไว้ 30% ของระดับเริ่มต้น
-เล่นทีละรอบจนจบก่อนเริ่มรอบต่อไป ไม่มีเสียงบินซ้อนกัน ปล่อยปุ่มแล้วจบรอบปัจจุบันก่อนหยุด
-กดกลับระหว่างเสียงเล่นใช้รอบเดิมต่อ จังหวะกระพือเองยังมีเสียงตามการหมุนของปีก
-พักเกม เปิดร้าน ตาย ซ่อนแท็บ หรือหยุด Platform จะจบเสียงรอบปัจจุบันโดยไม่เริ่มรอบใหม่
-
-`BalloonGift.pop()` ส่ง `balloon-popped` เมื่อแตกสำเร็จ แล้วเล่น `balloon-pop.wav`
-จาก `balloon_pop.wav` ความยาว 0.6 วินาที ครั้งเดียว ทั้งชนลูกโป่งและกล่องของขวัญ
-ชนสอง collider พร้อมกันไม่เล่นซ้ำ และการลบวัตถุนอกจอไม่ส่งเสียงนี้
-
-`assets/audio/bird-sinking.wav` ใช้ `bubble_sinking.wav` เล่นครั้งเดียวเมื่อนกตายจากการจมน้ำ
-นกที่ตายกลางอากาศจากเหยี่ยว ปลา หรือฟ้าผ่าจะเล่นเสียงนี้เมื่อตกถึงน้ำด้วย
-เล่นครั้งเดียวต่อชีวิต ไม่เล่นซ้ำระหว่างจมหรือเมื่อศพข้ามผิวน้ำอีกครั้ง
-
-`assets/audio/water-bounce.wav` ใช้ `splish_single_soft.wav` ดังครั้งเดียวต่อนกกระเด้งผิวน้ำ
-ไม่ดังซ้ำระหว่างอยู่ในน้ำ และการจมน้ำหลังใช้สิทธิ์กระเด้งหมดไม่เล่นเสียงนี้
-
-`assets/audio/fish-strike.wav` ใช้ `plop_fall_in.wav` ดังครั้งเดียวตอนปลาเริ่มพุ่งขึ้นจากน้ำโจมตี
-ไม่ดังระหว่างว่ายตาม เตรียมพุ่ง หรือเฟรมที่พุ่งอยู่แล้ว และดังได้แม้พุ่งพลาด
-
-`assets/audio/thunder.wav` ใช้ไฟล์ `fish_scary_drag_under.wav` ตามที่เลือกสำหรับเสียงฟ้าผ่า
-ดังครั้งเดียวเมื่อเมฆปล่อยสายฟ้าจริง ทั้งผ่าโดนและผ่าพลาด ไม่ดังตอนสะสมประจุ
-
-`assets/audio/laser-pew.wav` ใช้ `laser_pew.wav` เล่นครั้งเดียวเมื่อสร้างกระสุนยิงเหยี่ยวหรือปลา
-เมื่อยิงเหยี่ยวจะตัดเสียงพุ่งของตัวเป้าหมายทันที โดยไม่ตัดเสียงเหยี่ยวตัวอื่นหรือเสียงสายรุ้ง
-
-`assets/audio/hawk-strike.wav` ใช้ `jet_flyby_1s.wav` เล่นครั้งเดียวเมื่อเหยี่ยวเริ่มพุ่งโจมตี
-ไม่เล่นซ้ำระหว่างพุ่ง ไม่เล่นตอนบินลาดตระเวนหรือปลาพุ่ง และดังแม้เหยี่ยวจะพุ่งพลาด
-
-`assets/audio/rainbow.wav` เป็นเสียงโหมดความเร็วสายรุ้งจาก `rainbow_8s.wav`
-เล่นต่อเนื่องเฉพาะช่วง boost และไม่เล่นซ้อนเมื่อกินสายรุ้งเพิ่ม พักเกมหรือซ่อนแท็บแล้วหยุดเสียง
-กลับมาเล่นต่อจากตำแหน่งเสียงเดิม โหมดหมด ตาย หรือเริ่มรอบใหม่จะล้างเสียงนี้
-
-`assets/audio/bird-hurt.wav` ใช้ `bird_hurt_short.wav` ความยาว 0.26 วินาที ร้องครั้งเดียวเมื่อหมวกกันเหยี่ยวหรือปลากัด หรือชุดกันฟ้ารับฟ้าผ่าได้
-โจมตีพลาด โดนช่วงคุ้มกัน หรือถูกโจมตีจนตายจะไม่เล่นเสียงนี้
-
-`assets/audio/crunch.wav` เป็นเสียงตอนนกกินหิ่งห้อย ทั้งแบบปกติและแบบสายรุ้ง
-โหลดและ decode ครั้งเดียวผ่าน `AudioSystem` แล้วเล่นเมื่อได้รับเหตุการณ์ `firefly-eaten`
-จากการเก็บสำเร็จ ไฟล์ถูกตัดช่วงเบาต้นเสียงออกแล้ว เหลือประมาณ 0.365 วินาที (64 KB)
-จึงเล่นจากต้นไฟล์ได้ทันทีและลดข้อมูลที่ต้องโหลด รายการไฟล์เสียงอยู่ใน `src/config/audio.js`
-การแตะหรือกดปุ่มจะปลดล็อกเสียงตามเงื่อนไขของเบราว์เซอร์
-รองรับการกินหลายตัวติดกันโดยจำกัดจำนวนเสียงซ้อน หากโหลดเสียงไม่ได้เกมยังเล่นต่อได้
-
-## ตรวจสอบ
+Use Python 3.11+ and a **Java 25 JDK** (including `javac`):
 
 ```sh
-npm run check
-npm test
+python3 scripts/defold.py build
+python3 scripts/defold.py serve
+python3 scripts/defold.py build --target android
 ```
 
-ไม่ต้องติดตั้ง dependency สำหรับสองคำสั่งนี้ `check` ตรวจ syntax, import path และ circular imports
-ส่วน tests ตรวจการบิน กระเด้งน้ำ ศัตรู ไอเท็ม ชุบชีวิต ร้านค้า และการบันทึกคะแนน
-การตรวจภาพและอินพุตจริงให้เปิดเกมในเบราว์เซอร์ทั้งแนวตั้งและแนวนอน
+The first build downloads/checksums Bob 1.14.0 (about 219 MiB) and downloads the
+pinned official Rive dependency archive (about 211 MiB). The engine is linked by
+Defold's build service and cached locally. Normal builds use the committed `.riv`
+and need neither a Rive GUI editor nor Python packages.
 
-## CI/CD และ GitHub Pages
+Optional environment variables: `DEFOLD_JAVA`, `DEFOLD_BOB_JAR`,
+`DEFOLD_JAVA_OPTS`, `DEFOLD_BUILD_SERVER`. Keep HTTPS certificate verification
+on when configuring a proxy/trust store. Bob's native build uploads engine flags,
+standard manifests/default icons and the public Rive extension sources/libraries.
+Game Lua, SVG/RIV artwork, fonts, audio and signing keys are bundled locally.
 
-Workflow อยู่ที่ [`.github/workflows/pages.yml`](./.github/workflows/pages.yml)
+The pinned extension's shipped Java pipeline builders use an older protobuf
+method descriptor. `scripts/defold_rive_plugin.py` recompiles its three public
+Java builder classes against the pinned Bob in the ignored local dependency
+cache. The native extension sources/libraries are unchanged. This compatibility
+step runs after dependency resolution, and is repeated for a fresh archive.
 
-- Push และ PR เข้า `development` หรือ `main`: ตรวจ syntax/imports, รัน tests และสร้างไฟล์เว็บไซต์
-- Push เข้า `development`: เมื่อผ่านทั้งหมด จะ deploy ไป GitHub Pages อัตโนมัติ
-- PR และ push เข้า `main` จะตรวจสอบเท่านั้น ขณะนี้ใช้ `development` เป็นสาขาสำหรับเผยแพร่เกม
-- ใช้ `GITHUB_TOKEN` ที่ GitHub ออกให้แต่ละ run ไม่ต้องเพิ่ม PAT หรือ secret
-- ให้สิทธิ์ `pages: write` และ `id-token: write` เฉพาะ job deploy; PR ไม่สามารถ deploy ได้
+Outputs:
 
-ตั้งค่าครั้งแรกใน repository:
+- Web: `dist/defold/Nightly Bird - Rive Demo/`. Serve the full directory over
+  HTTP(S); opening `index.html` as `file://` cannot run WASM. The downloaded ZIP
+  includes a Python preview launcher and a Windows launcher.
+- Android: `dist/android/NightlyBirdRiveDemo/NightlyBirdRiveDemo.apk`.
+  Android uses **OpenGL ES only**, matching this Rive pin. The app manifest
+  excludes the Vulkan adapter; the builder verifies that the APK does not bundle
+  the VkQuality automatic backend selector.
+  **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
+  are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
+  with an increasing version code, so the same local signing key can update
+  the earlier test app. Keep `debug.keystore` and its password file local.
 
-1. เปิด **Settings → Pages → Build and deployment → Source** เลือก **GitHub Actions**
-2. หาก environment `github-pages` จำกัดสาขาที่ deploy ได้ ให้เพิ่ม `development` ใน **Settings → Environments → github-pages**
-3. หาก workflow รอบแรกหยุดเพราะยังไม่ได้เปิด Pages ให้เปิด run ใน **Actions** แล้วเลือก **Re-run failed jobs** หรือ push commit ใหม่เข้า `development`
+Web needs WebGL2. The Rive extension is pinned to commit
+`0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
 
-หลัง deploy สำเร็จ เว็บไซต์อยู่ที่ <https://arayaphong.github.io/nightly-bird/>
-ดูผลแต่ละรอบและลิงก์เว็บไซต์ได้ใน job **Deploy to GitHub Pages**
+## How it works
 
-สร้างชุดไฟล์เผยแพร่ในเครื่องด้วย:
+- `rive-demo/bird.riv`: original SVG cubic geometry, colors, layers and pivot
+  nodes, with a `BirdControls` view model and a `Bird` state machine.
+- `rive-demo/motion.lua`: continuous JS-derived phase/timing, including coasting
+  after release and immediate continuation on a renewed press.
+- `rive-demo/demo.script`: sends numeric channel values through the official
+  `rive.cmd.setViewModelInstanceNumber` API, and handles native sound callbacks.
+- `rive-demo/demo.gui_script`: independent touch/keyboard input and native GUI.
+- `rive-demo/pages.lua`: gallery selection, six-character order and route bounds.
+- `rive-demo/gallery.riv`: static vector thumbnails and cards, with native GUI
+  labels/hit targets. The first three reuse the original character SVGs.
+- `rive-demo/nature.riv`: firefly/balloon SVGs, design-A cloud SVG, and procedural
+  rain/lightning paths. `nature-motion.lua` drives wings, light, bobbing, rain
+  and the timed lightning action; `nature.script` handles its audio and status.
+  `motion.strike(state, {x=..., y=...})` accepts an exact target in cloud-local
+  vector coordinates for later bird targeting; omit it for a full-screen random
+  preview. A `lightning` message can supply `target_x` / `target_y` in the preview's
+  480 × 800 artboard coordinates (x right, y down), converted by `preview_target`.
+- `rive-demo/gestures.lua`: shared touch/mouse swipe recognition, tap cancellation
+  and multitouch exclusion so equipment taps cannot turn into page navigation.
+- `rive-demo/fish.riv`: original fish SVG layers, clipped tail segments and pivots.
+  `fish-motion.lua` reproduces cruise pose/heading; `fish.script` drives its view model.
+- `rive-demo/hawk.riv`: original flight/dive paths, feather pivots and insets,
+  plus view-model-controlled flutter of all thirteen dive blades. `hawk-rig.lua`
+  is generated from SVG metadata; `hawk-motion.lua` controls the timed pose.
+- `rive-demo/equipment.lua`: independent equipment flags and the original
+  inward field-ring phases. No equipment action resets bird motion.
+- `rive-demo/equipment-icons.riv`: original item SVGs, vector card backgrounds
+  and bound active frames, aligned with transparent GUI hit targets.
+- `rive-demo/demo.render_script`: Rive pass followed by GUI, explicitly restoring
+  stencil/color/blend state so the native vector pass does not hide the controls.
+
+Rive applies bound properties and renders vectors each frame. Lua preserves the
+original procedural animation equations rather than resampling them into an
+image sequence or resetting a timeline when input changes. There are no baked
+raster bird frames in this proof. The renderer's framebuffer is a per-frame GPU
+render target, not pre-rasterized source artwork.
+
+The Thai UI retains runtime SDF Mitr + HarfBuzz/SkriBidi. Both
+`font.runtime_generation` and the full-layout app manifest must remain enabled.
+The native Thai font proof and its visual regression checker remain available
+under `tests/font-proof.*` and `tests/defold/check_font_proof.py`.
+
+## Regenerate and verify
+
+Artwork regeneration is optional and requires Python `fontTools`:
 
 ```sh
-npm run build
+python3 scripts/defold_rive_bird.py
+python3 scripts/defold_rive_fish.py
+python3 scripts/defold_rive_hawk.py
+python3 scripts/defold_rive_gallery.py
+python3 tests/defold/check_rive_geometry.py
 ```
 
-คำสั่งนี้ล้างและสร้าง `dist/` ใหม่ โดยคัดลอกเฉพาะ `index.html`, `styles/`, `src/`, `assets/` และ `LICENSE`
-พร้อม `.nojekyll` ไม่แปลงโค้ด ESM และไม่รวม tests หรือสคริปต์พัฒนาในเว็บไซต์
-ไฟล์ใช้ relative paths จึงเปิดได้ทั้งที่ root ของเว็บและใต้ `/nightly-bird/`
+It parses the named SVG layers and their affine transforms, converts SVG arcs to
+cubic Beziers, preserves RGBA paint, linear gradients and clip paths (including
+the suit hood's even-odd opening), and writes the public Rive 7 runtime format.
+Radial paints retain the focal highlight with Rive's concentric gradient.
+`assets/svg/environment/rain-cloud.svg` is the editable design-A cloud source;
+rain uses a fixed preview layout derived from the original procedural painter. The
+SVG and generation code are the editable source; the `.riv` is the generated
+runtime asset. The original art's repository license applies; Mitr's OFL license
+is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
+licenses.
 
-## License
+Normal builds run `tests/defold/rules.lua`, `rive-motion.lua`, `equipment.lua`,
+`fish-motion.lua`, `gestures.lua`, `hawk-motion.lua`, `pages.lua` and
+`nature-motion.lua` with Bob's
+bundled LuaJIT. An additional 300-frame comparison runs the original JS animation
+and Lua model with the same mixed time steps, press/release/repress and triggers:
 
-Copyright (c) 2026 Arayaphong Traisopon
+```sh
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_hawk_parity.mjs
+```
 
-ดู [LICENSE](./LICENSE): งานภาพ เสียง และเอกสารใช้ CC BY-NC 4.0
-ซอร์สโค้ดใช้เงื่อนไข noncommercial ของโครงการ การนำไปใช้เชิงพาณิชย์ต้องได้รับอนุญาตก่อน
+An optional browser check (Playwright, Chromium and Pillow) tests the rendered
+mobile UI: a second finger toggles all four items while the first keeps flight
+held, releasing settles, and tapping again removes each item exactly once:
 
-เวอร์ชันนี้ใช้ Platform และคลาสวัตถุแบบ ESM โดยรักษางานภาพและกติกาหลัก พร้อมแก้การจมน้ำ การรับ input และการตรวจชนระหว่างเฟรม
+```sh
+python3 tests/defold/check_equipment_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_fish_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_hawk_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_gallery_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_cloud_browser.py http://127.0.0.1:8080/
+```
 
-### เวอร์ชันที่แสดงในเกม
+The fish browser check exercises actual swipes in both directions, automatic
+swimming, the turn button and upright facing, restoration of the bird page, and
+swiping over an equipment card without activating it. Fish parity compares the
+Lua channels with the actual JS painter and `Shark.afterPhysics` over 3600 frames,
+including swimming continuously across the 50-tail-cycle boundary.
+Hawk parity compares 3600 flight/dive frames with the original JS painter and
+flap update. Its browser check covers three-page navigation, dive sound,
+the three-second button/pose recovery, repeat locking and cancellation on exit.
 
-หน้าต่างเริ่มเกมแสดงเวอร์ชันจาก `package.json` และรหัส build ที่ใส่ระหว่าง `npm run build`
-บน GitHub Actions ใช้เลข run, เลข attempt และ commit 7 ตัวแรก เช่น
-`เวอร์ชัน 0.1.0 · build 42.1 · abc1234` จึงแยกการ deploy แต่ละครั้งได้แม้เวอร์ชันหลักเท่ากัน
-build บนเครื่องแสดง `local` ส่วนการเปิด source โดยตรงแสดง `เวอร์ชันพัฒนา`
+## Review and deployment
 
-บน CI ทุกโมดูล ESM ใช้ query รหัส build เดียวกัน เพื่อให้เลข build ใหม่โหลดโค้ดและค่าเสียงชุดใหม่ด้วย
+Work stays on `defold/development`. Send a **manual APK** to Arayaphong for testing
+and wait for explicit approval before creating a PR into `development` or merging.
+GitHub Actions builds only Web artifacts; it never builds/uploads APKs.
+Defold is the root project (`game.project`). The original HTML/JS application is
+under `legacy/`; run `npm --prefix legacy run check`, `npm --prefix legacy test`
+and `npm --prefix legacy run build` to verify it. `assets/svg/` is the active
+vector source; copies in `legacy/assets/` are the frozen original reference.
+`development` is the GitHub Pages deployment branch. Pages serves Defold at `/`
+and the reference application at `/legacy/`. Pushing the preview branch
+only builds a Web artifact. The pre-Defold HTML/JS snapshot is kept at
+`backup/development-before-defold-2026-10-24`.

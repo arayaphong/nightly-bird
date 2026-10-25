@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local g=require('rive-demo.gestures')
 local s=g.new()
 g.begin(s,1,350,500,nil);g.move(s,1,250,500)

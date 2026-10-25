@@ -135,6 +135,6 @@ def nature():
           'preview={x=240,y=300,scale=1.7,width=480,height=800},',
           'target={min_x=-240/1.7,max_x=240/1.7,min_y=-300/1.7,max_y=500/1.7},drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
-    (ROOT/'defold/rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
+    (ROOT/'rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 
 if __name__=='__main__':gallery();nature()

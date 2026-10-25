@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local m=require('rive-demo.motion')
 local s=m.new()
 local rest=math.pi/2
@@ -34,7 +34,7 @@ local env=setmetatable({
     rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
-setfenv(assert(loadfile('defold/rive-demo/demo.script')),env)()
+setfenv(assert(loadfile('rive-demo/demo.script')),env)()
 local demo={motion=m.new(),items=require('rive-demo.equipment').new(),width=480,height=800}
 env.on_message(demo,'chew',{})
 assert(plays==1 and stops==1)

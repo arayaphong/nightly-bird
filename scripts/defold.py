@@ -20,7 +20,7 @@ from defold_test import run as test_rules
 from defold_rive_plugin import prepare as prepare_rive_plugin
 
 ROOT = Path(__file__).resolve().parent.parent
-PROJECT = ROOT / "defold"
+PROJECT = ROOT
 OUTPUT = ROOT / "dist" / "defold"
 ANDROID_OUTPUT = ROOT / "dist" / "android"
 VERSION = "1.14.0"

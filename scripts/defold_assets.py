@@ -9,7 +9,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / 'defold/assets'
+OUT = ROOT / 'assets'
 SVG = '{http://www.w3.org/2000/svg}'
 ET.register_namespace('', SVG[1:-1])
 

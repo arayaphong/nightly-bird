@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="410 290 136 86" role="img" aria-labelledby="title">
+  <title id="title">นกแดงเคี้ยว — ปากอ้าและงับ ไม่มีแมลงในปาก</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Dedicated chewing jaw layers in bird coordinates. No insect or light effects.</desc>
+  <g id="beak-lower" data-sprite="" transform="translate(424 326)">
+    <path d="M6 4 Q36 5 69 3 Q64 16 25 22 Z" fill="#e8960e"/>
+    <path d="M16 9 Q40 12 58 8" fill="none" stroke="#c67910" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g id="beak-upper" data-sprite="" transform="translate(424 326)">
+    <path d="M-8 -26 Q33 -25 73 -8 Q78 -3 67 0 L6 5 Z" fill="#f8b51a"/>
+    <path d="M5 -18 Q33 -18 53 -10" fill="none" stroke="#ffcd50" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

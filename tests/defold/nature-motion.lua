@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local m=require('rive-demo.nature-motion')
 local s=m.new()
 for i=1,300 do
@@ -90,7 +90,7 @@ local env=setmetatable({hash=function(v) return v end,
     rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
-setfenv(assert(loadfile('defold/rive-demo/nature.script')),env)()
+setfenv(assert(loadfile('rive-demo/nature.script')),env)()
 local demo={};env.init(demo);demo.width,demo.height=480,800
 env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='firefly'});env.on_message(demo,'lightning',{});assert(plays==0)

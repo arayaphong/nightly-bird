@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 65 125 65" role="img" aria-labelledby="title">
+  <title id="title">ปืน</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="gun" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M5 74 L115 74 L115 96 L5 96 Z" fill="#5b6070" data-scorched-fill="#221f20" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M10 82 L32 82 L32 122 L10 122 Z" fill="#5b6070" data-scorched-fill="#221f20" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M10 74 L115 74 L115 81 L10 81 Z" fill="#c9ccd6" data-scorched-fill="#3a3737" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+</svg>

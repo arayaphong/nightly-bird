@@ -1,4 +1,4 @@
-package.path = './defold/?.lua;' .. package.path
+package.path = './?.lua;' .. package.path
 local rules = require('game.rules')
 local total = 0
 local function test(name, fn)

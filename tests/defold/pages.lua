@@ -1,4 +1,4 @@
-package.path='./defold/?.lua;'..package.path
+package.path='./?.lua;'..package.path
 local p=require('rive-demo.pages')
 assert(p.valid('home') and not p.index('home'))
 assert(not p.valid('invalid') and not p.neighbor('invalid',1))

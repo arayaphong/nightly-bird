@@ -1,6 +1,6 @@
 // Optional source-to-source regression: DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
 import { execFileSync } from 'node:child_process';
-import { BirdAnimation } from '../src/visuals/bird-animation.js';
+import { BirdAnimation } from '../legacy/src/visuals/bird-animation.js';
 const bird = { alive: true, flapping: false };
 const animation = new BirdAnimation(bird, { phase: 'play' }, () => .5);
 animation.blinkNext = Infinity;
@@ -14,7 +14,7 @@ for (let i = 0; i < 300; i++) {
   expected.push([animation.wingAngle, animation.wing(), animation.blinkOpen(), animation.chewAmount(),
     animation.wingMoving, animation.wingSoundRequested]);
 }
-const lua = `package.path='./defold/?.lua;'..package.path
+const lua = `package.path='./?.lua;'..package.path
 local m=require('rive-demo.motion');local s=m.new()
 for i=0,299 do
  s.held=(i>=5 and i<37) or (i>=42 and i<81) or (i>=150 and i<165)

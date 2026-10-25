@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -40 560 500" role="img" aria-labelledby="title">
+  <title id="title">นกแดง — ปีก ตา และปากแยกชิ้น</title>
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0; see ../../../LICENSE. Named groups are the game animation layers. Edit their shapes here.</desc>
+  <defs></defs>
+  <g id="wing-back" data-sprite=""  transform="translate(272 258) rotate(0)">
+      <path d=" M0 -27.6 C81.2 -69 220.4 -50.6 232 0 C236.64 36.8 92.8 57.04 0 27.6 Z" fill="#a3162f" data-scorched-fill="#320f12" fill-rule="nonzero" opacity="1" transform="matrix(-0.88295 -0.46947 0.46947 -0.88295 0 0)"/>
+      <path d=" M0 -23.4 C66.5 -58.5 180.5 -42.9 190 0 C193.8 31.2 76 48.36 0 23.4 Z" fill="#8c1028" data-scorched-fill="#2d0e11" fill-rule="nonzero" opacity="1" transform="matrix(-0.97815 -0.20791 0.20791 -0.97815 0 8)"/>
+      <path d=" M0 -18.6 C46.2 -46.5 125.4 -34.1 132 0 C134.64 24.8 52.8 38.44 0 18.6 Z" fill="#a3162f" data-scorched-fill="#320f12" fill-rule="nonzero" opacity="1" transform="matrix(-0.0349 -0.99939 0.99939 -0.0349 8 -6)"/>
+  </g>
+  <g id="body" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M0 -16.8 C41.3 -42 112.1 -30.8 118 0 C120.36 22.4 47.2 34.72 0 16.8 Z" fill="#a3162f" data-scorched-fill="#320f12" fill-rule="nonzero" opacity="1" transform="matrix(-0.93969 -0.34202 0.34202 -0.93969 128 332)"/>
+      <path d=" M0 -15.6 C39.2 -39 106.4 -28.6 112 0 C114.24 20.8 44.8 32.24 0 15.6 Z" fill="#8c1028" data-scorched-fill="#2d0e11" fill-rule="nonzero" opacity="1" transform="matrix(-0.99939 -0.0349 0.0349 -0.99939 128 340)"/>
+      <path d=" M0 -13.2 C32.2 -33 87.4 -24.2 92 0 C93.84 17.6 36.8 27.28 0 13.2 Z" fill="#a3162f" data-scorched-fill="#320f12" fill-rule="nonzero" opacity="1" transform="matrix(-0.9703 0.24192 -0.24192 -0.9703 132 348)"/>
+      <path d=" M0 -6.6 C20.3 -16.5 55.1 -12.1 58 0 C59.16 8.8 23.2 13.64 0 6.6 Z" fill="#f8b51a" data-scorched-fill="#45320e" fill-rule="nonzero" opacity="1" transform="matrix(-0.86603 0.5 -0.5 -0.86603 188 392)"/>
+      <path d=" M0 -6 C17.5 -15 47.5 -11 50 0 C51 8 20 12.4 0 6 Z" fill="#e8a012" data-scorched-fill="#412d0c" fill-rule="nonzero" opacity="1" transform="matrix(-0.99939 0.0349 -0.0349 -0.99939 188 392)"/>
+      <path d=" M0 -5.4 C16.1 -13.5 43.7 -9.9 46 0 C46.92 7.2 18.4 11.16 0 5.4 Z" fill="#f8b51a" data-scorched-fill="#45320e" fill-rule="nonzero" opacity="1" transform="matrix(-0.61566 0.78801 -0.78801 -0.61566 188 392)"/>
+      <path d=" M0 -6.6 C20.3 -16.5 55.1 -12.1 58 0 C59.16 8.8 23.2 13.64 0 6.6 Z" fill="#f8b51a" data-scorched-fill="#45320e" fill-rule="nonzero" opacity="1" transform="matrix(-0.86603 0.5 -0.5 -0.86603 214 404)"/>
+      <path d=" M0 -6 C17.5 -15 47.5 -11 50 0 C51 8 20 12.4 0 6 Z" fill="#e8a012" data-scorched-fill="#412d0c" fill-rule="nonzero" opacity="1" transform="matrix(-0.99939 0.0349 -0.0349 -0.99939 214 404)"/>
+      <path d=" M0 -5.4 C16.1 -13.5 43.7 -9.9 46 0 C46.92 7.2 18.4 11.16 0 5.4 Z" fill="#f8b51a" data-scorched-fill="#45320e" fill-rule="nonzero" opacity="1" transform="matrix(-0.61566 0.78801 -0.78801 -0.61566 214 404)"/>
+      <path d=" M95 330 C150 298 220 254 300 248 C362 243 422 252 452 292 C472 334 440 382 380 396 C300 414 210 410 165 396 C130 382 110 356 95 330" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M160 352 C240 334 330 328 425 338 C414 380 372 400 300 406 C236 410 186 398 160 380 Z" fill="#ee7676" data-scorched-fill="#422422" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M180 352 C250 336 330 332 418 340 C404 370 366 386 300 390 C240 393 200 384 180 370 Z" fill="#f8908e" data-scorched-fill="#452a27" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M96 332 C165 300 262 292 332 326 C262 346 176 356 118 350 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="wing-front-0" data-sprite="" data-pivot-x="300" data-pivot-y="268" data-role="wing-front" transform="translate(300 268) rotate(-128)">
+      <path d=" M0 -31.2 C82.6 -78 224.2 -57.2 236 0 C240.72 41.6 94.4 64.48 0 31.2 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="wing-front-1" data-sprite="" data-pivot-x="300" data-pivot-y="268" data-role="wing-front" transform="translate(300 274) rotate(-142)">
+      <path d=" M0 -28.8 C74.9 -72 203.3 -52.8 214 0 C218.28 38.4 85.6 59.52 0 28.8 Z" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="wing-front-2" data-sprite="" data-pivot-x="300" data-pivot-y="268" data-role="wing-front" transform="translate(304 264) rotate(-112)">
+      <path d=" M0 -25.8 C66.5 -64.5 180.5 -47.3 190 0 C193.8 34.4 76 53.32 0 25.8 Z" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="wing-front-3" data-sprite="" data-pivot-x="300" data-pivot-y="268" data-role="wing-front" transform="translate(300 272) rotate(-150)">
+      <path d=" M0 -21 C45.5 -52.5 123.5 -38.5 130 0 C132.6 28 52 43.4 0 21 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="crest" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M0 -9 C16.1 -22.5 43.7 -16.5 46 0 C46.92 12 18.4 18.6 0 9 Z" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(-0.37461 -0.92718 0.92718 -0.37461 352 226)"/>
+      <path d=" M0 -7.8 C14 -19.5 38 -14.3 40 0 C40.8 10.4 16 16.12 0 7.8 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(0.17365 -0.98481 0.98481 0.17365 372 222)"/>
+      <path d=" M0 -7.8 C14 -19.5 38 -14.3 40 0 C40.8 10.4 16 16.12 0 7.8 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(-0.76604 -0.64279 0.64279 -0.76604 340 236)"/>
+  </g>
+  <g id="cheek" data-sprite=""  transform="translate(386 282) rotate(0)">
+      <path d=" M82 0 A82 74 0 0 1 -82 0 A82 74 0 0 1 82 0" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-left" data-sprite=""  transform="translate(384 292) rotate(0)">
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M30.5 -9 A9.5 9.5 0 0 1 11.5 -9 A9.5 9.5 0 0 1 30.5 -9" fill="#1b1414" data-scorched-fill="#140f0c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-left-white" data-sprite=""  transform="translate(384 292) rotate(0)" display="none">
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-left-dead" data-sprite=""  transform="translate(384 292) rotate(0)" display="none">
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M30 0 A30 33 0 0 1 -30 0 A30 33 0 0 1 30 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-18.6 -18.6 L18.6 18.6 M18.6 -18.6 L-18.6 18.6" fill="none" stroke="#1b1414" data-scorched-stroke="#140f0c" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-left-lid" data-sprite=""  transform="translate(384 292) rotate(0)" display="none">
+      <path d=" M-27 0 Q0 11.55 27 0" fill="none" stroke="#a3162f" data-scorched-stroke="#320f12" stroke-width="5" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-right" data-sprite=""  transform="translate(438 287) rotate(0)">
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M13 -7 A6 6 0 0 1 1 -7 A6 6 0 0 1 13 -7" fill="#1b1414" data-scorched-fill="#140f0c" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-right-white" data-sprite=""  transform="translate(438 287) rotate(0)" display="none">
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-right-dead" data-sprite=""  transform="translate(438 287) rotate(0)" display="none">
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="#fbfaf7" data-scorched-fill="#45413e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M14 0 A14 20 0 0 1 -14 0 A14 20 0 0 1 14 0" fill="none" stroke="#5a1418" data-scorched-stroke="#220f0d" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M-8.68 -8.68 L8.68 8.68 M8.68 -8.68 L-8.68 8.68" fill="none" stroke="#1b1414" data-scorched-stroke="#140f0c" stroke-width="4" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eye-right-lid" data-sprite=""  transform="translate(438 287) rotate(0)" display="none">
+      <path d=" M-12.6 0 Q0 7 12.6 0" fill="none" stroke="#a3162f" data-scorched-stroke="#320f12" stroke-width="5" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="eyebrows" data-sprite=""  transform="translate(0 0) rotate(0)">
+      <path d=" M415.66911 250.26811 A34 9 -8 0 1 348.33089 259.73189 A34 9 -8 0 1 415.66911 250.26811" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+      <path d=" M453.65036 260.67341 A16 6 -12 0 1 422.34964 267.32659 A16 6 -12 0 1 453.65036 260.67341" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="mouth" data-sprite=""  transform="translate(0 0) rotate(0)" display="none">
+      <path d=" M0 0 L100 0 L0 100" fill="#5a1418" data-scorched-fill="#220f0d" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
+  </g>
+  <g id="beak-upper" data-sprite=""  transform="translate(424 326) rotate(0)">
+      <path d=" M416 300 L502 318 L430 332 Z" fill="#f8b51a" data-scorched-fill="#45320e" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 -424 -326)"/>
+  </g>
+  <g id="beak-lower" data-sprite=""  transform="translate(424 326) rotate(0)">
+      <path d=" M430 332 L500 320 L442 350 Z" fill="#e8960e" data-scorched-fill="#412b0b" fill-rule="nonzero" opacity="1" transform="matrix(1 0 0 1 -424 -326)"/>
+  </g>
+</svg>

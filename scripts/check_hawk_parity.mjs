@@ -1,9 +1,9 @@
 // Compare rendered pose channels with the actual JS painter and flap update.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { createHawkPainter } from '../src/visuals/hawk-painter.js';
-import { Hawk } from '../src/objects/hawk.js';
-const rig = JSON.parse(readFileSync(new URL('../defold/rive-demo/hawk-rig.json', import.meta.url)));
+import { createHawkPainter } from '../legacy/src/visuals/hawk-painter.js';
+import { Hawk } from '../legacy/src/objects/hawk.js';
+const rig = JSON.parse(readFileSync(new URL('../rive-demo/hawk-rig.json', import.meta.url)));
 const hawk = { size: 100, x: 200, y: 400, flap: 0, ang: 0, dir: 1, mode: 'patrol',
   vx: 100, vy: 0, body: { enabled: true }, trail: [] };
 const session = { time: 0 };
@@ -30,7 +30,7 @@ for (let i = 0; i < 3600; i++) {
     remaining > 0 ? drawn[blade.id].scaleX : 0);
   expected.push(row);
 }
-const lua = `package.path='./defold/?.lua;'..package.path
+const lua = `package.path='./?.lua;'..package.path
 local m=require('rive-demo.hawk-motion');local s=m.new()
 local triggers={};for _,i in ipairs({30,60,260,330,700,1300,2000,2600}) do triggers[i]=true end
 for i=0,3599 do

@@ -1,13 +1,15 @@
 node_modules/
 dist/
 .cache/
-defold/build/
-defold/.internal/
-defold/.externalToolBuilders/
-defold/.settings/
-defold/debug.keystore
-defold/debug.keystore.pass.txt
+build/
+.internal/
+.externalToolBuilders/
+.settings/
+debug.keystore
+debug.keystore.pass.txt
 
 # Python CLI caches
 __pycache__/
 *.py[cod]
+
+legacy/dist/

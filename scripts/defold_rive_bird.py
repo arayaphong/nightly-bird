@@ -176,7 +176,7 @@ def start_file(channels,name,width,height,view_model='BirdControls'):
 
 def finish_file(f,name,state_machine='Bird'):
     f.obj(53,{55:state_machine});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
-    dest=ROOT/f'defold/rive-demo/{name}.riv';dest.write_bytes(f.data)
+    dest=ROOT/f'rive-demo/{name}.riv';dest.write_bytes(f.data)
     print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
 
 ITEMS=('magnet','gun','helmet','suit')
@@ -266,6 +266,6 @@ def build():
                     child.set('data-mouth','1');child.set('transform','');child.set('d','M0 0 L74 -8 L70 6 Z')
                 draw_path(f,child,node)
     finish_file(f,'bird')
-    (ROOT/'defold/rive-demo/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
+    (ROOT/'rive-demo/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
     icons()
 if __name__=='__main__':build()

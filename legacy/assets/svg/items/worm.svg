@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 7" role="img" aria-label="หนอน">
+  <desc>Copyright (c) 2026 Arayaphong Traisopon. CC BY-NC 4.0.</desc>
+  <defs><pattern id="segments" width="4" height="7" patternUnits="userSpaceOnUse"><rect width="3" height="7" fill="#ff9fb4"/><rect x="3" width="1" height="7" fill="#e2708a"/></pattern></defs>
+  <rect width="16" height="7" rx="3.5" fill="url(#segments)"/>
+</svg>
