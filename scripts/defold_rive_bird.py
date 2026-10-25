@@ -62,7 +62,10 @@ def contours(d,t):
     def flush(closed):
         nonlocal vertices
         if not vertices:return
-        if len(vertices)>1 and math.dist(vertices[0]['p'],vertices[-1]['p'])<1e-5:
+        # Only a closed Rive path reconnects its final vertex to the first.
+        # SVG ellipses here return to the start without Z: keep their endpoint
+        # or the final curved segment becomes a straight fill/stroke edge.
+        if closed and len(vertices)>1 and math.dist(vertices[0]['p'],vertices[-1]['p'])<1e-5:
             vertices[0]['i']=vertices[-1]['i'];vertices.pop()
         paths.append((vertices,closed));vertices=[]
     for op,points in pen.value:
