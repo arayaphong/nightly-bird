@@ -1,12 +1,21 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.4.4 is an isolated, interactive Rive bird and equipment proof. The bird is drawn from
+Version 0.5.0 is an interactive Rive bird/equipment and swimming-fish proof. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
 
 ## Try it
 
+- Swipe **left** from the bird to open the fish test; swipe **right** to return.
+  Mouse drags and the Right/Left arrow keys also navigate. The fish page has
+  exactly one action button, **กลับตัว** (turn), also available on **Space**.
+  The fish swims automatically: tail, fin, gill and body wobble follow the JS
+  cruise pose. Turning follows the original smoothed heading and belly-down
+  rendering rule, without restarting the swim phase. It stays centered for inspection.
+- Bird input/audio stops when leaving its page; equipment stays equipped on return.
+  Button taps activate on release; a horizontal swipe over a button does not
+  activate it. Multitouch stays dedicated to the bird's independent controls.
 - Hold the screen or **Space** to flap. Release to finish the current revolution
   and settle at the same rest angle as the original JavaScript bird.
 - Press **Blink** / **B** to blink once, and **Chew** / **C** to chew three times.
@@ -74,7 +83,7 @@ Outputs:
   the VkQuality automatic backend selector.
   **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
   are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
-  version code 11, so the same local signing key can update the earlier test app.
+  version code 12, so the same local signing key can update the earlier test app.
 
 Web needs WebGL2. The Rive extension is pinned to commit
 `0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
@@ -88,6 +97,10 @@ Web needs WebGL2. The Rive extension is pinned to commit
 - `rive-demo/demo.script`: sends numeric channel values through the official
   `rive.cmd.setViewModelInstanceNumber` API, and handles native sound callbacks.
 - `rive-demo/demo.gui_script`: independent touch/keyboard input and native GUI.
+- `rive-demo/gestures.lua`: shared touch/mouse swipe recognition, tap cancellation
+  and multitouch exclusion so equipment taps cannot turn into page navigation.
+- `rive-demo/fish.riv`: original fish SVG layers, clipped tail segments and pivots.
+  `fish-motion.lua` reproduces cruise pose/heading; `fish.script` drives its view model.
 - `rive-demo/equipment.lua`: independent equipment flags and the original
   inward field-ring phases. No equipment action resets bird motion.
 - `rive-demo/equipment-icons.riv`: original item SVGs, vector card backgrounds
@@ -112,6 +125,7 @@ Artwork regeneration is optional and requires Python `fontTools`:
 
 ```sh
 python3 scripts/defold_rive_bird.py
+python3 scripts/defold_rive_fish.py
 python3 tests/defold/check_rive_geometry.py
 ```
 
@@ -123,12 +137,14 @@ runtime asset. The original art's repository license applies; Mitr's OFL license
 is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
 licenses.
 
-Normal builds run `tests/defold/rules.lua`, `rive-motion.lua` and `equipment.lua` with Bob's
+Normal builds run `tests/defold/rules.lua`, `rive-motion.lua`, `equipment.lua`,
+`fish-motion.lua` and `gestures.lua` with Bob's
 bundled LuaJIT. An additional 300-frame comparison runs the original JS animation
 and Lua model with the same mixed time steps, press/release/repress and triggers:
 
 ```sh
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
 ```
 
 An optional browser check (Playwright, Chromium and Pillow) tests the rendered
@@ -137,13 +153,20 @@ held, releasing settles, and tapping again removes each item exactly once:
 
 ```sh
 python3 tests/defold/check_equipment_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_fish_browser.py http://127.0.0.1:8080/
 ```
+
+The fish browser check exercises actual swipes in both directions, automatic
+swimming, the turn button and upright facing, restoration of the bird page, and
+swiping over an equipment card without activating it. Fish parity compares the
+Lua channels with the actual JS painter and `Shark.afterPhysics` over 3600 frames,
+including swimming continuously across the 50-tail-cycle boundary.
 
 ## Review and deployment
 
 Work stays on `defold/development`. Send a **manual APK** to Arayaphong for testing
 and wait for explicit approval before creating a PR into `development` or merging.
 GitHub Actions builds only Web artifacts; it never builds/uploads APKs.
-`development` currently retains the pre-Defold HTML/JS game and publishes that to
-GitHub Pages. The original commit is also kept at
+`development` is the GitHub Pages deployment branch. Pushing the preview branch
+only builds a Web artifact. The pre-Defold HTML/JS snapshot is kept at
 `backup/development-before-defold-2026-10-24`.

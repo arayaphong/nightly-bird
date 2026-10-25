@@ -16,7 +16,7 @@ local function play_wing(self)
     end)
 end
 function init(self)
-    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false
+    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.page='bird'
     self.vm=rive.get_view_model_instance('#bird')
     -- The command-queue view model may become available after initialization.
     window.set_listener(function(self,event)
@@ -43,6 +43,7 @@ function update(self,dt)
     end
     motion.step(self.motion,math.min(dt,.033))
     equipment.step(self.items,dt)
+    if self.page=='fish' then return end
     if not self.vm then self.vm=rive.get_view_model_instance('#bird') end
     if not self.vm then return end
     local values=motion.values(self.motion)
@@ -72,6 +73,17 @@ function update(self,dt)
     end
 end
 function on_message(self,id,message)
+    if id==hash('page') then
+        if message.name~='bird' and message.name~='fish' then return end
+        self.page=message.name
+        clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
+        self.motion.wants_sound=false
+        msg.post('#bird',self.page=='bird' and 'enable' or 'disable')
+        msg.post('/icons#icons',self.page=='bird' and 'enable' or 'disable')
+        msg.post('/fish#script','active',{active=self.page=='fish'})
+        return
+    end
+    if self.page=='fish' then return end
     if id==hash('flight') then self.motion.held=message.held
     elseif id==hash('blink') then self.motion.blink=.18;print('BLINK_TRIGGER')
     elseif id==hash('chew') then

@@ -151,17 +151,17 @@ def asset(name):
     svg=ET.parse(ROOT/f'assets/svg/items/{name}.svg').getroot()
     return svg,{g.get('id'):g for g in svg.iter() if g.get('id')}
 
-def start_file(channels,name,width,height):
+def start_file(channels,name,width,height,view_model='BirdControls'):
     f=File();f.obj(23)
-    f.obj(435,{557:'BirdControls'})
+    f.obj(435,{557:view_model})
     for channel in channels:f.obj(431,{557:channel})
     f.obj(437,{4:'Default',566:0})
     for i,value in enumerate(channels.values()):f.obj(442,{554:i,575:value})
     f.obj(1,{4:name,7:width,8:height,583:0,236:0},True)
     return f
 
-def finish_file(f,name):
-    f.obj(53,{55:'Bird'});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
+def finish_file(f,name,state_machine='Bird'):
+    f.obj(53,{55:state_machine});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
     dest=ROOT/f'defold/rive-demo/{name}.riv';dest.write_bytes(f.data)
     print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
 

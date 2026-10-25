@@ -9,3 +9,5 @@ key_trigger { input: KEY_1 action: "magnet" }
 key_trigger { input: KEY_2 action: "gun" }
 key_trigger { input: KEY_3 action: "helmet" }
 key_trigger { input: KEY_4 action: "suit" }
+key_trigger { input: KEY_RIGHT action: "next_page" }
+key_trigger { input: KEY_LEFT action: "previous_page" }
