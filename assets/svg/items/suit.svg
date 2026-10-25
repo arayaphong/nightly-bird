@@ -23,7 +23,5 @@
   <g id="hood" data-sprite=""  transform="translate(0 0) rotate(0)">
       <g clip-path="url(#clip-2)"><path d=" M478 280 A96 88 0 0 1 286 280 A96 88 0 0 1 478 280 L474 292 A70 64 0 0 1 334 292 A70 64 0 0 1 474 292" fill="url(#paint-3)" fill-rule="evenodd" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
       <g clip-path="url(#clip-2)"><path d=" M474 292 A70 64 0 0 1 334 292 A70 64 0 0 1 474 292" fill="none" stroke="#1d4f96" data-scorched-stroke="#141c29" stroke-width="5" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/></g>
-      <path d=" M0 -7.8 C14 -19.5 38 -14.3 40 0 C40.8 10.4 16 16.12 0 7.8 Z" fill="#ff2d3a" data-scorched-fill="#461415" fill-rule="nonzero" opacity="1" transform="matrix(-0.37461 -0.92718 0.92718 -0.37461 352 198)"/>
-      <path d=" M0 -6.6 C11.9 -16.5 32.3 -12.1 34 0 C34.68 8.8 13.6 13.64 0 6.6 Z" fill="#f0202f" data-scorched-fill="#431112" fill-rule="nonzero" opacity="1" transform="matrix(0.17365 -0.98481 0.98481 0.17365 372 194)"/>
   </g>
 </svg>
