@@ -37,7 +37,7 @@ export function createBirdPainter(view, cx, assets) {
       });
       cx.restore();
     }
-    if (!(bird.suit && bird.alive)) draw('crest');
+    if (!((bird.suit || bird.helmet) && bird.alive)) draw('crest');
     draw('cheek', {
       y: 282 + chew * 3,
       scaleX: 1 + chew * 0.055,
