@@ -2,9 +2,10 @@ local motion=require('shared.characters.hawk.motion')
 local function publish(self)
     local busy=self.motion.remaining>0
     local seconds=math.ceil(self.motion.remaining)
-    if busy~=self.busy or seconds~=self.seconds or self.motion.direction~=self.status_direction then
+    if busy~=self.busy or seconds~=self.seconds or self.motion.direction~=self.status_direction or self.motion.turning~=self.status_turning then
         self.busy,self.seconds,self.status_direction=busy,seconds,self.motion.direction
-        msg.post('/ui#gui','hawk_status',{busy=busy,seconds=seconds,direction=self.motion.direction})
+        self.status_turning=self.motion.turning
+        msg.post('/ui#gui','hawk_status',{busy=busy,seconds=seconds,direction=self.motion.direction,turning=self.motion.turning})
     end
 end
 local function cancel(self)

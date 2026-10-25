@@ -159,7 +159,7 @@ function on_message(self,id,message)
     elseif id==hash('fish_status') then gui.set_text(self.fish_status,message.text)
     elseif id==hash('hawk_status') then
         self.hawk_busy=message.busy
-        local facing=message.direction==1 and 'หันขวา' or 'หันซ้าย'
+        local facing=message.turning and 'กำลังกลับตัว' or (message.direction==1 and 'หันขวา' or 'หันซ้าย')
         gui.set_text(self.hawk_status,(message.busy and 'กำลังพุ่งตัว' or 'กำลังบิน')..' · '..facing)
         gui.set_text(self.dive_label,message.busy and ('กำลังพุ่ง · '..message.seconds) or 'พุ่งตัว')
         gui.set_color(self.dive,message.busy and vmath.vector4(.15,.23,.38,1) or ACCENT)

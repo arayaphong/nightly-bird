@@ -6,6 +6,20 @@ assert(s.direction==1)
 local before_time,before_flap=s.time,s.flap
 m.turn(s);assert(s.direction==-1 and s.time==before_time and s.flap==before_flap)
 m.turn(s);assert(s.direction==1)
+-- Match the shark preview throughout turns, including reversals in mid-turn
+-- and slow frames. The hawk's dive/flap clock remains independent.
+local fish=require('shared.characters.fish.motion')
+local h,f=m.new(),fish.new()
+for i=1,240 do
+    if i==5 or i==19 or i==30 then
+        local before=h.angle;m.turn(h);fish.turn(f);near(h.angle,before)
+    end
+    local dt=({1/60,.025,.013,.1})[(i-1)%4+1]
+    m.step(h,dt);fish.step(f,math.min(dt,.033))
+    near(h.angle,f.angle);near(h.target,f.target)
+    assert(h.direction==f.direction and h.turning==f.turning)
+end
+assert(not h.turning and m.values(h).belly==-1 and math.abs(h.angle-math.pi)<.001)
 local phase=s.flap;assert(m.dive(s));near(s.flap,phase)
 m.step(s,2.999);assert(s.remaining>0 and m.values(s).dive_visible==1)
 assert(not m.dive(s),'Repeated input extended the dive')
@@ -18,7 +32,7 @@ assert(m.dive(s));m.step(s,.75)
 local remaining,flap,time=s.remaining,s.flap,s.time
 m.turn(s);assert(s.direction==-1 and s.remaining==remaining and s.flap==flap and s.time==time)
 m.step(s,remaining);assert(s.remaining==0 and s.direction==-1)
--- Exercise controller audio/status and presentation mirroring without a GPU.
+-- Exercise controller audio/status and the Rive rotation/belly bindings.
 local plays=0;local status;local scale;local width,height=480,800;local numbers={}
 local env=setmetatable({hash=function(v) return v end,
     msg={post=function(_,id,data) if id=='hawk_status' then status=data end end},
@@ -39,15 +53,20 @@ local phase_before=demo.motion.flap
 env.on_message(demo,'turn',{})
 assert(status.direction==-1 and status.busy and status.seconds==3 and plays==1)
 assert(demo.motion.flap==phase_before and demo.motion.remaining==3)
-env.update(demo,0);assert(numbers.facing==-1)
-width,height=960,1600;env.update(demo,0);near(scale.x,.36);near(scale.y,.36);assert(numbers.facing==-1)
+env.update(demo,0);assert(numbers.angle==0 and numbers.belly==1 and status.turning)
+width,height=960,1600;env.update(demo,0);near(scale.x,.36);near(scale.y,.36);assert(numbers.angle==0)
 env.on_message(demo,'dive',{});assert(plays==1)
-env.update(demo,2);assert(status.busy and status.seconds==1)
+env.update(demo,2);assert(status.busy and status.seconds==1 and numbers.angle>0 and numbers.angle<math.pi)
 env.update(demo,1);assert(not status.busy and status.seconds==0 and demo.motion.direction==-1)
+for i=1,150 do env.update(demo,1/120) end
+assert(not status.turning and numbers.belly==-1 and math.abs(numbers.angle-math.pi)<.001 and plays==1)
 env.on_message(demo,'dive',{});assert(plays==2)
 env.on_message(demo,'active',{active=false});assert(not status.busy and demo.motion.remaining==0 and demo.motion.direction==-1)
 env.on_message(demo,'active',{active=true});env.on_message(demo,'dive',{})
 env.on_message(demo,'cancel',{});assert(not status.busy and demo.motion.remaining==0)
 env.on_message(demo,'turn',{});env.update(demo,0)
-assert(status.direction==1 and plays==3 and numbers.facing==1);near(scale.x,.36);near(scale.y,.36)
-print('PASS hawk: turn in flight/dive, phase/timer continuity, mirroring/resize, recovery, one sound and cancellation')
+assert(status.direction==1 and status.turning and plays==3 and numbers.belly==-1)
+for i=1,150 do env.update(demo,1/120) end
+assert(not status.turning and math.abs(numbers.angle)<.001 and numbers.belly==1 and plays==3)
+near(scale.x,.36);near(scale.y,.36)
+print('PASS hawk: shark-style rotation, mid-turn reversals, independent dive timer/phase, Rive bindings and audio')

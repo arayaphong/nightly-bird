@@ -44,14 +44,16 @@ with sync_playwright() as p:
     if max(im.getpixel((x,y)))>70:ys.append(y)
   assert ys,'Hawk artwork is missing'
   return max(ys)-min(ys)
- def beak_x(im):
-  a,z=pt(30,630),pt(450,320);xs=[]
+ def beak(im):
+  a,z=pt(30,630),pt(450,320);points=[]
   for y in range(round(a[1]),round(z[1])):
    for x in range(round(a[0]),round(z[0])):
     red,green,blue=im.getpixel((x,y))
-    if red>180 and 90<green<225 and blue<100 and red>green+15:xs.append(x)
-  assert len(xs)>15,'Hawk beak/feet artwork missing'
-  return sum(xs)/len(xs)
+    if red>180 and 90<green<225 and blue<100 and red>green+15:points.append((x,y))
+  assert len(points)>15,'Hawk beak/feet artwork missing'
+  return tuple(sum(p[i] for p in points)/len(points) for i in (0,1))
+ def beak_x(im):return beak(im)[0]
+ def beak_y(im):return beak(im)[1]
  for x,y in ((240,475),(240,500)):
   touch('touchStart',x,y);frames(3);touch('touchEnd');frames(6)
  touch('touchStart',90,500);frames(4);touch('touchEnd');frames(6)
@@ -60,12 +62,14 @@ with sync_playwright() as p:
  assert beak_x(flight)>pt(240,470)[0]+15,'Hawk did not start facing right'
  x,y=pt(190+20*2,12);assert flight.getpixel((round(x),round(y)))[1]>200,'Third indicator not selected'
  page.evaluate('window.__audio=[]')
- tap(130);frames(5);left=snap('rive-hawk-flight-left.png')
+ tap(130);frames(2);mid=snap('rive-hawk-turn-mid.png')
+ assert abs(beak_y(mid)-beak_y(flight))>8,'Turn snapped horizontally instead of rotating'
+ frames(75);left=snap('rive-hawk-flight-left.png')
  assert beak_x(left)<pt(240,470)[0]-15,'Turn button did not face left'
  assert page.evaluate('window.__audio.reduce((a,b)=>a+b,0)')<1e-6,'Turning played dive audio'
- page.keyboard.down('t');frames(2);page.keyboard.up('t');frames(4)
+ page.keyboard.down('t');frames(2);page.keyboard.up('t');frames(75)
  assert beak_x(snap('rive-hawk-keyboard-right.png'))>pt(240,470)[0]+15,'T did not face right'
- tap(130);frames(3)
+ tap(130);frames(75)
  page.evaluate('window.__audio=[]')
  tap();started=time.monotonic()
  # Repeat immediately while the action is definitely active. Doing this after
@@ -74,8 +78,10 @@ with sync_playwright() as p:
  left_dive=snap('rive-hawk-dive-left.png')
  assert not ready(left_dive) and beak_x(left_dive)<pt(240,470)[0]-15,'Left-facing dive did not render'
  tap(130);frames(2)
- dive=snap('rive-hawk-dive.png');assert not ready(dive),'Button did not enter busy state'
- assert beak_x(dive)>pt(240,470)[0]+15,'Turn was not available during the dive'
+ dive_mid=snap('rive-hawk-dive-turn-mid.png');assert not ready(dive_mid),'Button did not enter busy state'
+ assert abs(beak_y(dive_mid)-beak_y(left_dive))>8,'Dive turn did not rotate through an intermediate pose'
+ dive=left_dive
+ (ART/'rive-hawk-dive.png').write_bytes((ART/'rive-hawk-dive-left.png').read_bytes())
  assert art_height(dive)<art_height(flight)*.8,'Hawk did not switch to the folded dive pose'
  # Exact three-second simulation timing and repeat locking are asserted by the
  # controller/unit test. Allow rendering overhead in this software-GPU check.
@@ -100,6 +106,6 @@ with sync_playwright() as p:
  swipe(70,400);swipe(70,400);snap('rive-hawk-back-to-bird.png')
  errors=[s for s in logs if any(t in s for t in ['ERROR:','PAGEERROR','GL_INVALID'])]
  assert not errors,errors
- result={'three_page_swipe':'passed','turn_button_and_keyboard':'passed','turn_during_dive':'passed','timed_dive':'passed','recovery_observed_seconds':elapsed,'repeat_lock':'passed','sound':'passed','leave_cancels':'passed','errors':errors}
+ result={'three_page_swipe':'passed','turn_button_and_keyboard':'passed','rotating_intermediate_pose':'passed','turn_during_dive':'passed','timed_dive':'passed','recovery_observed_seconds':elapsed,'repeat_lock':'passed','sound':'passed','leave_cancels':'passed','errors':errors}
  (ART/'rive-hawk-browser-test.json').write_text(json.dumps(result,indent=2))
  print(json.dumps(result));b.close()

@@ -25,12 +25,13 @@ def build():
                 data.update(pivotX=float(part.get('data-pivot-x')),pivotY=float(part.get('data-pivot-y')),
                             inset=float(part.get('data-inset')))
                 rig['wings'].append(data)
-    channels={'flight_visible':1,'dive_visible':0,'wing_rotation':0,'facing':1}
+    channels={'flight_visible':1,'dive_visible':0,'wing_rotation':0,'angle':0,'belly':1}
     for i,blade in enumerate(rig['blades']):
         channels[f'blade_{i}_angle']=blade['angle'];channels[f'blade_{i}_scale']=1
     keys=list(channels)
     f=start_file(channels,'NightlyHawk',2000,2000,'HawkControls')
-    facing=f.node('facing',x=1000,y=1000);f.bind(16,keys.index('facing'))
+    facing=f.node('facing',x=1000,y=1000)
+    f.bind(15,keys.index('angle'));f.bind(17,keys.index('belly'))
     for name,anchor,opacity in [('hawk-dive',(700,650),0),('hawk',(780,760),1)]:
         svg=sources[name];definitions={e.get('id'):e for e in svg.iter() if e.get('id')}
         root=f.node(name+'-origin',facing,x=-anchor[0],y=-anchor[1],opacity=opacity)

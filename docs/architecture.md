@@ -31,8 +31,10 @@ The other Studio categories likewise mark their test suites as future work.
 - `shared/characters/hawk/`: flight/dive vector, feather rig and timed motion.
   Studio's **กลับตัว** button or **T** reverses its facing in either pose without
   resetting wing phase, extending the three-second dive or replaying its sound.
-  A bound Rive `facing` channel mirrors the same vector paths around the artboard
-  center. The preview keeps the chosen direction when returning to the page.
+  The shared `shared/motion/heading.lua` shark turn interpolates the heading;
+  Rive `angle` and `belly` channels rotate both poses around the artboard center
+  using the shark's belly-down rule. Mid-turn reversals preserve the current
+  angle, and the preview retains turn state when returning to the page.
   Dive feathers share the SVG `wing-root-cut` clipping outline. This keeps the
   whole root edge on one continuous curve while individual feathers flutter;
   edit that outline to change the cut across the entire folded wing.
