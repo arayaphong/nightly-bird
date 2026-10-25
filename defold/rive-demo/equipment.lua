@@ -12,7 +12,7 @@ function M.values(s)
     local v={}
     for _,key in ipairs(M.keys) do v['equip_'..key]=s[key] and 1 or 0 end
     v.equip_coat=v.equip_suit;v.equip_hood=v.equip_suit;v.equip_field=v.equip_magnet
-    v.crest_visible=1-v.equip_suit
+    v.crest_visible=(s.helmet or s.suit) and 0 or 1
     for i=0,2 do
         -- Same inward movement and phase offsets as items-painter.js.
         local phase=(s.time*.7+i/3)%1

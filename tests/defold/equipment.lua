@@ -11,14 +11,14 @@ for mask=0,15 do
     local v=equipment.values(s)
     for i,key in ipairs(equipment.keys) do near(v['equip_'..key],math.floor(mask/2^(i-1))%2) end
     near(v.equip_coat,v.equip_suit);near(v.equip_hood,v.equip_suit);near(v.equip_field,v.equip_magnet)
-    near(v.crest_visible,1-v.equip_suit)
+    near(v.crest_visible,mask<4 and 1 or 0)
     local bird=motion.new();bird.held=true;bird.blink=.18;bird.chew=1.48
     for i=1,70 do motion.step(bird,1/60);equipment.step(s,1/60) end
     assert(bird.moving and bird.wants_sound)
     for i,key in ipairs(equipment.keys) do near(equipment.values(s)['equip_'..key],v['equip_'..key]) end
     for _,key in ipairs(equipment.keys) do
         local before=s[key];assert(equipment.toggle(s,key)==not before)
-        near(equipment.values(s).crest_visible,s.suit and 0 or 1)
+        near(equipment.values(s).crest_visible,(s.helmet or s.suit) and 0 or 1)
         equipment.toggle(s,key)
         near(equipment.values(s)['equip_'..key],v['equip_'..key])
     end
