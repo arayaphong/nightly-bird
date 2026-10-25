@@ -4,7 +4,7 @@ import copy
 import json
 import math
 import xml.etree.ElementTree as ET
-from defold_rive_bird import ROOT, start_file, finish_file, draw_group, transform
+from defold_rive_bird import ROOT, start_file, finish_file, draw_group, draw_path, transform
 
 
 def build():
@@ -12,7 +12,7 @@ def build():
              for name in ('hawk','hawk-dive')}
     rig={'wings':[], 'blades':[]}
     for name,svg in sources.items():
-        for part in svg:
+        for part in svg.iter():
             role=part.get('data-role')
             if role not in ('wing-back','wing-front','blade'):continue
             a,b,c,d,x,y=transform(part.get('transform'))
@@ -35,13 +35,26 @@ def build():
         svg=sources[name];definitions={e.get('id'):e for e in svg.iter() if e.get('id')}
         root=f.node(name+'-origin',facing,x=-anchor[0],y=-anchor[1],opacity=opacity)
         f.bind(18,keys.index('dive_visible' if name=='hawk-dive' else 'flight_visible'))
-        for part in reversed([g for g in svg if g.get('data-sprite') is not None]):
+        def paint_part(part,parent):
             a,b,c,d,x,y=transform(part.get('transform'))
             angle=math.atan2(b,a);sx=math.hypot(a,b);sy=(a*d-b*c)/sx
-            parent=root;role=part.get('data-role')
+            clip=part.get('clip-path')
+            if clip:
+                # A shared clip stays fixed while the feather children flutter.
+                # Its source and the wing group use the same SVG coordinates.
+                node=f.node(part.get('id'),parent,x,y,angle,sx,sy)
+                source=f.node(part.get('id')+'-cut',parent)
+                for source_path in definitions[clip[5:-1]]:
+                    source_path=copy.deepcopy(source_path)
+                    source_path.set('fill','none');source_path.set('stroke','none')
+                    draw_path(f,source_path,source,definitions)
+                f.obj(42,{5:node,92:source,93:0,94:1},True)
+                for child in reversed(list(part)):paint_part(child,node)
+                return
+            role=part.get('data-role')
             if role in ('wing-back','wing-front'):
                 px,py=float(part.get('data-pivot-x')),float(part.get('data-pivot-y'))
-                parent=f.node(part.get('id')+'-pivot',root,px,py);f.bind(15,keys.index('wing_rotation'))
+                parent=f.node(part.get('id')+'-pivot',parent,px,py);f.bind(15,keys.index('wing_rotation'))
                 # Rotating this offset with the pivot preserves the JS inset.
                 x,y=x-px,y-py
             node=f.node(part.get('id'),parent,x,y,angle,sx,sy)
@@ -53,6 +66,8 @@ def build():
                 for child in part.iter():
                     if child.get('fill')=='#f2c04a':child.set('fill','#ff5a1e')
             draw_group(f,part,node,definitions)
+        for part in reversed([g for g in svg if g.get('data-sprite') is not None]):
+            paint_part(part,root)
     finish_file(f,'hawk','Flight')
     dest=ROOT/'shared/characters/hawk'
     (dest/'rig.json').write_text(json.dumps(rig,indent=2)+'\n')

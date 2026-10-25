@@ -33,6 +33,9 @@ The other Studio categories likewise mark their test suites as future work.
   resetting wing phase, extending the three-second dive or replaying its sound.
   A bound Rive `facing` channel mirrors the same vector paths around the artboard
   center. The preview keeps the chosen direction when returning to the page.
+  Dive feathers share the SVG `wing-root-cut` clipping outline. This keeps the
+  whole root edge on one continuous curve while individual feathers flutter;
+  edit that outline to change the cut across the entire folded wing.
 - `shared/objects/firefly/`, `balloon/`, `rain_cloud/`: each has its own Rive
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.
