@@ -25,14 +25,15 @@ def build():
                 data.update(pivotX=float(part.get('data-pivot-x')),pivotY=float(part.get('data-pivot-y')),
                             inset=float(part.get('data-inset')))
                 rig['wings'].append(data)
-    channels={'flight_visible':1,'dive_visible':0,'wing_rotation':0}
+    channels={'flight_visible':1,'dive_visible':0,'wing_rotation':0,'facing':1}
     for i,blade in enumerate(rig['blades']):
         channels[f'blade_{i}_angle']=blade['angle'];channels[f'blade_{i}_scale']=1
     keys=list(channels)
     f=start_file(channels,'NightlyHawk',2000,2000,'HawkControls')
+    facing=f.node('facing',x=1000,y=1000);f.bind(16,keys.index('facing'))
     for name,anchor,opacity in [('hawk-dive',(700,650),0),('hawk',(780,760),1)]:
         svg=sources[name];definitions={e.get('id'):e for e in svg.iter() if e.get('id')}
-        root=f.node(name+'-origin',x=1000-anchor[0],y=1000-anchor[1],opacity=opacity)
+        root=f.node(name+'-origin',facing,x=-anchor[0],y=-anchor[1],opacity=opacity)
         f.bind(18,keys.index('dive_visible' if name=='hawk-dive' else 'flight_visible'))
         for part in reversed([g for g in svg if g.get('data-sprite') is not None]):
             a,b,c,d,x,y=transform(part.get('transform'))

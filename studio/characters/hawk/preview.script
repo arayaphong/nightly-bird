@@ -2,9 +2,9 @@ local motion=require('shared.characters.hawk.motion')
 local function publish(self)
     local busy=self.motion.remaining>0
     local seconds=math.ceil(self.motion.remaining)
-    if busy~=self.busy or seconds~=self.seconds then
-        self.busy,self.seconds=busy,seconds
-        msg.post('/ui#gui','hawk_status',{busy=busy,seconds=seconds})
+    if busy~=self.busy or seconds~=self.seconds or self.motion.direction~=self.status_direction then
+        self.busy,self.seconds,self.status_direction=busy,seconds,self.motion.direction
+        msg.post('/ui#gui','hawk_status',{busy=busy,seconds=seconds,direction=self.motion.direction})
     end
 end
 local function cancel(self)
@@ -42,6 +42,7 @@ function on_message(self,id,message)
         if not self.active then cancel(self) end
         msg.post('#hawk',self.active and 'enable' or 'disable');publish(self)
     elseif id==hash('cancel') then cancel(self)
+    elseif id==hash('turn') and self.active then motion.turn(self.motion);publish(self)
     elseif id==hash('dive') and self.active and motion.dive(self.motion) then
         sound.stop('#strike');sound.play('#strike');publish(self)
     end

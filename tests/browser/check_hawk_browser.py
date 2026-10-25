@@ -29,13 +29,13 @@ with sync_playwright() as p:
   touch('touchStart',a,560);frames(2)
   for i in range(1,6):touch('touchMove',a+(z-a)*i/5,560);frames(2)
   touch('touchEnd');frames(6)
- def tap():touch('touchStart',240,190);frames(1);touch('touchEnd')
+ def tap(x=350,y=190):touch('touchStart',x,y);frames(1);touch('touchEnd')
  def snap(name=None):
   raw=page.screenshot()
   if name:(ART/name).write_bytes(raw)
   return Image.open(io.BytesIO(raw)).convert('RGB')
  def ready(im):
-  x,y=pt(130,190);red,green,blue=im.getpixel((round(x),round(y)))
+  x,y=pt(435,190);red,green,blue=im.getpixel((round(x),round(y)))
   return red>120 and green>200 and blue<150
  def art_height(im):
   a=pt(30,630);z=pt(450,320);ys=[]
@@ -44,18 +44,36 @@ with sync_playwright() as p:
     if max(im.getpixel((x,y)))>70:ys.append(y)
   assert ys,'Hawk artwork is missing'
   return max(ys)-min(ys)
+ def beak_x(im):
+  a,z=pt(30,630),pt(450,320);xs=[]
+  for y in range(round(a[1]),round(z[1])):
+   for x in range(round(a[0]),round(z[0])):
+    red,green,blue=im.getpixel((x,y))
+    if red>180 and 90<green<225 and blue<100 and red>green+15:xs.append(x)
+  assert len(xs)>15,'Hawk beak/feet artwork missing'
+  return sum(xs)/len(xs)
  for x,y in ((240,475),(240,500)):
   touch('touchStart',x,y);frames(3);touch('touchEnd');frames(6)
  touch('touchStart',90,500);frames(4);touch('touchEnd');frames(6)
  swipe(400,70);swipe(400,70)
  flight=snap('rive-hawk-flight.png');assert ready(flight)
+ assert beak_x(flight)>pt(240,470)[0]+15,'Hawk did not start facing right'
  x,y=pt(190+20*2,12);assert flight.getpixel((round(x),round(y)))[1]>200,'Third indicator not selected'
+ page.evaluate('window.__audio=[]')
+ tap(130);frames(5);left=snap('rive-hawk-flight-left.png')
+ assert beak_x(left)<pt(240,470)[0]-15,'Turn button did not face left'
+ assert page.evaluate('window.__audio.reduce((a,b)=>a+b,0)')<1e-6,'Turning played dive audio'
+ page.keyboard.down('t');frames(2);page.keyboard.up('t');frames(4)
+ assert beak_x(snap('rive-hawk-keyboard-right.png'))>pt(240,470)[0]+15,'T did not face right'
+ tap(130);frames(3)
  page.evaluate('window.__audio=[]')
  tap();started=time.monotonic()
  # Repeat immediately while the action is definitely active. Doing this after
  # multiple software-GPU screenshots can accidentally start a fresh dive.
  page.keyboard.down('Space');frames(1);page.keyboard.up('Space');frames(2)
+ tap(130);frames(2)
  dive=snap('rive-hawk-dive.png');assert not ready(dive),'Button did not enter busy state'
+ assert beak_x(dive)>pt(240,470)[0]+15,'Turn was not available during the dive'
  assert art_height(dive)<art_height(flight)*.8,'Hawk did not switch to the folded dive pose'
  # Exact three-second simulation timing and repeat locking are asserted by the
  # controller/unit test. Allow rendering overhead in this software-GPU check.
@@ -71,6 +89,7 @@ with sync_playwright() as p:
  assert ready(recovered),('Button did not recover after three seconds',elapsed)
  (ART/'rive-hawk-recovered.png').write_bytes(page.screenshot())
  assert art_height(recovered)>art_height(dive)*1.2,'Flight pose did not return'
+ assert beak_x(recovered)>pt(240,470)[0]+15,'Facing was lost when flight returned'
  assert page.evaluate('window.__audio.reduce((a,b)=>a+b,0)')>1e-6,'Dive produced no audio'
  tap();frames(2);assert not ready(snap())
  swipe(70,400);swipe(400,70)
@@ -79,6 +98,6 @@ with sync_playwright() as p:
  swipe(70,400);swipe(70,400);snap('rive-hawk-back-to-bird.png')
  errors=[s for s in logs if any(t in s for t in ['ERROR:','PAGEERROR','GL_INVALID'])]
  assert not errors,errors
- result={'three_page_swipe':'passed','timed_dive':'passed','recovery_observed_seconds':elapsed,'repeat_lock':'passed','sound':'passed','leave_cancels':'passed','errors':errors}
+ result={'three_page_swipe':'passed','turn_button_and_keyboard':'passed','turn_during_dive':'passed','timed_dive':'passed','recovery_observed_seconds':elapsed,'repeat_lock':'passed','sound':'passed','leave_cancels':'passed','errors':errors}
  (ART/'rive-hawk-browser-test.json').write_text(json.dumps(result,indent=2))
  print(json.dumps(result));b.close()

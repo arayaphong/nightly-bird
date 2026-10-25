@@ -29,6 +29,10 @@ The other Studio categories likewise mark their test suites as future work.
 - `shared/characters/red_bird/`: vector bird, numeric animation channels, motion.
 - `shared/characters/fish/`: fish vector/rig channels and swim/turn motion.
 - `shared/characters/hawk/`: flight/dive vector, feather rig and timed motion.
+  Studio's **กลับตัว** button or **T** reverses its facing in either pose without
+  resetting wing phase, extending the three-second dive or replaying its sound.
+  A bound Rive `facing` channel mirrors the same vector paths around the artboard
+  center. The preview keeps the chosen direction when returning to the page.
 - `shared/objects/firefly/`, `balloon/`, `rain_cloud/`: each has its own Rive
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.

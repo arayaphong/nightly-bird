@@ -2,6 +2,7 @@
   "flight_visible",
   "dive_visible",
   "wing_rotation",
+  "facing",
   "blade_0_angle",
   "blade_0_scale",
   "blade_1_angle",

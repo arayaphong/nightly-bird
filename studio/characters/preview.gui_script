@@ -113,11 +113,13 @@ function init(self)
         text(240,710,'HAWK · VECTOR 2D',17,ACCENT)
         text(240,680,'ทดสอบเหยี่ยวบิน',21,WHITE)
         text(240,641,'พุ่งตัว 3 วินาที แล้วกลับมาบิน',15,MUTED)
-        self.hawk_status=text(240,290,'กำลังบิน',18,MUTED)
-        self.dive=box(240,190,270,66,ACCENT)
-        self.dive_label=text(240,190,'พุ่งตัว',25,vmath.vector4(.04,.09,.12,1))
+        self.hawk_status=text(240,290,'กำลังบิน · หันขวา',18,MUTED)
+        self.hawk_turn=box(130,190,190,66,vmath.vector4(.15,.23,.38,1))
+        text(130,190,'กลับตัว',25)
+        self.dive=box(350,190,190,66,ACCENT)
+        self.dive_label=text(350,190,'พุ่งตัว',25,vmath.vector4(.04,.09,.12,1))
         text(240,94,'ปัดขวาเพื่อกลับหน้าปลา',17,MUTED)
-        text(240,53,'Space: พุ่งตัว · ลูกศร: เปลี่ยนหน้า',13,MUTED)
+        text(240,53,'Space: พุ่งตัว · T: กลับตัว',13,MUTED)
         gui.set_enabled(self.hawk_root,false)
     end
     for _,entry in ipairs({{'firefly','หิ่งห้อย','FIREFLY · VECTOR 2D'},
@@ -157,7 +159,8 @@ function on_message(self,id,message)
     elseif id==hash('fish_status') then gui.set_text(self.fish_status,message.text)
     elseif id==hash('hawk_status') then
         self.hawk_busy=message.busy
-        gui.set_text(self.hawk_status,message.busy and 'กำลังพุ่งตัว' or 'กำลังบิน')
+        local facing=message.direction==1 and 'หันขวา' or 'หันซ้าย'
+        gui.set_text(self.hawk_status,(message.busy and 'กำลังพุ่งตัว' or 'กำลังบิน')..' · '..facing)
         gui.set_text(self.dive_label,message.busy and ('กำลังพุ่ง · '..message.seconds) or 'พุ่งตัว')
         gui.set_color(self.dive,message.busy and vmath.vector4(.15,.23,.38,1) or ACCENT)
         gui.set_color(self.dive_label,message.busy and MUTED or vmath.vector4(.04,.09,.12,1))
@@ -180,7 +183,10 @@ local function button_at(self,x,y)
         return nil
     end
     if self.page=='fish' then return gui.pick_node(self.turn,x,y) and 'turn' or nil end
-    if self.page=='hawk' then return not self.hawk_busy and gui.pick_node(self.dive,x,y) and 'dive' or nil end
+    if self.page=='hawk' then
+        if gui.pick_node(self.hawk_turn,x,y) then return 'hawk_turn' end
+        return not self.hawk_busy and gui.pick_node(self.dive,x,y) and 'dive' or nil
+    end
     if self.page=='cloud' then return not self.cloud_busy and gui.pick_node(self.lightning,x,y) and 'lightning' or nil end
     if self.page~='bird' then return nil end
     for _,key in ipairs(ITEMS) do if gui.pick_node(self.items[key],x,y) then return key end end
@@ -191,6 +197,7 @@ local function activate(self,button)
     if button=='home' then set_page(self,'characters')
     elseif button:sub(1,7)=='select:' then set_page(self,button:sub(8))
     elseif button=='turn' then msg.post('/fish#script','turn')
+    elseif button=='hawk_turn' then msg.post('/hawk#script','turn')
     elseif button=='dive' then if not self.hawk_busy then msg.post('/hawk#script','dive') end
     elseif button=='lightning' then if not self.cloud_busy then msg.post('/objects#script','lightning') end
     elseif button=='blink' or button=='chew' then send(button)
@@ -238,6 +245,7 @@ function on_input(self,id,action)
         return true
     end
     if self.page=='fish' or self.page=='hawk' or self.page=='cloud' then
+        if self.page=='hawk' and id==hash('turn') and action.pressed then activate(self,'hawk_turn') end
         if id==hash('activate') and action.pressed then
             activate(self,({fish='turn',hawk='dive',cloud='lightning'})[self.page])
         end

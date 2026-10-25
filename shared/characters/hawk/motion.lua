@@ -1,7 +1,8 @@
 -- Flight/flap and dive flutter from hawk-painter.js and Hawk.afterPhysics.
 local blades=require('shared.characters.hawk.rig')
 local M={DIVE_TIME=3}
-function M.new() return {time=0,flap=0,remaining=0} end
+function M.new() return {time=0,flap=0,remaining=0,direction=1} end
+function M.turn(s) s.direction=-s.direction end
 function M.dive(s)
     if s.remaining>0 then return false end
     s.remaining=M.DIVE_TIME;return true
@@ -17,7 +18,7 @@ end
 function M.values(s)
     local diving=s.remaining>0
     local v={flight_visible=diving and 0 or 1,dive_visible=diving and 1 or 0,
-             wing_rotation=math.sin(s.flap)*math.rad(-48)}
+             wing_rotation=math.sin(s.flap)*math.rad(-48),facing=s.direction}
     local flutter=math.sin(s.time*45)*5
     for i,b in ipairs(blades) do
         local dx=b.targetX-b.x
