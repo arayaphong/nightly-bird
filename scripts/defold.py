@@ -103,7 +103,7 @@ def build(target):
     index = next(OUTPUT.glob("*/index.html"), None)
     if not index:
         raise RuntimeError("Build finished without an HTML5 index.html.")
-    shutil.copytree(PROJECT / "preview", index.parent, dirs_exist_ok=True)
+    shutil.copytree(PROJECT / "scripts/web_preview", index.parent, dirs_exist_ok=True)
     print(f"HTML5 bundle: {index.parent.relative_to(ROOT)}", flush=True)
     print("Preview: python3 scripts/defold.py serve", flush=True)
 

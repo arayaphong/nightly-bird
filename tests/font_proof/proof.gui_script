@@ -1,0 +1,26 @@
+-- Optional native-engine proof sheet. Build using defold/tests/font_proof/proof.settings.
+local function text(y, value, size, color)
+    local n = gui.new_text_node(vmath.vector3(240, y, 0), value)
+    gui.set_font(n, 'main')
+    gui.set_scale(n, vmath.vector3(size/32, size/32, 1))
+    gui.set_color(n, color or vmath.vector4(1, 1, 1, 1))
+    gui.set_outline(n, vmath.vector4(0, 0, 0, 0))
+    gui.set_shadow(n, vmath.vector4(0, 0, 0, 0))
+end
+function init(self)
+    text(750, 'THAI FONT / MITR', 24)
+    text(698, 'กิ กี กึ กื กุ กู ก่ ก้ ก๊ ก๋', 32)
+    text(636, 'กี่ กี้ กึ้ กื้ กุ่ กู้ ก่ำ ก้ำ', 32)
+    text(574, 'ปี่ ปี้ ปู่ ปู้ ฝิ่น ฝุ่น ฟื้น ปี๊บ', 30)
+    text(512, 'ที่ เริ่ม เพิ่ม น้ำ เด้งน้ำ หิ่งห้อย', 28)
+    text(450, 'ไกลที่สุด พร้อมแล้วค่อยบินต่อ', 23)
+    text(388, 'ญุ ญู ฐุ ฐู ฎุ ฏุ', 32)
+    text(319, 'หยุดพักสักครู่', 32)
+    text(267, 'แตะค้างเพื่อเริ่มบิน', 23)
+    text(215, 'ปล่อยเพื่อลดระดับ · เก็บหิ่งห้อยเพิ่มพลัง', 15)
+    text(163, 'คีย์บอร์ด: Space บิน · P หยุดเกม', 14)
+    text(106, 'AGI 0.25  0123456789  ×4  8.0 s', 20)
+    text(54, 'BASELINES: vowels / tones / tall & lower forms', 12,
+         vmath.vector4(.65, .73, .88, 1))
+    print('FONT_PROOF_READY')
+end

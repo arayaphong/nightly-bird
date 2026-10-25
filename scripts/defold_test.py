@@ -20,5 +20,5 @@ def run(bob):
         with zipfile.ZipFile(bob) as jar:
             executable.write_bytes(jar.read(entry))
         executable.chmod(0o755)
-        for name in ('rules.lua', 'rive-motion.lua', 'equipment.lua', 'fish-motion.lua', 'gestures.lua', 'hawk-motion.lua', 'pages.lua', 'nature-motion.lua'):
-            subprocess.run([str(executable), str(ROOT / 'tests/defold' / name)], cwd=ROOT, check=True)
+        for name in ('flight_rules.lua', 'red_bird.lua', 'equipment.lua', 'fish.lua', 'gestures.lua', 'hawk.lua', 'routes.lua', 'objects.lua'):
+            subprocess.run([str(executable), str(ROOT / 'tests/unit' / name)], cwd=ROOT, check=True)

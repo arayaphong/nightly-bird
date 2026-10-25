@@ -1,0 +1,5 @@
+scene: "/shared/characters/fish/visual.rivescene"
+artboard: "NightlyFish"
+default_state_machine: "Swim"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

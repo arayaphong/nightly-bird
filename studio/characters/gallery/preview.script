@@ -1,0 +1,11 @@
+function init(self) msg.post('#gallery','disable') end
+function update(self)
+    local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
+    if w~=self.width or h~=self.height then
+        self.width,self.height=w,h;local scale=math.min(w/480,h/800)
+        go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
+    end
+end
+function on_message(self,id,message)
+    if id==hash('active') then msg.post('#gallery',message.active and 'enable' or 'disable') end
+end

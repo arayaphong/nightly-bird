@@ -1,0 +1,54 @@
+local motion=require('shared.objects.rain_cloud.motion')
+local firefly=require('shared.objects.firefly.motion')
+local balloon=require('shared.objects.balloon.motion')
+local names={'firefly','balloon','cloud'}
+local function publish(self)
+    local busy=self.motion.remaining>0
+    if busy~=self.busy then self.busy=busy;msg.post('/ui#gui','cloud_status',{busy=busy}) end
+end
+local function sync(self)
+    if not self.active then return end
+    local name=self.page
+    local vm=self.vms[name] or rive.get_view_model_instance('#'..name)
+    if not vm then return end
+    self.vms[name]=vm;self.last[name]=self.last[name] or {}
+    local values=name=='firefly' and firefly.values(self.motion.time)
+        or name=='balloon' and balloon.values(self.motion.time) or motion.values(self.motion)
+    for key,value in pairs(values) do
+        if self.last[name][key]~=value then
+            rive.cmd.setViewModelInstanceNumber(vm,key,value);self.last[name][key]=value
+        end
+    end
+end
+local function cancel(self)
+    motion.cancel(self.motion);sound.stop('#thunder');publish(self);sync(self)
+end
+function init(self)
+    self.motion=motion.new();self.vms={};self.last={};self.active=false;self.page='home'
+    for _,name in ipairs(names) do msg.post('#'..name,'disable') end
+end
+function update(self,dt)
+    local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
+    if w~=self.width or h~=self.height then
+        self.width,self.height=w,h;local scale=math.min(w/480,h/800)
+        go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
+    end
+    if self.active then
+        if motion.step(self.motion,dt) then sound.stop('#thunder');sound.play('#thunder') end
+        publish(self);sync(self)
+    end
+end
+function on_message(self,id,message)
+    if id==hash('page') then
+        self.page=message.name
+        self.active=self.page=='firefly' or self.page=='balloon' or self.page=='cloud'
+        if self.page~='cloud' then cancel(self) end
+        for _,name in ipairs(names) do msg.post('#'..name,self.page==name and 'enable' or 'disable') end
+        sync(self)
+    elseif id==hash('cancel') then cancel(self)
+    elseif id==hash('lightning') and self.active and self.page=='cloud' then
+        local target
+        if message.target_x~=nil and message.target_y~=nil then target=motion.preview_target(message.target_x,message.target_y) end
+        if motion.strike(self.motion,target) then sound.stop('#thunder');publish(self);sync(self) end
+    end
+end

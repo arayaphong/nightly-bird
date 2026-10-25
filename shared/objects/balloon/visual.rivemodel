@@ -1,0 +1,5 @@
+scene: "/shared/objects/balloon/visual.rivescene"
+artboard: "Balloon"
+default_state_machine: "Preview"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

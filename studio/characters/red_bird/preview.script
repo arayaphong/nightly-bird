@@ -1,0 +1,96 @@
+local motion=require('shared.characters.red_bird.motion')
+local equipment=require('shared.items.equipment')
+local function clear_input(self)
+    self.motion.held=false
+    msg.post('/ui#gui','clear_input')
+end
+local function play_wing(self)
+    if self.playing or not self.motion.held or not self.motion.wants_sound then return end
+    self.playing=true
+    print('WING_SOUND_START')
+    sound.play('#wing',{},function(self, id)
+        self.playing=false
+        print('WING_SOUND_END')
+        -- Like AudioSystem.startRound(): finish the recording, then recheck input.
+        play_wing(self)
+    end)
+end
+function init(self)
+    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.page='home'
+    msg.post('#bird','disable');msg.post('/icons#icons','disable')
+    self.vm=rive.get_view_model_instance('#bird')
+    print('RIVE_BIRD_READY')
+end
+function update(self,dt)
+    -- Game coordinates are window points, adjusted by Rive's display scale.
+    -- Fit the 480x800 reference just like the GUI, including high-DPI screens.
+    local projection=rive.get_projection_matrix()
+    local width,height=2/projection.m00,2/projection.m11
+    if width~=self.width or height~=self.height then
+        self.width,self.height=width,height
+        local scale=math.min(width/480,height/800)
+        go.set_scale(vmath.vector3(.52*scale,.52*scale,1))
+        go.set_position(vmath.vector3(width/2-10*scale,height/2+150*scale,0))
+        go.set_scale(vmath.vector3(scale,scale,1),'/icons')
+        go.set_position(vmath.vector3(width/2,height/2,0),'/icons')
+    end
+    motion.step(self.motion,math.min(dt,.033))
+    equipment.step(self.items,dt)
+    if self.page and self.page~='bird' then return end
+    if not self.vm then self.vm=rive.get_view_model_instance('#bird') end
+    if not self.vm then return end
+    local values=motion.values(self.motion)
+    for name,value in pairs(equipment.values(self.items)) do values[name]=value end
+    for name,value in pairs(values) do
+        if self.last[name]~=value then
+            rive.cmd.setViewModelInstanceNumber(self.vm,name,value)
+            self.last[name]=value
+        end
+    end
+    if not self.icons_vm then self.icons_vm=rive.get_view_model_instance('/icons#icons') end
+    if self.icons_vm then
+        for _,key in ipairs(equipment.keys) do
+            local name='equip_'..key
+            if self.last_icons[name]~=values[name] then
+                rive.cmd.setViewModelInstanceNumber(self.icons_vm,name,values[name])
+                self.last_icons[name]=values[name]
+            end
+        end
+    end
+    play_wing(self)
+    local status=self.motion.held and 'กระพือ' or self.motion.moving and 'จบรอบ' or 'พัก'
+    if status~=self.status then
+        self.status=status
+        msg.post('/ui#gui','status',{text=status})
+        print('WING_STATE '..status..' '..self.motion.angle)
+    end
+end
+function on_message(self,id,message)
+    if id==hash('active') then
+        self.page=message.active and 'bird' or 'home'
+        clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
+        self.motion.wants_sound=false
+        msg.post('#bird',message.active and 'enable' or 'disable')
+        msg.post('/icons#icons',message.active and 'enable' or 'disable')
+        return
+    elseif id==hash('cancel') then
+        clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
+        self.motion.wants_sound=false;return
+    end
+    if self.page and self.page~='bird' then return end
+    if id==hash('flight') then self.motion.held=message.held
+    elseif id==hash('blink') then self.motion.blink=.18;print('BLINK_TRIGGER')
+    elseif id==hash('chew') then
+        self.motion.chew=1.48
+        -- One recording covers the full three-bite animation.
+        sound.stop('#chew');sound.play('#chew')
+        print('CHEW_TRIGGER')
+    end
+    if id==hash('toggle_equipment') then
+        local enabled=equipment.toggle(self.items,message.item)
+        if enabled~=nil then
+            msg.post('/ui#gui','equipment_state',{item=message.item,enabled=enabled})
+            print('EQUIPMENT '..message.item..' '..tostring(enabled))
+        end
+    end
+end

@@ -1,0 +1,27 @@
+local routes=require('app.routes')
+local function navigate(self,name)
+    if not routes.valid(name) or self.page==name then return end
+    self.page=name
+    msg.post('/ui#gui','route',{name=name})
+    msg.post('/menus#gui','route',{name=name})
+    msg.post('/red_bird#script','active',{active=name=='bird'})
+    msg.post('/fish#script','active',{active=name=='fish'})
+    msg.post('/hawk#script','active',{active=name=='hawk'})
+    msg.post('/gallery#script','active',{active=name=='characters'})
+    msg.post('/objects#script','page',{name=name})
+    print('NAV_ROUTE '..name)
+end
+function init(self)
+    window.set_listener(function(self,event)
+        if event==window.WINDOW_EVENT_FOCUS_LOST then
+            msg.post('/ui#gui','clear_input');msg.post('/menus#gui','clear_input')
+            for _,url in ipairs({'/red_bird#script','/hawk#script','/objects#script'}) do msg.post(url,'cancel') end
+        end
+    end)
+    navigate(self,'home')
+end
+function on_message(self,id,message)
+    if id==hash('navigate') then navigate(self,message.name)
+    elseif id==hash('back') then navigate(self,routes.parent(self.page)) end
+end
+function final(self) window.set_listener(nil) end

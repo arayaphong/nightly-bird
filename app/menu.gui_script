@@ -1,0 +1,128 @@
+local routes=require('app.routes')
+local gestures=require('shared.input.gestures')
+local categories=require('studio.catalog')
+local scenarios=require('scenarios.catalog')
+local WHITE=vmath.vector4(.97,.97,1,1)
+local MUTED=vmath.vector4(.62,.72,.85,1)
+local ACCENT=vmath.vector4(.74,1,.35,1)
+local PANEL=vmath.vector4(.08,.13,.21,1)
+local function text(x,y,value,size,color)
+    local n=gui.new_text_node(vmath.vector3(x,y,0),value)
+    gui.set_font(n,'main');gui.set_scale(n,vmath.vector3(size/32,size/32,1))
+    gui.set_color(n,color or WHITE);gui.set_outline(n,vmath.vector4());gui.set_shadow(n,vmath.vector4())
+    return n
+end
+local function box(x,y,w,h,color)
+    local n=gui.new_box_node(vmath.vector3(x,y,0),vmath.vector3(w,h,0));gui.set_color(n,color);return n
+end
+local function section(self,name,title,subtitle)
+    local root=box(240,400,480,800,vmath.vector4());self.roots[name]=root;self.buttons[name]={}
+    local function add(fn,...)
+        local n=fn(...);gui.set_parent(n,root,true);gui.set_inherit_alpha(n,false);return n
+    end
+    local function label(...) return add(text,...) end
+    local function button(y,route,caption,description)
+        local n=add(box,240,y,410,96,PANEL);self.buttons[name][route]=n
+        label(240,y+16,caption,25);label(240,y-20,description,15,MUTED)
+    end
+    label(240,752,'NIGHTLY BIRD',32);label(240,694,title,27,ACCENT);label(240,650,subtitle,16,MUTED)
+    return label,button
+end
+local function navigate(name) msg.post('/navigation#script','navigate',{name=name}) end
+local function apply(self,name)
+    self.page=name;self.gestures=gestures.new();self.contacts={}
+    self.menu_page=self.roots[name]~=nil
+    for key,node in pairs(self.roots) do gui.set_enabled(node,key==name) end
+    local parent=routes.parent(name)
+    gui.set_enabled(self.back,parent~=nil);gui.set_enabled(self.back_label,parent~=nil)
+    gui.set_text(self.back_label,parent=='characters' and 'หน้ารวม' or parent=='studio' and 'Studio' or 'หน้าหลัก')
+end
+function init(self)
+    self.roots={};self.buttons={};self.contacts={};self.gestures=gestures.new()
+    do
+        local label,button=section(self,'home','เลือกพื้นที่ทำงาน','พัฒนาส่วนประกอบ หรือทดสอบภาพรวม')
+        button(475,'studio','Studio','พัฒนาและทดสอบส่วนประกอบทีละหน่วย')
+        button(345,'scenarios','Scenarios','ทดสอบภาพรวมเป็นฉากอิสระ')
+        label(240,135,'1: Studio · 2: Scenarios',14,MUTED)
+    end
+    do
+        local label,button=section(self,'studio','Studio','เลือกหมวดทดสอบ')
+        for i,item in ipairs(categories) do button(500-(i-1)*130,item.route,item.title,item.description) end
+        label(240,100,'1–3: เลือกหมวด · Esc: หน้าหลัก',13,MUTED)
+    end
+    do
+        local label,button=section(self,'scenarios','Scenarios','เลือกฉากทดสอบภาพรวม')
+        if #scenarios==0 then
+            label(240,425,'ยังไม่มีฉากทดสอบ',25)
+            label(240,380,'แต่ละฉากจะเลือกเข้าได้อย่างอิสระ',17,MUTED)
+            label(240,350,'เมื่อพร้อมทดสอบส่วนประกอบร่วมกัน',17,MUTED)
+        else
+            for i,item in ipairs(scenarios) do button(500-(i-1)*130,item.route,item.title,item.description) end
+        end
+    end
+    for _,item in ipairs({{'scenery','ฉากและฟิสิกส์','ฉาก · platform · การชน · state'},
+                           {'rules_and_items','กติกาและไอเท็ม','คุณสมบัติ · การติดตั้ง · ปฏิสัมพันธ์'}}) do
+        local label=section(self,item[1],item[2],item[3])
+        label(240,425,'ยังไม่มีชุดทดสอบในหมวดนี้',23)
+        label(240,375,'พร้อมเพิ่มการทดสอบในขั้นถัดไป',17,MUTED)
+    end
+    self.back=box(48,752,70,34,vmath.vector4(.15,.23,.38,1))
+    self.back_label=text(48,752,'หน้าหลัก',12)
+    local system=sys.get_sys_info().system_name
+    self.touch_device=system=='Android' or system=='iPhone OS'
+    if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
+    apply(self,'home')
+end
+function update(self)
+    -- Acquire after every GUI has initialized. Resource initialization order
+    -- must not let the Studio controls swallow global back/Escape input.
+    if not self.input_ready then self.input_ready=true;msg.post('.','acquire_input_focus') end
+end
+function on_message(self,id,message)
+    if id==hash('route') then apply(self,message.name)
+    elseif id==hash('clear_input') then self.gestures=gestures.new();self.contacts={} end
+end
+local function button_at(self,x,y)
+    if routes.parent(self.page) and gui.pick_node(self.back,x,y) then return 'back' end
+    for route,node in pairs(self.buttons[self.page] or {}) do if gui.pick_node(node,x,y) then return route end end
+end
+local function pointer(self,id,a)
+    if not a.x or not a.y then return false end
+    if a.pressed then
+        local button=button_at(self,a.x,a.y)
+        if button or self.menu_page then
+            self.contacts[id]=true;gestures.begin(self.gestures,id,a.x,a.y,button)
+        end
+    end
+    local consumed=self.contacts[id]~=nil
+    if not consumed then return false end
+    gestures.move(self.gestures,id,a.x,a.y)
+    if a.released then
+        local result=gestures.finish(self.gestures,id,a.x,a.y);self.contacts[id]=nil
+        if result.tap=='back' then msg.post('/navigation#script','back')
+        elseif result.tap then navigate(result.tap) end
+    end
+    return true
+end
+function on_input(self,id,a)
+    if a.pressed and id==hash('escape') and routes.parent(self.page) then
+        msg.post('/navigation#script','back');return true
+    end
+    if id==hash('touch') then
+        self.touch_device=true;local consumed=false
+        for _,finger in ipairs(a.touch or {}) do consumed=pointer(self,finger.id,finger) or consumed end
+        return consumed or self.menu_page
+    end
+    if id==hash('pointer') or (id==nil and self.contacts.mouse) then
+        if self.touch_device then return self.menu_page end
+        return pointer(self,'mouse',a) or self.menu_page
+    end
+    if self.menu_page and a.pressed then
+        if self.page=='home' then
+            if id==hash('magnet') then navigate('studio') elseif id==hash('gun') then navigate('scenarios') end
+        elseif self.page=='studio' then
+            for i,key in ipairs({'magnet','gun','helmet'}) do if id==hash(key) then navigate(categories[i].route) end end
+        end
+    end
+    return self.menu_page
+end

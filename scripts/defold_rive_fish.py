@@ -26,7 +26,7 @@ def build():
         elif role=='gill':f.bind(16,4);f.bind(17,5)
         draw_group(f,part,node,definitions)
     finish_file(f,'fish','Swim')
-    (ROOT/'rive-demo/fish-channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
+    (ROOT/'shared/characters/fish/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
 
 
 if __name__=='__main__':build()

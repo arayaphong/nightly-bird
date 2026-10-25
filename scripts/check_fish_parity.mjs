@@ -22,7 +22,7 @@ for (let i = 0; i < 3600; i++) {
     angles[0], scales.reduce((sign, [, y]) => sign * (y < 0 ? -1 : 1), 1)]);
 }
 const lua = `package.path='./?.lua;'..package.path
-local m=require('rive-demo.fish-motion');local s=m.new()
+local m=require('shared.characters.fish.motion');local s=m.new()
 for i=0,3599 do
  if i==30 or i==110 or i==116 or i==190 then m.turn(s) end
  m.step(s,({1/60,1/120,.025,.013})[i%4+1]);local v=m.values(s)

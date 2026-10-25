@@ -72,21 +72,21 @@ docs/                # architecture, workflow and this plan
 legacy/              # frozen original HTML/JS application/reference
 ```
 
-- [ ] Separate the Studio presentation/controllers from reusable character,
+- [x] Separate the Studio presentation/controllers from reusable character,
   object, item, input and rendering resources/behavior. Group files by feature
   inside these folders; replace temporary `rive-demo` naming.
-- [ ] Add the Studio/Scenarios main menu. Studio exposes clear test categories;
+- [x] Add the Studio/Scenarios main menu. Studio exposes clear test categories;
   its Characters category contains the existing gallery. Keep future categories
   and scenario lists honest about what has not been implemented.
-- [ ] Keep the Game boundary explicit and document that progression/story is
+- [x] Keep the Game boundary explicit and document that progression/story is
   future work. Do not migrate additional gameplay during this structural change.
-- [ ] Update all references, generators, tests, workflows and documentation.
+- [x] Update all references, generators, tests, workflows and documentation.
   Include a concise repository map and instructions for adding a preview,
   scenario and future Game integration using shared components.
-- [ ] Verify navigation, all six previews and their existing controls/audio,
+- [x] Verify navigation, all six previews and their existing controls/audio,
   equipment, animation parity, vector geometry, Thai text, Web/Pages packaging
   and a manually built/signature-checked Android APK.
-- [ ] Commit this stage and send the APK for device testing. GitHub Actions
+- [x] Commit this stage and send the APK for device testing. GitHub Actions
   builds Web only; APK remains a manual local build. No PR/merge yet.
 
 ## Behavior to preserve
@@ -128,3 +128,44 @@ tests remain; there is no retained sprite runtime.
 Verification: root Web build and all Lua tests pass. `scripts/check_project.py`
 checks active resource/Lua references and rejects sprite APIs/resources or PNG
 artwork; it is now a normal build prerequisite. Current Rive artwork is unchanged.
+
+### Stage 3 completed
+
+Organized App bootstrap/navigation/menus, Studio preview presentation and shared
+feature resources/behavior into the documented folders. Removed `rive-demo`
+naming. Bird/fish/hawk vector bytes remain unchanged; firefly, balloon and rain
+cloud now each have their own reusable Rive artboard/model and motion module.
+Pure flight rules moved to `shared/rules/flight.lua`. Native config, input,
+launchers, code generation and unit/browser/vector/font-proof tests use the new
+paths. Root README and architecture/build docs explain where to add each kind
+of work and how to reuse shared components.
+
+The first menu exposes Studio and Scenarios. Studio contains Characters/Objects,
+Scenery/Physics and Rules/Items categories. The current six-character gallery is
+under Characters/Objects. The latter two suites and Scenarios truthfully show
+empty states; their folders/catalog are ready for future implementation. Game
+has a documented boundary for connected player-facing progression/story and no
+misleading playable entry. Global input focus and nested back/Escape routing
+are handled by App, ahead of component controls.
+
+Verification:
+
+- Root resource/module check (66 source/resources), all Lua behavior/navigation
+  tests and vector geometry checks pass. No active sprite resources/APIs or PNG
+  artwork remain.
+- Bird 300-frame and fish/hawk 3600-frame comparisons match legacy JS.
+- Actual mobile Web checks pass for the main menu, Studio categories, Scenarios
+  empty state, nested back/keyboard navigation, six gallery icons/previews,
+  fish turning/swipes, 3-second hawk dive/audio/recovery, two-finger equipment
+  toggles/removal and the silent 0.5-second cloud charge followed by bolt/audio.
+- Main menu restoration confirms preview art does not leak onto App menus.
+  The frozen legacy snapshot matches all 96 original application/reference
+  files. Thai font bytes and the full shaping manifest are unchanged.
+- Final Web and Pages packaging pass; the legacy app also loads and runs at
+  `/legacy/` over HTTP with no missing resources or JavaScript errors.
+- Android ARM64 APK **0.8.0 (19)** built manually; v1/v2/v3 signatures pass and
+  its certificate matches the previous APK. GLES-only check passes. Device
+  runtime testing remains for Arayaphong; no APK GitHub Actions job was added.
+
+Checkpoints: plan `e3fcf75`, stage 1 `fce51ec`, stage 2 `4e4703d`; this stage is
+committed separately after verification. No PR or merge into development.

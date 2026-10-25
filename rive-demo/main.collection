@@ -1,8 +1,0 @@
-name: "rive-demo"
-instances { id: "gallery" prototype: "/rive-demo/gallery.go" position {x: 240 y: 400} }
-instances { id: "nature" prototype: "/rive-demo/nature.go" position {x: 240 y: 400} }
-instances { id: "demo" prototype: "/rive-demo/bird.go" position {x: 228 y: 507} scale3 {x: .6 y: .6 z: 1} }
-instances { id: "fish" prototype: "/rive-demo/fish.go" position {x: 240 y: 480} scale3 {x: .24 y: .24 z: 1} }
-instances { id: "hawk" prototype: "/rive-demo/hawk.go" position {x: 240 y: 470} scale3 {x: .18 y: .18 z: 1} }
-embedded_instances { id: "icons" data: "components { id: \"icons\" component: \"/rive-demo/equipment-icons.rivemodel\" }" position {x: 240 y: 400} }
-embedded_instances { id: "ui" data: "components { id: \"gui\" component: \"/rive-demo/demo.gui\" }" }

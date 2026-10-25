@@ -1,5 +1,0 @@
-scene: "/rive-demo/hawk.rivescene"
-artboard: "NightlyHawk"
-default_state_machine: "Flight"
-coordinate_system: COORDINATE_SYSTEM_GAME
-auto_bind: true

@@ -174,9 +174,11 @@ def start_file(channels,name,width,height,view_model='BirdControls'):
     f.obj(1,{4:name,7:width,8:height,583:0,236:0},True)
     return f
 
+ARTWORK_PATHS={'bird': 'shared/characters/red_bird/visual.riv', 'fish': 'shared/characters/fish/visual.riv', 'hawk': 'shared/characters/hawk/visual.riv', 'equipment-icons': 'studio/characters/red_bird/equipment_icons.riv', 'gallery': 'studio/characters/gallery/visual.riv', 'firefly': 'shared/objects/firefly/visual.riv', 'balloon': 'shared/objects/balloon/visual.riv', 'cloud': 'shared/objects/rain_cloud/visual.riv'}
+
 def finish_file(f,name,state_machine='Bird'):
     f.obj(53,{55:state_machine});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
-    dest=ROOT/f'rive-demo/{name}.riv';dest.write_bytes(f.data)
+    dest=ROOT/ARTWORK_PATHS[name];dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(f.data)
     print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
 
 ITEMS=('magnet','gun','helmet','suit')
@@ -266,6 +268,6 @@ def build():
                     child.set('data-mouth','1');child.set('transform','');child.set('d','M0 0 L74 -8 L70 6 Z')
                 draw_path(f,child,node)
     finish_file(f,'bird')
-    (ROOT/'rive-demo/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
+    (ROOT/'shared/characters/red_bird/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
     icons()
 if __name__=='__main__':build()

@@ -10,7 +10,7 @@ IGNORED = {'.git', '.internal', '.cache', '.settings', '.externalToolBuilders',
 RESOURCES = {'.go', '.collection', '.gui', '.font', '.render', '.rivescene',
              '.rivemodel', '.sound', '.settings', '.appmanifest'}
 RASTER = {'.sprite', '.tilesource', '.atlas', '.tilemap'}
-MODULE_ROOTS = {'app', 'studio', 'scenarios', 'game', 'shared', 'rive-demo'}
+MODULE_ROOTS = {'app', 'studio', 'scenarios', 'game', 'shared'}
 
 
 def check():

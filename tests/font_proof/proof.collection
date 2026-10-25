@@ -1,0 +1,5 @@
+name: "font-proof"
+embedded_instances {
+ id: "proof"
+ data: "components { id: \"gui\" component: \"/tests/font_proof/proof.gui\" }"
+}

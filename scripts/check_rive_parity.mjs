@@ -15,7 +15,7 @@ for (let i = 0; i < 300; i++) {
     animation.wingMoving, animation.wingSoundRequested]);
 }
 const lua = `package.path='./?.lua;'..package.path
-local m=require('rive-demo.motion');local s=m.new()
+local m=require('shared.characters.red_bird.motion');local s=m.new()
 for i=0,299 do
  s.held=(i>=5 and i<37) or (i>=42 and i<81) or (i>=150 and i<165)
  if i==16 or i==155 then s.blink=.18 end

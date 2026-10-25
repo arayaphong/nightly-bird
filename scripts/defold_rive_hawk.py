@@ -53,13 +53,13 @@ def build():
                     if child.get('fill')=='#f2c04a':child.set('fill','#ff5a1e')
             draw_group(f,part,node,definitions)
     finish_file(f,'hawk','Flight')
-    dest=ROOT/'rive-demo'
-    (dest/'hawk-rig.json').write_text(json.dumps(rig,indent=2)+'\n')
+    dest=ROOT/'shared/characters/hawk'
+    (dest/'rig.json').write_text(json.dumps(rig,indent=2)+'\n')
     rows=['-- Generated from hawk-dive.svg by scripts/defold_rive_hawk.py.','return {']
     for b in rig['blades']:
         rows.append('    {'+','.join(f'{k}={b[k]:.17g}' for k in ('x','y','targetX','targetY','length'))+'},')
-    (dest/'hawk-rig.lua').write_text('\n'.join(rows+['}'])+'\n')
-    (dest/'hawk-channels.json').write_text(json.dumps(keys,indent=2)+'\n')
+    (dest/'rig.lua').write_text('\n'.join(rows+['}'])+'\n')
+    (dest/'channels.json').write_text(json.dumps(keys,indent=2)+'\n')
 
 
 if __name__=='__main__':build()

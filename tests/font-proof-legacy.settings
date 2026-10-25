@@ -1,6 +1,0 @@
-[bootstrap]
-main_collection = /tests/font-proof.collectionc
-[font]
-runtime_generation = 0
-[native_extension]
-app_manifest =

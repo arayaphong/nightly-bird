@@ -111,30 +111,30 @@ def gallery():
     finish_file(f,'gallery','Gallery')
 
 def nature():
-    channels={'show_firefly':0,'show_balloon':0,'show_cloud':0,
-              'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6,
-              'balloon_y':300,'balloon_rotation':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,
-              'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}
-    for name,count in (('bolt',BOLT_POINTS),('fork',FORK_POINTS)):
-        for i in range(count):channels.update({f'{name}_x_{i}':0,f'{name}_y_{i}':23+i*15})
-    for i,(x,phase) in enumerate(DROPS):
-        channels.update({f'rain_x_{i}':x,f'rain_y_{i}':36+phase*100,f'rain_alpha_{i}':.7})
-    keys=list(channels);f=start_file(channels,'Nature',480,800,'NatureControls')
-    for name in ('firefly','balloon','cloud'):
-        scale={'firefly':6,'balloon':90,'cloud':1.7}[name]
-        node=f.node(name,x=240,y=320 if name=='firefly' else 300,sx=scale,sy=scale,opacity=0)
-        f.bind(18,keys.index('show_'+name))
+    previews={
+        'firefly':('Firefly',6,320,{'show_firefly':0,'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6}),
+        'balloon':('Balloon',90,300,{'show_balloon':0,'balloon_y':300,'balloon_rotation':0}),
+        'cloud':('RainCloud',1.7,300,{'show_cloud':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}),
+    }
+    for name,(artboard,scale,y,channels) in previews.items():
+        if name=='cloud':
+            for line,count in (('bolt',BOLT_POINTS),('fork',FORK_POINTS)):
+                for i in range(count):channels.update({f'{line}_x_{i}':0,f'{line}_y_{i}':23+i*15})
+            for i,(x,phase) in enumerate(DROPS):
+                channels.update({f'rain_x_{i}':x,f'rain_y_{i}':36+phase*100,f'rain_alpha_{i}':.7})
+        keys=list(channels);f=start_file(channels,artboard,480,800,artboard+'Controls')
+        node=f.node(name,x=240,y=y,sx=scale,sy=scale,opacity=0);f.bind(18,keys.index('show_'+name))
         if name=='firefly':firefly(f,node,keys)
         elif name=='balloon':
             f.bind(14,keys.index('balloon_y'));f.bind(15,keys.index('balloon_rotation'));balloon(f,node)
         else:cloud(f,node,keys)
-    finish_file(f,'nature','Preview')
+        finish_file(f,name,'Preview')
     rows=['-- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.',
           f'return {{bolt_points={BOLT_POINTS},fork_points={FORK_POINTS},',
           '-- Preview: full 480x800 artboard, including above and beside the cloud.',
           'preview={x=240,y=300,scale=1.7,width=480,height=800},',
           'target={min_x=-240/1.7,max_x=240/1.7,min_y=-300/1.7,max_y=500/1.7},drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
-    (ROOT/'rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
+    (ROOT/'shared/objects/rain_cloud/rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 
 if __name__=='__main__':gallery();nature()

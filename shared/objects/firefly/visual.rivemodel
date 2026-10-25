@@ -1,0 +1,5 @@
+scene: "/shared/objects/firefly/visual.rivescene"
+artboard: "Firefly"
+default_state_machine: "Preview"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true
