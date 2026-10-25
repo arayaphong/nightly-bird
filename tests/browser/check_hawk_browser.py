@@ -71,6 +71,8 @@ with sync_playwright() as p:
  # Repeat immediately while the action is definitely active. Doing this after
  # multiple software-GPU screenshots can accidentally start a fresh dive.
  page.keyboard.down('Space');frames(1);page.keyboard.up('Space');frames(2)
+ left_dive=snap('rive-hawk-dive-left.png')
+ assert not ready(left_dive) and beak_x(left_dive)<pt(240,470)[0]-15,'Left-facing dive did not render'
  tap(130);frames(2)
  dive=snap('rive-hawk-dive.png');assert not ready(dive),'Button did not enter busy state'
  assert beak_x(dive)>pt(240,470)[0]+15,'Turn was not available during the dive'
