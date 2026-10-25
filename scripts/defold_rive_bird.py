@@ -211,6 +211,7 @@ def build():
     channels={'wing_front':0,'wing_back':0,'wing_scale':1,'eye_open':1,'eye_lid':0,'upper_beak':0,'lower_beak':0,'cheek_scale':1,'cheek_y':282,'mouth_open':0,'eye_normal':1,'eye_white':0,'mouth_x1':74,'mouth_y1':-8,'mouth_x2':70,'mouth_y2':6}
     channels.update({'equip_'+k:0 for k in (*ITEMS,'coat','hood','field')})
     for i in range(3):channels.update({f'field_scale_{i}':1,f'field_alpha_{i}':0})
+    channels['crest_visible']=1
     f=start_file(channels,'NightlyBird',560,560)
     root=f.node('svg-origin',x=20,y=40)
     source=ET.parse(ROOT/'assets/svg/characters/bird.svg').getroot()
@@ -242,6 +243,7 @@ def build():
         elif key=='beak-upper':f.bind(15,5)
         elif key=='beak-lower':f.bind(15,6)
         elif key=='cheek':f.bind(16,7);f.bind(17,7);f.bind(14,8)
+        elif key=='crest':f.bind(18,list(channels).index('crest_visible'))
         elif key=='mouth':
             f.bind(18,9)
         for child in reversed(list(group)):

@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.4.2 is an isolated, interactive Rive bird and equipment proof. The bird is drawn from
+Version 0.4.3 is an isolated, interactive Rive bird and equipment proof. The bird is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -24,6 +24,8 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
   equipment while the first holds flight. Green frames and เปิด/ปิด show state.
 - The magnet has no additional painted toes. It renders under the original
   bird body/feet, so the existing foot paths overlap its grip.
+- The lightning suit has a plain blue hood without red crest decorations.
+  Equipping it hides the bird's crest; removing it restores the original crest.
 
 Equipment stays equipped until toggled off. This preview does not apply pickup
 timers, attraction to collectibles, laser firing or damage protection yet.
@@ -71,7 +73,7 @@ Outputs:
   the VkQuality automatic backend selector.
   **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
   are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
-  version code 9, so the same local signing key can update the earlier test app.
+  version code 10, so the same local signing key can update the earlier test app.
 
 Web needs WebGL2. The Rive extension is pinned to commit
 `0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
