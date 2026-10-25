@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.3.2 is an isolated, interactive Rive bird proof. The bird is drawn from
+Version 0.4.0 is an isolated, interactive Rive bird and equipment proof. The bird is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -15,6 +15,14 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
 - The original wing WAV starts when flapping begins. Each recording finishes
   naturally; continued input repeats it without overlap. Releasing stops renewal.
 - Losing focus clears held input and stops sound.
+- Toggle the four vector icon cards (or **1–4**) to equip/remove a foot-held
+  magnet with three inward-pulsing field rings, a slung laser gun, a yellow
+  safety helmet, and the lightning suit (coat + hood). All 16 combinations work
+  independently of flapping, blinking and chewing. A second finger can toggle
+  equipment while the first holds flight. Green frames and เปิด/ปิด show state.
+
+Equipment stays equipped until toggled off. This preview does not apply pickup
+timers, attraction to collectibles, laser firing or damage protection yet.
 
 Autonomous idle flaps and random blinks are deliberately disabled in this manual
 proof. Motion equations, pivots, rotations, compression, blink timing and three
@@ -59,7 +67,7 @@ Outputs:
   the VkQuality automatic backend selector.
   **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
   are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
-  version code 6, so the same local signing key can update the earlier test app.
+  version code 7, so the same local signing key can update the earlier test app.
 
 Web needs WebGL2. The Rive extension is pinned to commit
 `0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
@@ -73,6 +81,10 @@ Web needs WebGL2. The Rive extension is pinned to commit
 - `rive-demo/demo.script`: sends numeric channel values through the official
   `rive.cmd.setViewModelInstanceNumber` API, and handles native sound callbacks.
 - `rive-demo/demo.gui_script`: independent touch/keyboard input and native GUI.
+- `rive-demo/equipment.lua`: independent equipment flags and the original
+  inward field-ring phases. No equipment action resets bird motion.
+- `rive-demo/equipment-icons.riv`: original item SVGs, vector card backgrounds
+  and bound active frames, aligned with transparent GUI hit targets.
 - `rive-demo/demo.render_script`: Rive pass followed by GUI, explicitly restoring
   stencil/color/blend state so the native vector pass does not hide the controls.
 
@@ -97,18 +109,27 @@ python3 tests/defold/check_rive_geometry.py
 ```
 
 It parses the named SVG layers and their affine transforms, converts SVG arcs to
-cubic Beziers, and writes the public Rive 7 runtime object/property format. The
+cubic Beziers, preserves RGBA paint, linear gradients and clip paths (including
+the suit hood's even-odd opening), and writes the public Rive 7 runtime format. The
 SVG and generation code are the editable source; the `.riv` is the generated
 runtime asset. The original art's repository license applies; Mitr's OFL license
 is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
 licenses.
 
-Normal builds run both `tests/defold/rules.lua` and `rive-motion.lua` with Bob's
+Normal builds run `tests/defold/rules.lua`, `rive-motion.lua` and `equipment.lua` with Bob's
 bundled LuaJIT. An additional 300-frame comparison runs the original JS animation
 and Lua model with the same mixed time steps, press/release/repress and triggers:
 
 ```sh
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
+```
+
+An optional browser check (Playwright, Chromium and Pillow) tests the rendered
+mobile UI: a second finger toggles all four items while the first keeps flight
+held, releasing settles, and tapping again removes each item exactly once:
+
+```sh
+python3 tests/defold/check_equipment_browser.py http://127.0.0.1:8080/
 ```
 
 ## Review and deployment

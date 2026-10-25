@@ -1,6 +1,8 @@
 local WHITE=vmath.vector4(.97,.97,1,1)
 local MUTED=vmath.vector4(.62,.72,.85,1)
 local ACCENT=vmath.vector4(.74,1,.35,1)
+local ITEMS={'magnet','gun','helmet','suit'}
+local LABELS={'แม่เหล็ก','ปืนเลเซอร์','หมวกนิรภัย','ชุดกันฟ้าผ่า'}
 local function text(x,y,value,size,color)
     local n=gui.new_text_node(vmath.vector3(x,y,0),value)
     gui.set_font(n,'main');gui.set_scale(n,vmath.vector3(size/32,size/32,1))
@@ -13,16 +15,25 @@ end
 local function send(id,data) msg.post('/demo#script',id,data or {}) end
 function init(self)
     msg.post('.','acquire_input_focus')
-    text(240,742,'NIGHTLY BIRD',32)
-    text(240,698,'RIVE · VECTOR 2D',17,ACCENT)
-    text(240,655,'แตะค้างเพื่อกระพือปีก · ปล่อยเพื่อพัก',16,MUTED)
-    self.blink=box(130,277,190,56,vmath.vector4(.15,.23,.38,1))
-    self.chew=box(350,277,190,56,vmath.vector4(.15,.23,.38,1))
-    text(130,277,'กระพริบตา',20);text(350,277,'เคี้ยว',20)
-    self.hold=box(240,173,410,74,ACCENT)
-    text(240,173,'แตะค้างเพื่อกระพือปีก',23,vmath.vector4(.04,.09,.12,1))
-    self.status=text(240,101,'ปีก: พัก',17,MUTED)
-    text(240,53,'Space: กระพือ  ·  B: ตา  ·  C: เคี้ยว',14,MUTED)
+    text(240,752,'NIGHTLY BIRD',32)
+    text(240,710,'RIVE · VECTOR 2D',17,ACCENT)
+    text(240,680,'แตะค้างเพื่อกระพือปีก · ปล่อยเพื่อพัก',16,MUTED)
+    self.items={};self.badges={}
+    for i,key in ipairs(ITEMS) do
+        local x=75+(i-1)*110
+        -- Artwork and card frames are Rive vectors; transparent GUI nodes hit-test.
+        self.items[key]=box(x,340,94,106,vmath.vector4(0,0,0,0))
+        text(x,326,LABELS[i],14)
+        self.badges[key]=text(x,304,'ปิด',12,MUTED)
+    end
+    self.blink=box(130,245,190,48,vmath.vector4(.15,.23,.38,1))
+    self.chew=box(350,245,190,48,vmath.vector4(.15,.23,.38,1))
+    text(130,245,'กระพริบตา',20);text(350,245,'เคี้ยว',20)
+    self.hold=box(240,155,410,66,ACCENT)
+    text(240,155,'แตะค้างเพื่อกระพือปีก',23,vmath.vector4(.04,.09,.12,1))
+    self.status=text(240,95,'ปีก: พัก',17,MUTED)
+    text(240,53,'Space: กระพือ · B: ตา · C: เคี้ยว',13,MUTED)
+    text(240,30,'1–4: ใส่ / ถอดไอเท็ม',12,MUTED)
     self.pointer=false;self.keyboard=false;self.fingers={}
     local platform=sys.get_sys_info().system_name
     self.touch_device=platform=='Android' or platform=='iPhone OS'
@@ -32,7 +43,21 @@ function init(self)
 end
 function on_message(self,id,message)
     if id==hash('status') then gui.set_text(self.status,'ปีก: '..message.text)
+    elseif id==hash('equipment_state') then
+        local badge=self.badges[message.item]
+        if badge then
+            gui.set_text(badge,message.enabled and 'เปิด' or 'ปิด')
+            gui.set_color(badge,message.enabled and ACCENT or MUTED)
+        end
     elseif id==hash('clear_input') then self.pointer=false;self.keyboard=false;self.fingers={} end
+end
+local function button(self,x,y)
+    for _,key in ipairs(ITEMS) do
+        if gui.pick_node(self.items[key],x,y) then send('toggle_equipment',{item=key});return true end
+    end
+    if gui.pick_node(self.blink,x,y) then send('blink');return true end
+    if gui.pick_node(self.chew,x,y) then send('chew');return true end
+    return false
 end
 local function held(self)
     return self.keyboard or self.pointer or next(self.fingers)~=nil
@@ -42,23 +67,26 @@ function on_input(self,id,action)
         self.touch_device=true
         for _,finger in ipairs(action.touch or {}) do
             if finger.pressed then
-                if gui.pick_node(self.blink,finger.x,finger.y) then send('blink')
-                elseif gui.pick_node(self.chew,finger.x,finger.y) then send('chew')
-                else self.fingers[finger.id]=true end
+                if not button(self,finger.x,finger.y) then self.fingers[finger.id]=true end
             elseif finger.released then self.fingers[finger.id]=nil end
         end
         send('flight',{held=held(self)})
         return true
     end
     if id==hash('pointer') and self.touch_device then return true end
+    for _,key in ipairs(ITEMS) do
+        if id==hash(key) then
+            if action.pressed then send('toggle_equipment',{item=key}) end
+            return true
+        end
+    end
     if action.pressed and (id==hash('blink') or id==hash('chew')) then
         send(id==hash('blink') and 'blink' or 'chew');return true
     end
     local pointer,keyboard=id==hash('pointer'),id==hash('activate')
     if not pointer and not keyboard then return false end
     if action.pressed then
-        if pointer and gui.pick_node(self.blink,action.x,action.y) then send('blink');return true end
-        if pointer and gui.pick_node(self.chew,action.x,action.y) then send('chew');return true end
+        if pointer and button(self,action.x,action.y) then return true end
         if pointer then self.pointer=true else self.keyboard=true end
     elseif action.released then
         if pointer then self.pointer=false else self.keyboard=false end

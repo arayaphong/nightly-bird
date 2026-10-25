@@ -13,10 +13,10 @@ from fontTools.pens.recordingPen import RecordingPen
 from fontTools.misc.transform import Transform, Identity
 ROOT = Path(__file__).resolve().parent.parent
 # Public Rive property wire types: uvarint, float32, string, bytes, ARGB32.
-FLOAT = {7,8,11,12,13,14,15,16,17,18,24,25,47,84,85,86,87,575}
+FLOAT = {7,8,11,12,13,14,15,16,17,18,24,25,33,34,35,39,42,46,47,84,85,86,87,575}
 STRING = {4,55,557}
 BYTES = {588}
-COLOR = {37}
+COLOR = {37,38}
 def var(value):
     value=int(value); out=bytearray()
     while value>127:out.append((value&127)|128);value>>=7
@@ -83,10 +83,13 @@ def contours(d,t):
     flush(False);return paths
 
 def color(value):
+    if value.startswith('rgba('):
+        r,g,b,a=map(float,value[5:-1].split(','))
+        return round(a*255)<<24|int(r)<<16|int(g)<<8|int(b)
     assert value.startswith('#') and len(value)==7,value
     return 0xff000000|int(value[1:],16)
 
-def draw_path(f,element,parent):
+def draw_path(f,element,parent,definitions=None):
     shape=f.obj(3,{5:parent,18:float(element.get('opacity','1'))},True)
     for points,closed in contours(element.get('d'),transform(element.get('transform'))):
         path=f.obj(16,{5:shape,32:int(closed)},True)
@@ -106,21 +109,116 @@ def draw_path(f,element,parent):
         if kind==20:props[40]=0 if element.get('fill-rule','nonzero')=='nonzero' else 1
         else:
             props.update({47:float(element.get('stroke-width','1')),48:{'butt':0,'round':1,'square':2}.get(element.get('stroke-linecap'),0),49:{'miter':0,'round':1,'bevel':2}.get(element.get('stroke-linejoin'),0)})
-        paint=f.obj(kind,props,True);f.obj(18,{5:paint,37:color(value)},True)
+        paint=f.obj(kind,props,True)
+        if value.startswith('url(#'):
+            gradient=definitions[value[5:-1]]
+            assert gradient.tag.endswith('linearGradient')
+            assert gradient.get('gradientUnits')=='userSpaceOnUse'
+            t=transform(element.get('transform')).transform(transform(gradient.get('gradientTransform')))
+            x1,y1=t.transformPoint((float(gradient.get('x1',0)),float(gradient.get('y1',0))))
+            x2,y2=t.transformPoint((float(gradient.get('x2',1)),float(gradient.get('y2',0))))
+            grad=f.obj(22,{5:paint,42:x1,33:y1,34:x2,35:y2},True)
+            for stop in gradient:
+                offset=stop.get('offset','0')
+                pos=float(offset[:-1])/100 if offset.endswith('%') else float(offset)
+                f.obj(19,{5:grad,38:color(stop.get('stop-color')),39:pos},True)
+        else:f.obj(18,{5:paint,37:color(value)},True)
+    return shape
 
-def build():
+def path(d,fill='none',**attrs):
+    return ET.Element('path',{'d':d,'fill':fill,**{k.replace('_','-'):str(v) for k,v in attrs.items()}})
+
+def draw_group(f,group,parent,definitions):
+    """Retain nested SVG clipping and gradients as native Rive components."""
+    for child in reversed(list(group)):
+        if child.tag.endswith('path'):draw_path(f,child,parent,definitions)
+        elif child.tag.endswith('g'):
+            t=transform(child.get('transform'))
+            a,b,c,d,x,y=t
+            sx=math.hypot(a,b)
+            node=f.node('svg-group',parent,x,y,math.atan2(b,a),sx,(a*d-b*c)/sx)
+            clip=child.get('clip-path')
+            if clip:
+                source=f.node('clip-source',parent)
+                for p in definitions[clip[5:-1]]:
+                    p=ET.fromstring(ET.tostring(p))
+                    p.set('fill','none');p.set('stroke','none')
+                    draw_path(f,p,source)
+                f.obj(42,{5:node,92:source,93:0,94:1},True)
+            draw_group(f,child,node,definitions)
+
+def asset(name):
+    svg=ET.parse(ROOT/f'assets/svg/items/{name}.svg').getroot()
+    return svg,{g.get('id'):g for g in svg.iter() if g.get('id')}
+
+def start_file(channels,name,width,height):
     f=File();f.obj(23)
-    channels={'wing_front':0,'wing_back':0,'wing_scale':1,'eye_open':1,'eye_lid':0,'upper_beak':0,'lower_beak':0,'cheek_scale':1,'cheek_y':282,'mouth_open':0,'eye_normal':1,'eye_white':0,'mouth_x1':74,'mouth_y1':-8,'mouth_x2':70,'mouth_y2':6}
     f.obj(435,{557:'BirdControls'})
-    for name in channels:f.obj(431,{557:name})
+    for channel in channels:f.obj(431,{557:channel})
     f.obj(437,{4:'Default',566:0})
     for i,value in enumerate(channels.values()):f.obj(442,{554:i,575:value})
-    f.obj(1,{4:'NightlyBird',7:560,8:560,583:0,236:0},True)
+    f.obj(1,{4:name,7:width,8:height,583:0,236:0},True)
+    return f
+
+def finish_file(f,name):
+    f.obj(53,{55:'Bird'});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
+    dest=ROOT/f'defold/rive-demo/{name}.riv';dest.write_bytes(f.data)
+    print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
+
+ITEMS=('magnet','gun','helmet','suit')
+
+def equipment(f,key,root,channels):
+    node=f.node(key,root,opacity=0);f.bind(18,channels.index('equip_'+('gun' if key=='sling' else key)))
+    if key=='sling':
+        parent=f.node('sling-mount',node,280,318,sx=487/420,sy=487/420)
+        draw_path(f,path('M-48 -35 Q-35 18 22 91',stroke='#242b3d',stroke_width=9,stroke_linecap='round'),parent)
+        return
+    if key=='field':
+        for i in range(3):
+            ring=f.node('field-ring-'+str(i),node,280,318)
+            f.bind(16,channels.index(f'field_scale_{i}'));f.bind(17,channels.index(f'field_scale_{i}'))
+            f.bind(18,channels.index(f'field_alpha_{i}'))
+            draw_path(f,path('M260 0 A260 260 0 0 1 -260 0 A260 260 0 0 1 260 0 Z',stroke='#ff7878',stroke_width=3),ring)
+        return
+    if key in ('magnet','gun','helmet'):
+        # Same ratio as bird-painter.js: item r/100 vs bird r*4.2/487.
+        ratio=487/420
+        x,y=(280-.62*487/4.2,318+1.2*487/4.2) if key=='magnet' else (280,318)
+        parent=f.node(key+'-mount',node,x,y,sx=ratio,sy=ratio)
+        _,defs=asset(key);draw_group(f,defs[key],parent,defs)
+        return
+    _,defs=asset('suit');draw_group(f,defs[key],node,defs)
+
+def icons():
+    channels={'equip_'+k:0 for k in ITEMS}
+    f=start_file(channels,'Equipment',480,800)
+    for i,key in enumerate(ITEMS):
+        root=f.node(key+'-card',x=75+110*i,y=800-340)
+        # SVG drawing order is reversed in the runtime component stream.
+        active=f.node(key+'-active',root,opacity=0);f.bind(18,i)
+        draw_path(f,path('M-47 -53 L47 -53 L47 53 L-47 53 Z',stroke='#bdff59',stroke_width=2.5),active)
+        svg,defs=asset(key)
+        x,y,w,h=map(float,svg.get('viewBox').split())
+        scale=min(52/w,46/h)
+        parent=f.node(key+'-icon',root,-(x+w/2)*scale,-15-(y+h/2)*scale,sx=scale,sy=scale)
+        if key=='suit':
+            draw_group(f,defs['hood'],parent,defs);draw_group(f,defs['coat'],parent,defs)
+        else:draw_group(f,defs[key],parent,defs)
+        draw_path(f,path('M-47 -53 L47 -53 L47 53 L-47 53 Z','#152136',stroke='#344965',stroke_width=1),root)
+    finish_file(f,'equipment-icons')
+
+def build():
+    channels={'wing_front':0,'wing_back':0,'wing_scale':1,'eye_open':1,'eye_lid':0,'upper_beak':0,'lower_beak':0,'cheek_scale':1,'cheek_y':282,'mouth_open':0,'eye_normal':1,'eye_white':0,'mouth_x1':74,'mouth_y1':-8,'mouth_x2':70,'mouth_y2':6}
+    channels.update({'equip_'+k:0 for k in (*ITEMS,'coat','hood','field')})
+    for i in range(3):channels.update({f'field_scale_{i}':1,f'field_alpha_{i}':0})
+    f=start_file(channels,'NightlyBird',560,560)
     root=f.node('svg-origin',x=20,y=40)
     source=ET.parse(ROOT/'assets/svg/characters/bird.svg').getroot()
     ids={g.get('id'):g for g in source if g.get('id')}
-    order=['wing-back','body','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','eye-left','eye-left-white','eye-left-lid','eye-right','eye-right-white','eye-right-lid','eyebrows','mouth','beak-upper','beak-lower']
+    order=['field','wing-back','body','coat','sling','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','hood','eye-left','eye-left-white','eye-left-lid','eye-right','eye-right-white','eye-right-lid','eyebrows','mouth','beak-upper','beak-lower','magnet','gun','helmet']
     for key in reversed(order):
+        if key in (*ITEMS,'coat','hood','field','sling'):
+            equipment(f,key,root,list(channels));continue
         group=ids[key]
         # Outer nodes are exactly the pivots and transforms in bird-painter.js.
         if key.startswith('wing-front'):
@@ -149,10 +247,7 @@ def build():
                 if key=='mouth':
                     child.set('data-mouth','1');child.set('transform','');child.set('d','M0 0 L74 -8 L70 6 Z')
                 draw_path(f,child,node)
-    f.obj(53,{55:'Bird'})
-    f.obj(57)
-    f.obj(63);f.obj(62);f.obj(64)
-    dest=ROOT/'defold/rive-demo/bird.riv';dest.write_bytes(f.data)
-    print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
+    finish_file(f,'bird')
     (ROOT/'defold/rive-demo/channels.json').write_text(json.dumps(list(channels),indent=2)+'\n')
+    icons()
 if __name__=='__main__':build()

@@ -1,3 +1,4 @@
 name: "rive-demo"
 instances { id: "demo" prototype: "/rive-demo/bird.go" position {x: 228 y: 507} scale3 {x: .6 y: .6 z: 1} }
+embedded_instances { id: "icons" data: "components { id: \"icons\" component: \"/rive-demo/equipment-icons.rivemodel\" }" position {x: 240 y: 400} }
 embedded_instances { id: "ui" data: "components { id: \"gui\" component: \"/rive-demo/demo.gui\" }" }

@@ -1,4 +1,5 @@
 local motion=require('rive-demo.motion')
+local equipment=require('rive-demo.equipment')
 local function clear_input(self)
     self.motion.held=false
     msg.post('/ui#gui','clear_input')
@@ -15,7 +16,7 @@ local function play_wing(self)
     end)
 end
 function init(self)
-    self.motion=motion.new();self.last={};self.playing=false
+    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false
     self.vm=rive.get_view_model_instance('#bird')
     -- The command-queue view model may become available after initialization.
     window.set_listener(function(self,event)
@@ -34,17 +35,31 @@ function update(self,dt)
     if width~=self.width or height~=self.height then
         self.width,self.height=width,height
         local scale=math.min(width/480,height/800)
-        go.set_scale(vmath.vector3(.6*scale,.6*scale,1))
-        go.set_position(vmath.vector3(width/2-12*scale,height/2+107*scale,0))
+        go.set_scale(vmath.vector3(.52*scale,.52*scale,1))
+        go.set_position(vmath.vector3(width/2-10*scale,height/2+150*scale,0))
+        go.set_scale(vmath.vector3(scale,scale,1),'/icons')
+        go.set_position(vmath.vector3(width/2,height/2,0),'/icons')
     end
     motion.step(self.motion,math.min(dt,.033))
+    equipment.step(self.items,dt)
     if not self.vm then self.vm=rive.get_view_model_instance('#bird') end
     if not self.vm then return end
     local values=motion.values(self.motion)
+    for name,value in pairs(equipment.values(self.items)) do values[name]=value end
     for name,value in pairs(values) do
         if self.last[name]~=value then
             rive.cmd.setViewModelInstanceNumber(self.vm,name,value)
             self.last[name]=value
+        end
+    end
+    if not self.icons_vm then self.icons_vm=rive.get_view_model_instance('/icons#icons') end
+    if self.icons_vm then
+        for _,key in ipairs(equipment.keys) do
+            local name='equip_'..key
+            if self.last_icons[name]~=values[name] then
+                rive.cmd.setViewModelInstanceNumber(self.icons_vm,name,values[name])
+                self.last_icons[name]=values[name]
+            end
         end
     end
     play_wing(self)
@@ -59,5 +74,12 @@ function on_message(self,id,message)
     if id==hash('flight') then self.motion.held=message.held
     elseif id==hash('blink') then self.motion.blink=.18;print('BLINK_TRIGGER')
     elseif id==hash('chew') then self.motion.chew=1.48;print('CHEW_TRIGGER') end
+    if id==hash('toggle_equipment') then
+        local enabled=equipment.toggle(self.items,message.item)
+        if enabled~=nil then
+            msg.post('/ui#gui','equipment_state',{item=message.item,enabled=enabled})
+            print('EQUIPMENT '..message.item..' '..tostring(enabled))
+        end
+    end
 end
 function final(self) window.set_listener(nil) end

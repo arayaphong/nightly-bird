@@ -14,5 +14,18 @@
   "mouth_x1",
   "mouth_y1",
   "mouth_x2",
-  "mouth_y2"
+  "mouth_y2",
+  "equip_magnet",
+  "equip_gun",
+  "equip_helmet",
+  "equip_suit",
+  "equip_coat",
+  "equip_hood",
+  "equip_field",
+  "field_scale_0",
+  "field_alpha_0",
+  "field_scale_1",
+  "field_alpha_1",
+  "field_scale_2",
+  "field_alpha_2"
 ]
