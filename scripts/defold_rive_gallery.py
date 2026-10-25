@@ -4,7 +4,6 @@ import math
 import xml.etree.ElementTree as ET
 from defold_rive_bird import ROOT,start_file,finish_file,draw_group,draw_path,path,transform
 
-PUFFS=[(-60,1,26),(-36,-5,32),(-12,4,28),(12,-6,30),(36,2,25),(60,0,29)]
 DROPS=[(-62+i*7.3,(i*.173)%1) for i in range(18)]
 
 def svg_asset(relative):
@@ -27,18 +26,33 @@ def paint_svg(f,svg,defs,parent):
         draw_group(f,group,node,defs)
 
 def cloud(f,parent,channels=None):
-    for i in reversed(range(len(PUFFS))):
-        x,y,r=PUFFS[i]
-        node=f.node('puff-'+str(i),parent,x,y)
-        if channels:f.bind(14,channels.index('puff_y_'+str(i)))
-        defs={'puff':radial('puff',r,'#5b6181','#2b2f47',0,-r*.3)}
-        draw_path(f,ellipse(r,'url(#puff)'),node,defs)
+    svg,defs=svg_asset('environment/rain-cloud')
+    body=f.node('cloud-body',parent)
+    if channels:f.bind(14,channels.index('cloud_y'))
+    # Rive's exporter emits foreground first. The bolt starts behind the cloud.
+    if channels:
+        flash=f.node('cloud-flash',body,opacity=0);f.bind(18,channels.index('flash_alpha'))
+        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
+        silhouette.set('fill','rgba(197,213,255,.5)');draw_path(f,silhouette,flash)
+    draw_group(f,svg,body,defs)
+    if channels:
+        bolt=f.node('lightning',parent,opacity=0);f.bind(18,channels.index('bolt_alpha'))
+        main='M12 23 L-3 53 L9 61 L-10 90 L1 95 L-16 131'
+        fork='M9 61 L31 78 L25 94'
+        for d in (main,fork):
+            draw_path(f,path(d,stroke='#fff8dd',stroke_width=1.8,stroke_linecap='round',stroke_linejoin='round'),bolt)
+        for d in (main,fork):
+            draw_path(f,path(d,stroke='rgba(150,195,255,.35)',stroke_width=6,stroke_linecap='round',stroke_linejoin='round'),bolt)
     for i,(x,phase) in enumerate(DROPS):
-        node=f.node('rain-'+str(i),parent,x,18+phase*115)
+        node=f.node('rain-'+str(i),parent,x,36+phase*100)
         if channels:
             f.bind(13,channels.index('rain_x_'+str(i)));f.bind(14,channels.index('rain_y_'+str(i)))
             f.bind(18,channels.index('rain_alpha_'+str(i)))
         draw_path(f,path('M0 0 L-3 9',stroke='rgba(150,175,220,.55)',stroke_width=1.2,stroke_linecap='round'),node)
+    if channels:
+        glow=f.node('lightning-glow',parent,0,45,opacity=0);f.bind(18,channels.index('flash_alpha'))
+        defs={'flash':radial('flash',140,'rgba(140,175,255,.32)','rgba(80,130,255,0)')}
+        draw_path(f,ellipse(140,'url(#flash)'),glow,defs)
 
 def firefly(f,parent,channels=None):
     svg,defs=svg_asset('items/firefly')
@@ -90,10 +104,9 @@ def gallery():
 def nature():
     channels={'show_firefly':0,'show_balloon':0,'show_cloud':0,
               'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6,
-              'balloon_y':300,'balloon_rotation':0}
-    for i,(_,y,_) in enumerate(PUFFS):channels['puff_y_'+str(i)]=y
+              'balloon_y':300,'balloon_rotation':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0}
     for i,(x,phase) in enumerate(DROPS):
-        channels.update({f'rain_x_{i}':x,f'rain_y_{i}':18+phase*115,f'rain_alpha_{i}':.7})
+        channels.update({f'rain_x_{i}':x,f'rain_y_{i}':36+phase*100,f'rain_alpha_{i}':.7})
     keys=list(channels);f=start_file(channels,'Nature',480,800,'NatureControls')
     for name in ('firefly','balloon','cloud'):
         scale={'firefly':6,'balloon':90,'cloud':1.7}[name]
@@ -104,9 +117,7 @@ def nature():
             f.bind(14,keys.index('balloon_y'));f.bind(15,keys.index('balloon_rotation'));balloon(f,node)
         else:cloud(f,node,keys)
     finish_file(f,'nature','Preview')
-    rows=['-- Generated preview layout; cloud geometry follows the JS puff/rain painter.','return {puffs={']
-    rows.extend(f'    {{x={x},y={y},r={r}}},' for x,y,r in PUFFS)
-    rows.append('},drops={')
+    rows=['-- Generated rain layout; the cloud silhouette is design A in rain-cloud.svg.','return {drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
     (ROOT/'defold/rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 

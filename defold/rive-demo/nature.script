@@ -1,4 +1,10 @@
 local motion=require('rive-demo.nature-motion')
+local function publish(self)
+    local busy=self.motion.remaining>0
+    if busy~=self.busy then
+        self.busy=busy;msg.post('/ui#gui','cloud_status',{busy=busy})
+    end
+end
 local function sync(self)
     if not self.vm then self.vm=rive.get_view_model_instance('#nature') end
     if not self.vm then return end
@@ -7,6 +13,9 @@ local function sync(self)
             rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value
         end
     end
+end
+local function cancel(self)
+    motion.cancel(self.motion);sound.stop('#thunder');publish(self);sync(self)
 end
 function init(self)
     self.motion=motion.new();self.last={};self.active=false;self.page='home'
@@ -18,13 +27,17 @@ function update(self,dt)
         self.width,self.height=w,h;local scale=math.min(w/480,h/800)
         go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
     end
-    if self.active then motion.step(self.motion,dt);sync(self) end
+    if self.active then motion.step(self.motion,dt);publish(self);sync(self) end
 end
 function on_message(self,id,message)
     if id==hash('page') then
         self.page=message.name
+        if self.page~='cloud' then cancel(self) end
         self.active=self.page=='firefly' or self.page=='balloon' or self.page=='cloud'
         if self.active then sync(self) end
         msg.post('#nature',self.active and 'enable' or 'disable')
+    elseif id==hash('cancel') then cancel(self)
+    elseif id==hash('lightning') and self.active and self.page=='cloud' and motion.strike(self.motion) then
+        sound.stop('#thunder');sound.play('#thunder');publish(self);sync(self)
     end
 end

@@ -27,6 +27,7 @@ function init(self)
             self.motion.wants_sound=false
             sound.stop('#chew')
             msg.post('/hawk#script','cancel')
+            msg.post('/nature#script','cancel')
         end
     end)
     print('RIVE_BIRD_READY')

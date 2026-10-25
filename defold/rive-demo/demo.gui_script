@@ -128,9 +128,14 @@ function init(self)
         add_text(240,752,'NIGHTLY BIRD',32)
         add_text(240,710,entry[3],17,ACCENT)
         add_text(240,680,entry[2],25,WHITE)
-        add_text(240,641,'แอนิเมชันอัตโนมัติ',16,MUTED)
+        add_text(240,641,entry[1]=='cloud' and 'ฝนตก · กดปุ่มเพื่อทดสอบฟ้าแลบ' or 'แอนิเมชันอัตโนมัติ',16,MUTED)
+        if entry[1]=='cloud' then
+            self.cloud_busy=false
+            self.lightning=add_box(240,190,270,66,ACCENT)
+            self.lightning_label=add_text(240,190,'ฟ้าแลบ',25,vmath.vector4(.04,.09,.12,1))
+        end
         add_text(240,94,'หน้ารวมเพื่อเลือกตัวละครอื่น',16,MUTED)
-        add_text(240,53,'ปัด: เปลี่ยนตัวละคร · Esc: หน้ารวม',13,MUTED)
+        add_text(240,53,entry[1]=='cloud' and 'Space: ฟ้าแลบ · Esc: หน้ารวม' or 'ปัด: เปลี่ยนตัวละคร · Esc: หน้ารวม',13,MUTED)
     end
     for _,name in ipairs(PAGES) do gui.set_enabled(self[name..'_root'],false) end
     self.back=box(48,752,64,34,vmath.vector4(.15,.23,.38,1))
@@ -157,6 +162,11 @@ function on_message(self,id,message)
         gui.set_text(self.dive_label,message.busy and ('กำลังพุ่ง · '..message.seconds) or 'พุ่งตัว')
         gui.set_color(self.dive,message.busy and vmath.vector4(.15,.23,.38,1) or ACCENT)
         gui.set_color(self.dive_label,message.busy and MUTED or vmath.vector4(.04,.09,.12,1))
+    elseif id==hash('cloud_status') then
+        self.cloud_busy=message.busy
+        gui.set_text(self.lightning_label,message.busy and 'กำลังฟ้าแลบ' or 'ฟ้าแลบ')
+        gui.set_color(self.lightning,message.busy and vmath.vector4(.15,.23,.38,1) or ACCENT)
+        gui.set_color(self.lightning_label,message.busy and MUTED or vmath.vector4(.04,.09,.12,1))
     elseif id==hash('equipment_state') then
         local badge=self.badges[message.item]
         if badge then
@@ -173,6 +183,7 @@ local function button_at(self,x,y)
     end
     if self.page=='fish' then return gui.pick_node(self.turn,x,y) and 'turn' or nil end
     if self.page=='hawk' then return not self.hawk_busy and gui.pick_node(self.dive,x,y) and 'dive' or nil end
+    if self.page=='cloud' then return not self.cloud_busy and gui.pick_node(self.lightning,x,y) and 'lightning' or nil end
     if self.page~='bird' then return nil end
     for _,key in ipairs(ITEMS) do if gui.pick_node(self.items[key],x,y) then return key end end
     if gui.pick_node(self.blink,x,y) then return 'blink' end
@@ -183,6 +194,7 @@ local function activate(self,button)
     elseif button:sub(1,7)=='select:' then set_page(self,button:sub(8))
     elseif button=='turn' then msg.post('/fish#script','turn')
     elseif button=='dive' then if not self.hawk_busy then msg.post('/hawk#script','dive') end
+    elseif button=='lightning' then if not self.cloud_busy then msg.post('/nature#script','lightning') end
     elseif button=='blink' or button=='chew' then send(button)
     else send('toggle_equipment',{item=button}) end
 end
@@ -226,8 +238,10 @@ function on_input(self,id,action)
         end
         return true
     end
-    if self.page=='fish' or self.page=='hawk' then
-        if id==hash('activate') and action.pressed then activate(self,self.page=='fish' and 'turn' or 'dive') end
+    if self.page=='fish' or self.page=='hawk' or self.page=='cloud' then
+        if id==hash('activate') and action.pressed then
+            activate(self,({fish='turn',hawk='dive',cloud='lightning'})[self.page])
+        end
         return true
     end
     if self.page~='bird' then return true end

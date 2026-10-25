@@ -1,12 +1,5 @@
--- Generated preview layout; cloud geometry follows the JS puff/rain painter.
-return {puffs={
-    {x=-60,y=1,r=26},
-    {x=-36,y=-5,r=32},
-    {x=-12,y=4,r=28},
-    {x=12,y=-6,r=30},
-    {x=36,y=2,r=25},
-    {x=60,y=0,r=29},
-},drops={
+-- Generated rain layout; the cloud silhouette is design A in rain-cloud.svg.
+return {drops={
     {x=-62,phase=0},
     {x=-54.700000000000003,phase=0.17299999999999999},
     {x=-47.399999999999999,phase=0.34599999999999997},

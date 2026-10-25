@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.7.0 opens with a six-character vector gallery. Artwork is drawn from
+Version 0.7.1 opens with a six-character vector gallery. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -24,9 +24,14 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
   Flight and the ready button return automatically. Repeated input cannot
   restart or extend a dive. Leaving the page or losing focus cancels it and
   stops its sound. Wing phase continues through the action.
-- Firefly, balloon and rain-cloud pages show automatic baseline previews:
-  complementary wings and a pulsing lamp, a floating pink balloon, and six
-  shaded cloud puffs with falling rain. They have no additional action buttons.
+- Firefly and balloon pages show complementary wings and a pulsing lamp, and
+  a floating pink balloon. The rain cloud uses **design A**: one asymmetric
+  silhouette with broad flowing shadow bands, shared by its gallery thumbnail
+  and preview. The original blue-purple palette and falling rain remain.
+- The cloud's **ฟ้าแลบ** button (or **Space**) triggers a 0.48-second vector
+  lightning flash and the original `thunder.wav` once. The button pauses during
+  the action and returns automatically; repeated input cannot extend it.
+  Leaving the page or losing focus cancels the flash and stops thunder.
 - Bird input/audio stops when leaving its page; equipment stays equipped on return.
   Button taps activate on release; a horizontal swipe over a button does not
   activate it. Multitouch stays dedicated to the bird's independent controls.
@@ -114,8 +119,9 @@ Web needs WebGL2. The Rive extension is pinned to commit
 - `rive-demo/pages.lua`: gallery selection, six-character order and route bounds.
 - `rive-demo/gallery.riv`: static vector thumbnails and cards, with native GUI
   labels/hit targets. The first three reuse the original character SVGs.
-- `rive-demo/nature.riv`: firefly/balloon SVGs and procedural cloud/rain paths.
-  `nature-motion.lua` drives wings, light, bobbing, cloud movement and rain.
+- `rive-demo/nature.riv`: firefly/balloon SVGs, design-A cloud SVG, and procedural
+  rain/lightning paths. `nature-motion.lua` drives wings, light, bobbing, rain
+  and the timed lightning action; `nature.script` handles its audio and status.
 - `rive-demo/gestures.lua`: shared touch/mouse swipe recognition, tap cancellation
   and multitouch exclusion so equipment taps cannot turn into page navigation.
 - `rive-demo/fish.riv`: original fish SVG layers, clipped tail segments and pivots.
@@ -156,8 +162,9 @@ python3 tests/defold/check_rive_geometry.py
 It parses the named SVG layers and their affine transforms, converts SVG arcs to
 cubic Beziers, preserves RGBA paint, linear gradients and clip paths (including
 the suit hood's even-odd opening), and writes the public Rive 7 runtime format.
-Radial paints retain the focal highlight with Rive's concentric gradient; cloud
-circles/rain follow the original procedural painter with a fixed preview layout. The
+Radial paints retain the focal highlight with Rive's concentric gradient.
+`../assets/svg/environment/rain-cloud.svg` is the editable design-A cloud source;
+rain uses a fixed preview layout derived from the original procedural painter. The
 SVG and generation code are the editable source; the `.riv` is the generated
 runtime asset. The original art's repository license applies; Mitr's OFL license
 is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
@@ -183,6 +190,8 @@ held, releasing settles, and tapping again removes each item exactly once:
 python3 tests/defold/check_equipment_browser.py http://127.0.0.1:8080/
 python3 tests/defold/check_fish_browser.py http://127.0.0.1:8080/
 python3 tests/defold/check_hawk_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_gallery_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_cloud_browser.py http://127.0.0.1:8080/
 ```
 
 The fish browser check exercises actual swipes in both directions, automatic
