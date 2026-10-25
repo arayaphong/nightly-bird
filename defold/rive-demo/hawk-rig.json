@@ -1,0 +1,426 @@
+{
+  "wings": [
+    {
+      "id": "back-feather-0",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -2.722713633111154,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-1",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -2.91469985083053,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-2",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -3.1066860685499065,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-3",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": 2.984513020910304,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-4",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": 2.7925268031909276,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-5",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": 2.6179938779914944,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-6",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -2.6878070480712677,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-7",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -2.897246558310587,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-8",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": -3.1066860685499065,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-9",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": 2.9670597283903604,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "back-feather-10",
+      "role": "wing-back",
+      "x": 900.0,
+      "y": 585.0,
+      "angle": 2.757620218151041,
+      "pivotX": 900.0,
+      "pivotY": 585.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-0",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": -2.478367537831948,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-1",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": -2.670353755551324,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-2",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": -2.8623399732707004,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-3",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": -3.0543261909900767,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-4",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": 3.0368728984701336,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-5",
+      "role": "wing-front",
+      "x": 875.0,
+      "y": 615.0,
+      "angle": 2.862339973270701,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 0.0
+    },
+    {
+      "id": "front-feather-6",
+      "role": "wing-front",
+      "x": 867.3395555688102,
+      "y": 608.5721239031346,
+      "angle": -2.443460952792061,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 10.0
+    },
+    {
+      "id": "front-feather-7",
+      "role": "wing-front",
+      "x": 866.1705240714107,
+      "y": 610.305284372141,
+      "angle": -2.652900463031381,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 10.0
+    },
+    {
+      "id": "front-feather-8",
+      "role": "wing-front",
+      "x": 865.3873830406168,
+      "y": 612.24362644183,
+      "angle": -2.8623399732707004,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 10.0
+    },
+    {
+      "id": "front-feather-9",
+      "role": "wing-front",
+      "x": 865.0243594974017,
+      "y": 614.3024352625588,
+      "angle": -3.07177948351002,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 10.0
+    },
+    {
+      "id": "front-feather-10",
+      "role": "wing-front",
+      "x": 865.0973193125843,
+      "y": 616.3917310096007,
+      "angle": 3.001966313430247,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 10.0
+    },
+    {
+      "id": "front-feather-11",
+      "role": "wing-front",
+      "x": 860.613203993227,
+      "y": 601.1068325908201,
+      "angle": -2.3736477827122884,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 20.0
+    },
+    {
+      "id": "front-feather-12",
+      "role": "wing-front",
+      "x": 857.6794919243113,
+      "y": 605.0,
+      "angle": -2.6179938779914944,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 20.0
+    },
+    {
+      "id": "front-feather-13",
+      "role": "wing-front",
+      "x": 855.7747660812337,
+      "y": 609.4872528836601,
+      "angle": -2.8623399732707004,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 20.0
+    },
+    {
+      "id": "front-feather-14",
+      "role": "wing-front",
+      "x": 855.0121834596181,
+      "y": 614.30201006595,
+      "angle": -3.1066860685499065,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 20.0
+    },
+    {
+      "id": "front-feather-15",
+      "role": "wing-front",
+      "x": 831.839611979681,
+      "y": 573.3204977724602,
+      "angle": -2.3736477827122884,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 60.0
+    },
+    {
+      "id": "front-feather-16",
+      "role": "wing-front",
+      "x": 823.0384757729337,
+      "y": 585.0,
+      "angle": -2.6179938779914944,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 60.0
+    },
+    {
+      "id": "front-feather-17",
+      "role": "wing-front",
+      "x": 817.3242982437009,
+      "y": 598.4617586509801,
+      "angle": -2.8623399732707004,
+      "pivotX": 875.0,
+      "pivotY": 615.0,
+      "inset": 60.0
+    }
+  ],
+  "blades": [
+    {
+      "id": "blade-0",
+      "role": "blade",
+      "x": 700.0,
+      "y": 600.0,
+      "angle": -3.069537165862163,
+      "targetX": 35.0,
+      "targetY": 552.0,
+      "length": 666.730080317365
+    },
+    {
+      "id": "blade-1",
+      "role": "blade",
+      "x": 700.0,
+      "y": 560.0,
+      "angle": -3.0596867515238593,
+      "targetX": 30.0,
+      "targetY": 505.0,
+      "length": 672.2536723588797
+    },
+    {
+      "id": "blade-2",
+      "role": "blade",
+      "x": 760.0,
+      "y": 640.0,
+      "angle": -3.1219230595105194,
+      "targetX": 150.0,
+      "targetY": 628.0,
+      "length": 610.1180213696364
+    },
+    {
+      "id": "blade-3",
+      "role": "blade",
+      "x": 820.0,
+      "y": 545.0,
+      "angle": -3.061820437952593,
+      "targetX": 132.0,
+      "targetY": 490.0,
+      "length": 690.1949000101348
+    },
+    {
+      "id": "blade-4",
+      "role": "blade",
+      "x": 720.0,
+      "y": 600.0,
+      "angle": -3.0752449969768785,
+      "targetX": 118.0,
+      "targetY": 560.0,
+      "length": 603.3274401185479
+    },
+    {
+      "id": "blade-5",
+      "role": "blade",
+      "x": 780.0,
+      "y": 642.0,
+      "angle": -3.106824061733711,
+      "targetX": 205.0,
+      "targetY": 622.0,
+      "length": 575.3477209479498
+    },
+    {
+      "id": "blade-6",
+      "role": "blade",
+      "x": 910.0,
+      "y": 530.0,
+      "angle": -3.0357944806659996,
+      "targetX": 345.0,
+      "targetY": 470.0,
+      "length": 568.1769090697017
+    },
+    {
+      "id": "blade-7",
+      "role": "blade",
+      "x": 960.0,
+      "y": 560.0,
+      "angle": -3.0601406092839225,
+      "targetX": 470.0,
+      "targetY": 520.0,
+      "length": 491.6299421312742
+    },
+    {
+      "id": "blade-8",
+      "role": "blade",
+      "x": 890.0,
+      "y": 612.0,
+      "angle": -3.0231026944316555,
+      "targetX": 470.0,
+      "targetY": 562.0,
+      "length": 422.9657196511321
+    },
+    {
+      "id": "blade-9",
+      "role": "blade",
+      "x": 910.0,
+      "y": 652.0,
+      "angle": -3.032439190680916,
+      "targetX": 545.0,
+      "targetY": 612.0,
+      "length": 367.1852393547431
+    },
+    {
+      "id": "blade-10",
+      "role": "blade",
+      "x": 990.0,
+      "y": 600.0,
+      "angle": -3.039621979382322,
+      "targetX": 560.0,
+      "targetY": 556.0,
+      "length": 432.24530072633524
+    },
+    {
+      "id": "blade-11",
+      "role": "blade",
+      "x": 1010.0,
+      "y": 640.0,
+      "angle": 3.1262092518091977,
+      "targetX": 620.0,
+      "targetY": 646.0,
+      "length": 390.04615111548014
+    },
+    {
+      "id": "blade-12",
+      "role": "blade",
+      "x": 1000.0,
+      "y": 585.0,
+      "angle": -2.981679530431574,
+      "targetX": 690.0,
+      "targetY": 535.0,
+      "length": 314.0063693621516
+    }
+  ]
+}

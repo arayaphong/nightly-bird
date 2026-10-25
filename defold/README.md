@@ -1,20 +1,26 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.5.1 is an interactive Rive bird/equipment and swimming-fish proof. Artwork is drawn from
+Version 0.6.0 is an interactive Rive bird, fish and hawk animation proof. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
 
 ## Try it
 
-- Swipe **left** from the bird to open the fish test; swipe **right** to return.
-  Two vector dots at the bottom show the current page: left for bird, right for
-  fish. The current dot is larger and lime green; the other is muted.
+- Swipe **left** through bird → fish → hawk; swipe **right** to go back.
+  Three vector dots at the bottom show the current page in that order.
+  The current dot is larger and lime green; the others are muted.
   Mouse drags and the Right/Left arrow keys also navigate. The fish page has
   exactly one action button, **กลับตัว** (turn), also available on **Space**.
   The fish swims automatically: tail, fin, gill and body wobble follow the JS
   cruise pose. Turning follows the original smoothed heading and belly-down
   rendering rule, without restarting the swim phase. It stays centered for inspection.
+- The hawk page has one **พุ่งตัว** (dive) button, also available on **Space**.
+  It switches to the original dive SVG for **3 seconds**, plays the original
+  `hawk-strike.wav` once, and shows a disabled countdown on the button.
+  Flight and the ready button return automatically. Repeated input cannot
+  restart or extend a dive. Leaving the page or losing focus cancels it and
+  stops its sound. Wing phase continues through the action.
 - Bird input/audio stops when leaving its page; equipment stays equipped on return.
   Button taps activate on release; a horizontal swipe over a button does not
   activate it. Multitouch stays dedicated to the bird's independent controls.
@@ -85,7 +91,7 @@ Outputs:
   the VkQuality automatic backend selector.
   **ARM64 only**: the current Rive extension excludes Android ARMv7. Engine symbols
   are stripped before signing. App ID stays `com.arayaphong.nightlybird.defoldhello`,
-  version code 13, so the same local signing key can update the earlier test app.
+  version code 14, so the same local signing key can update the earlier test app.
 
 Web needs WebGL2. The Rive extension is pinned to commit
 `0283d4ecb604953057385ca5a4fae7130c776ae9` and requires Defold 1.14.0.
@@ -103,6 +109,9 @@ Web needs WebGL2. The Rive extension is pinned to commit
   and multitouch exclusion so equipment taps cannot turn into page navigation.
 - `rive-demo/fish.riv`: original fish SVG layers, clipped tail segments and pivots.
   `fish-motion.lua` reproduces cruise pose/heading; `fish.script` drives its view model.
+- `rive-demo/hawk.riv`: original flight/dive paths, feather pivots and insets,
+  plus view-model-controlled flutter of all thirteen dive blades. `hawk-rig.lua`
+  is generated from SVG metadata; `hawk-motion.lua` controls the timed pose.
 - `rive-demo/equipment.lua`: independent equipment flags and the original
   inward field-ring phases. No equipment action resets bird motion.
 - `rive-demo/equipment-icons.riv`: original item SVGs, vector card backgrounds
@@ -128,6 +137,7 @@ Artwork regeneration is optional and requires Python `fontTools`:
 ```sh
 python3 scripts/defold_rive_bird.py
 python3 scripts/defold_rive_fish.py
+python3 scripts/defold_rive_hawk.py
 python3 tests/defold/check_rive_geometry.py
 ```
 
@@ -140,13 +150,14 @@ is in `assets/fonts/OFL.txt`. The renderer and extension use their upstream
 licenses.
 
 Normal builds run `tests/defold/rules.lua`, `rive-motion.lua`, `equipment.lua`,
-`fish-motion.lua` and `gestures.lua` with Bob's
+`fish-motion.lua`, `gestures.lua` and `hawk-motion.lua` with Bob's
 bundled LuaJIT. An additional 300-frame comparison runs the original JS animation
 and Lua model with the same mixed time steps, press/release/repress and triggers:
 
 ```sh
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_rive_parity.mjs
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
+DEFOLD_LUAJIT=/path/to/luajit node scripts/check_hawk_parity.mjs
 ```
 
 An optional browser check (Playwright, Chromium and Pillow) tests the rendered
@@ -156,6 +167,7 @@ held, releasing settles, and tapping again removes each item exactly once:
 ```sh
 python3 tests/defold/check_equipment_browser.py http://127.0.0.1:8080/
 python3 tests/defold/check_fish_browser.py http://127.0.0.1:8080/
+python3 tests/defold/check_hawk_browser.py http://127.0.0.1:8080/
 ```
 
 The fish browser check exercises actual swipes in both directions, automatic
@@ -163,6 +175,9 @@ swimming, the turn button and upright facing, restoration of the bird page, and
 swiping over an equipment card without activating it. Fish parity compares the
 Lua channels with the actual JS painter and `Shark.afterPhysics` over 3600 frames,
 including swimming continuously across the 50-tail-cycle boundary.
+Hawk parity compares 3600 flight/dive frames with the original JS painter and
+flap update. Its browser check covers three-page navigation, dive sound,
+the three-second button/pose recovery, repeat locking and cancellation on exit.
 
 ## Review and deployment
 

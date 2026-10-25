@@ -1,0 +1,3 @@
+sound: "/assets/audio/hawk-strike.wav"
+looping: 0
+gain: 0.65

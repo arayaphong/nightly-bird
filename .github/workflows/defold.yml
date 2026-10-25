@@ -8,6 +8,7 @@ on:
       - 'scripts/defold*.py'
       - 'scripts/check_rive_parity.mjs'
       - 'scripts/check_fish_parity.mjs'
+      - 'scripts/check_hawk_parity.mjs'
       - 'tests/defold/**'
       - '.github/workflows/defold.yml'
   workflow_dispatch:

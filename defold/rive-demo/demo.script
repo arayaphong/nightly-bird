@@ -24,6 +24,7 @@ function init(self)
             clear_input(self);sound.stop('#wing');self.playing=false
             self.motion.wants_sound=false
             sound.stop('#chew')
+            msg.post('/hawk#script','cancel')
         end
     end)
     print('RIVE_BIRD_READY')
@@ -43,7 +44,7 @@ function update(self,dt)
     end
     motion.step(self.motion,math.min(dt,.033))
     equipment.step(self.items,dt)
-    if self.page=='fish' then return end
+    if self.page and self.page~='bird' then return end
     if not self.vm then self.vm=rive.get_view_model_instance('#bird') end
     if not self.vm then return end
     local values=motion.values(self.motion)
@@ -74,16 +75,17 @@ function update(self,dt)
 end
 function on_message(self,id,message)
     if id==hash('page') then
-        if message.name~='bird' and message.name~='fish' then return end
+        if message.name~='bird' and message.name~='fish' and message.name~='hawk' then return end
         self.page=message.name
         clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
         self.motion.wants_sound=false
         msg.post('#bird',self.page=='bird' and 'enable' or 'disable')
         msg.post('/icons#icons',self.page=='bird' and 'enable' or 'disable')
         msg.post('/fish#script','active',{active=self.page=='fish'})
+        msg.post('/hawk#script','active',{active=self.page=='hawk'})
         return
     end
-    if self.page=='fish' then return end
+    if self.page and self.page~='bird' then return end
     if id==hash('flight') then self.motion.held=message.held
     elseif id==hash('blink') then self.motion.blink=.18;print('BLINK_TRIGGER')
     elseif id==hash('chew') then
