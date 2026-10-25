@@ -1,38 +1,63 @@
 local rig=require('rive-demo.nature-rig')
-local M={strike_duration=.72}
+local M={charge_duration=.5,bolt_duration=.28}
+M.strike_duration=M.charge_duration+M.bolt_duration
 local function random(s,low,high)
     -- Local Park–Miller generator: no global random seed or per-frame changes.
     s.random=s.random*48271%2147483647
     return low+(high-low)*(s.random-1)/2147483646
 end
 function M.new(seed)
-    return {time=0,remaining=0,random=math.floor(math.abs(seed or os.time()))%2147483646+1,bolt={},fork={}}
+    return {time=0,remaining=0,elapsed=0,random=math.floor(math.abs(seed or os.time()))%2147483646+1,bolt={},fork={}}
 end
-function M.strike(s)
+function M.preview_target(x,y)
+    -- Preview artboard coordinates are x-right/y-down. The motion model itself
+    -- accepts a target relative to the cloud, so a game can supply its bird pose.
+    return {x=(x-rig.preview.x)/rig.preview.scale,y=(y-rig.preview.y)/rig.preview.scale}
+end
+function M.strike(s,target)
     if s.remaining>0 then return false end
     local bounds=rig.target
-    local x0,y0=random(s,-48,48),23
-    local x1,y1=random(s,bounds.min_x,bounds.max_x),random(s,bounds.min_y,bounds.max_y)
+    local x1,y1
+    if target then x1,y1=target.x,target.y
+    else x1,y1=random(s,bounds.min_x,bounds.max_x),random(s,bounds.min_y,bounds.max_y) end
+    -- Start inside the cloud on the side facing the target. Perpendicular
+    -- jitter works equally for upward, sideways and downward shots.
+    local dx,dy=x1,y1+6
+    local radius=math.sqrt((dx/80)^2+(dy/34)^2)
+    local anchor=radius>0 and math.min(.7/radius,.35) or 0
+    local x0,y0=dx*anchor,-6+dy*anchor
+    dx,dy=x1-x0,y1-y0
+    local length=math.sqrt(dx*dx+dy*dy)
+    local ux,uy=0,1
+    if length>0 then ux,uy=dx/length,dy/length end
+    local nx,ny=-uy,ux
+    local amplitude=math.min(17,length*.12)
     local direction=random(s,0,1)<.5 and -1 or 1
     s.bolt={}
     for i=1,rig.bolt_points do
         local t=(i-1)/(rig.bolt_points-1)
-        local jitter=(i==1 or i==rig.bolt_points) and 0 or direction*random(s,7,17)*math.sin(t*math.pi)
-        s.bolt[i]={x=x0+(x1-x0)*t+jitter,y=y0+(y1-y0)*t}
+        local jitter=(i==1 or i==rig.bolt_points) and 0 or direction*random(s,amplitude*.4,amplitude)*math.sin(t*math.pi)
+        s.bolt[i]={x=x0+dx*t+nx*jitter,y=y0+dy*t+ny*jitter}
         direction=-direction
     end
     local branch=s.bolt[4];local side=random(s,0,1)<.5 and -1 or 1
     s.fork={{x=branch.x,y=branch.y}}
     for i=2,rig.fork_points do
-        s.fork[i]={x=math.max(bounds.min_x,math.min(bounds.max_x,branch.x+side*random(s,13,22)*(i-1))),
-                   y=math.min(bounds.max_y,branch.y+(i-1)*random(s,10,22))}
+        local along=(i-1)*random(s,.07,.13)*length
+        local across=side*(i-1)*random(s,.6,1)*amplitude
+        s.fork[i]={x=branch.x+ux*along+nx*across,y=branch.y+uy*along+ny*across}
     end
-    s.remaining=M.strike_duration;return true
+    s.elapsed=0;s.remaining=M.strike_duration;return true
 end
-function M.cancel(s) s.remaining=0 end
+function M.cancel(s) s.remaining=0;s.elapsed=0 end
 function M.step(s,dt)
     dt=math.max(0,dt);s.time=s.time+dt
-    s.remaining=math.max(0,s.remaining-dt)
+    if s.remaining==0 then return false end
+    local before=s.elapsed
+    s.elapsed=math.min(M.strike_duration,s.elapsed+dt)
+    s.remaining=math.max(0,M.strike_duration-s.elapsed)
+    -- A one-shot event at the exact boundary; even a long frame crosses it once.
+    return before<M.charge_duration and s.elapsed>=M.charge_duration
 end
 function M.values(s,page)
     local t=s.time;local pulse=.6+.4*math.sin(t*5)
@@ -44,12 +69,15 @@ function M.values(s,page)
         cloud_y=math.sin(t*1.5)*1.5,bolt_alpha=0,flash_alpha=0,dark_alpha=0,
         strike_glow_x=0,strike_glow_y=45}
     if page=='cloud' and s.remaining>0 then
-        local age=M.strike_duration-s.remaining
-        if age<.12 then v.dark_alpha=.85
-        elseif age<.22 then v.bolt_alpha=1;v.flash_alpha=1
-        elseif age<.36 then v.bolt_alpha=.08;v.dark_alpha=.95
-        elseif age<.46 then v.bolt_alpha=.9;v.flash_alpha=.85
-        else v.bolt_alpha=.9*s.remaining/.26;v.dark_alpha=.55*s.remaining/.26 end
+        local age=s.elapsed
+        if age<M.charge_duration then
+            local phase=math.floor(age/(M.charge_duration/4))
+            if phase%2==0 then v.dark_alpha=.9 else v.flash_alpha=1 end
+        else
+            -- Restore the original cloud before showing the bolt. No cloud or
+            -- sky flash is carried into the discharge phase.
+            v.bolt_alpha=math.min(1,s.remaining/.12)
+        end
     end
     for _,name in ipairs({'bolt','fork'}) do
         for i=1,rig[name..'_points'] do

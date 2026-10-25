@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.7.2 opens with a six-character vector gallery. Artwork is drawn from
+Version 0.7.3 opens with a six-character vector gallery. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -28,12 +28,15 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
   a floating pink balloon. The rain cloud uses **design A**: one asymmetric
   silhouette with broad flowing shadow bands, shared by its gallery thumbnail
   and preview. The original blue-purple palette and falling rain remain.
-- The cloud's **ฟ้าแลบ** button (or **Space**) triggers a 0.72-second vector
-  lightning action: the cloud alternates dark and bright before recovering.
-  Each action samples a new endpoint across the screen below the cloud and a
-  new jagged path/branch; geometry stays fixed throughout that action's flashes.
+- The cloud's **ฟ้าแลบ** button (or **Space**) first flashes the cloud
+  **dark → bright → dark → bright** in exactly **0.5 seconds**, without a bolt
+  or thunder. At 0.5 seconds the original cloud color returns and the vector
+  bolt and original `thunder.wav` start together. The bolt lasts 0.28 seconds.
+  Each action samples a new endpoint across the **whole 480 × 800 screen**,
+  including above/beside the cloud, and a new jagged path/branch. Its geometry
+  stays fixed throughout that action.
   A local random generator varies strikes without resetting global randomness.
-  The original `thunder.wav` plays once. The button pauses during
+  Thunder plays once after charging. The button pauses during
   the action and returns automatically; repeated input cannot extend it.
   Leaving the page or losing focus cancels the flash and stops thunder.
 - Bird input/audio stops when leaving its page; equipment stays equipped on return.
@@ -126,6 +129,10 @@ Web needs WebGL2. The Rive extension is pinned to commit
 - `rive-demo/nature.riv`: firefly/balloon SVGs, design-A cloud SVG, and procedural
   rain/lightning paths. `nature-motion.lua` drives wings, light, bobbing, rain
   and the timed lightning action; `nature.script` handles its audio and status.
+  `motion.strike(state, {x=..., y=...})` accepts an exact target in cloud-local
+  vector coordinates for later bird targeting; omit it for a full-screen random
+  preview. A `lightning` message can supply `target_x` / `target_y` in the preview's
+  480 × 800 artboard coordinates (x right, y down), converted by `preview_target`.
 - `rive-demo/gestures.lua`: shared touch/mouse swipe recognition, tap cancellation
   and multitouch exclusion so equipment taps cannot turn into page navigation.
 - `rive-demo/fish.riv`: original fish SVG layers, clipped tail segments and pivots.

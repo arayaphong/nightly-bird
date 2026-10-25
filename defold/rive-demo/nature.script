@@ -27,7 +27,10 @@ function update(self,dt)
         self.width,self.height=w,h;local scale=math.min(w/480,h/800)
         go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
     end
-    if self.active then motion.step(self.motion,dt);publish(self);sync(self) end
+    if self.active then
+        if motion.step(self.motion,dt) then sound.stop('#thunder');sound.play('#thunder') end
+        publish(self);sync(self)
+    end
 end
 function on_message(self,id,message)
     if id==hash('page') then
@@ -37,7 +40,13 @@ function on_message(self,id,message)
         if self.active then sync(self) end
         msg.post('#nature',self.active and 'enable' or 'disable')
     elseif id==hash('cancel') then cancel(self)
-    elseif id==hash('lightning') and self.active and self.page=='cloud' and motion.strike(self.motion) then
-        sound.stop('#thunder');sound.play('#thunder');publish(self);sync(self)
+    elseif id==hash('lightning') and self.active and self.page=='cloud' then
+        local target
+        if message.target_x~=nil and message.target_y~=nil then
+            target=motion.preview_target(message.target_x,message.target_y)
+        end
+        if motion.strike(self.motion,target) then
+            sound.stop('#thunder');publish(self);sync(self)
+        end
     end
 end

@@ -22,19 +22,37 @@ assert(not m.strike(s) and s.random==rng,'Blocked trigger changed the geometry/r
 for _,page in ipairs({'home','bird','fish','hawk','firefly','balloon'}) do
     local v=m.values(s,page);assert(v.bolt_alpha==0 and v.flash_alpha==0 and v.dark_alpha==0)
 end
-m.step(s,.16);assert(m.values(s,'cloud').bolt_alpha==1 and m.values(s,'cloud').dark_alpha==0)
-m.step(s,.12);assert(m.values(s,'cloud').dark_alpha>.9 and m.values(s,'cloud').flash_alpha==0)
-m.step(s,.12);assert(m.values(s,'cloud').bolt_alpha==.9 and m.values(s,'cloud').flash_alpha>0)
-m.step(s,.2);local fading=m.values(s,'cloud');assert(fading.bolt_alpha>0 and fading.bolt_alpha<.9)
+-- Four rapid charge states occupy exactly half a second, with no early bolt.
+for i=1,4 do
+    local v=m.values(s,'cloud')
+    assert(v.bolt_alpha==0,'Bolt appeared before the charge finished')
+    assert((v.dark_alpha>0)==(i%2==1) and (v.flash_alpha>0)==(i%2==0),'Wrong flash sequence')
+    assert(m.step(s,.125)==(i==4),'Discharge event did not occur at exactly 0.5 seconds')
+end
+local discharged=m.values(s,'cloud')
+assert(discharged.dark_alpha==0 and discharged.flash_alpha==0 and discharged.bolt_alpha==1,
+       'Cloud did not restore its original color at discharge')
+assert(not m.step(s,.22),'Discharge event repeated')
+local fading=m.values(s,'cloud');assert(fading.bolt_alpha>0 and fading.bolt_alpha<1)
+assert(fading.dark_alpha==0 and fading.flash_alpha==0,'Cloud flashed during the bolt')
 for _,name in ipairs({'bolt','fork'}) do
     for i=0,(name=='bolt' and 7 or 2) do
         assert(fading[name..'_x_'..i]==initial[name..'_x_'..i] and fading[name..'_y_'..i]==initial[name..'_y_'..i],
                'Geometry flickered within one strike')
     end
 end
-m.step(s,.13);assert(s.remaining==0 and m.values(s,'cloud').bolt_alpha==0 and m.values(s,'cloud').dark_alpha==0)
-assert(m.strike(s));m.step(s,1);assert(s.remaining==0,'Long frame did not finish action')
-assert(m.strike(s));m.cancel(s);assert(m.values(s,'cloud').flash_alpha==0)
+m.step(s,.061);assert(s.remaining==0 and m.values(s,'cloud').bolt_alpha==0 and m.values(s,'cloud').dark_alpha==0)
+assert(m.strike(s));assert(m.step(s,1));assert(s.remaining==0,'Long frame did not finish action')
+assert(not m.step(s,1),'Long frame repeated the discharge event')
+assert(m.strike(s));m.step(s,.49);m.cancel(s)
+assert(not m.step(s,1) and m.values(s,'cloud').flash_alpha==0,'Canceled charge fired later')
+-- Check both sides of every boundary, including the last instant before firing.
+for _,case in ipairs({{0,'dark'},{.124999,'dark'},{.125,'bright'},{.249999,'bright'},
+                      {.25,'dark'},{.374999,'dark'},{.375,'bright'},{.499999,'bright'},{.5,'bolt'}}) do
+    local sample=m.new(1);m.strike(sample);local event=m.step(sample,case[1]);local v=m.values(sample,'cloud')
+    assert((v.dark_alpha>0)==(case[2]=='dark') and (v.flash_alpha>0)==(case[2]=='bright'))
+    assert((v.bolt_alpha>0)==(case[2]=='bolt') and event==(case[2]=='bolt'))
+end
 -- Seeded runs are reproducible, but successive actions span the screen.
 local seeded,matching=m.new(12345),m.new(12345)
 local minx,maxx,miny,maxy=math.huge,-math.huge,math.huge,-math.huge
@@ -43,17 +61,26 @@ for n=1,80 do
     assert(m.strike(seeded) and m.strike(matching))
     local a,b=m.values(seeded,'cloud'),m.values(matching,'cloud')
     local x,y=a.bolt_x_7,a.bolt_y_7
-    assert(x>=-126 and x<=126 and y>=75 and y<=250,'Endpoint outside screen bounds')
+    assert(x>=-240/1.7 and x<=240/1.7 and y>=-300/1.7 and y<=500/1.7,'Endpoint outside screen bounds')
     assert(not previous or x~=previous.x or y~=previous.y,'Repeated endpoint')
     assert(a.fork_x_0==a.bolt_x_3 and a.fork_y_0==a.bolt_y_3,'Detached lightning branch')
     for i=0,7 do
         assert(a['bolt_x_'..i]==b['bolt_x_'..i] and a['bolt_y_'..i]==b['bolt_y_'..i])
-        if i>0 then assert(a['bolt_y_'..i]>a['bolt_y_'..(i-1)],'Bolt folded back upward') end
     end
     minx,maxx=math.min(minx,x),math.max(maxx,x);miny,maxy=math.min(miny,y),math.max(maxy,y)
     previous={x=x,y=y};m.step(seeded,1);m.step(matching,1)
 end
-assert(maxx-minx>220 and maxy-miny>150,'Random targets did not cover the screen')
+assert(minx<-120 and maxx>120 and miny<-140 and maxy>250,'Random targets missed part of the screen')
+-- Explicit bird targets are hit exactly in any direction, including very near
+-- the cloud and outside preview bounds. No downward-only aiming or clamping.
+for _,target in ipairs({{x=0,y=-150},{x=-135,y=-6},{x=135,y=-6},{x=0,y=270},
+                         {x=1,y=-5},{x=0,y=-6},{x=300,y=-250}}) do
+    local aimed=m.new(2);assert(m.strike(aimed,target));local v=m.values(aimed,'cloud')
+    assert(v.bolt_x_7==target.x and v.bolt_y_7==target.y,'Bolt missed explicit target')
+    for _,value in pairs(v) do assert(value==value and math.abs(value)<math.huge,'Invalid near-target geometry') end
+end
+local corner=m.preview_target(0,0)
+assert(corner.x==-240/1.7 and corner.y==-300/1.7)
 -- Controller gates both the animation and one original thunder recording.
 local plays,stops,status=0,0,nil
 local env=setmetatable({hash=function(v) return v end,
@@ -68,13 +95,19 @@ local demo={};env.init(demo);demo.width,demo.height=480,800
 env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='firefly'});env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='cloud'});env.on_message(demo,'lightning',{})
-assert(plays==1 and status.busy)
-env.on_message(demo,'lightning',{});assert(plays==1)
-env.update(demo,.73);assert(not status.busy)
-env.on_message(demo,'lightning',{});assert(plays==2 and status.busy)
+assert(plays==0 and status.busy,'Thunder played during charging')
+env.on_message(demo,'lightning',{});assert(plays==0)
+env.update(demo,.499999);assert(plays==0 and status.busy)
+env.update(demo,.000001);assert(plays==1 and status.busy)
+assert(m.values(demo.motion,'cloud').bolt_alpha==1,'Sound started without the bolt')
+env.update(demo,.281);assert(not status.busy and plays==1)
+env.on_message(demo,'lightning',{});assert(plays==1 and status.busy)
 local before=stops;env.on_message(demo,'page',{name='home'})
 assert(not status.busy and stops>before and demo.motion.remaining==0)
-env.on_message(demo,'page',{name='cloud'});env.on_message(demo,'lightning',{})
+env.on_message(demo,'page',{name='cloud'});env.update(demo,1);assert(plays==1,'Leaving charge did not cancel thunder')
+env.on_message(demo,'lightning',{target_x=0,target_y=0})
+local aimed=m.values(demo.motion,'cloud');assert(aimed.bolt_x_7==corner.x and aimed.bolt_y_7==corner.y)
+env.update(demo,.5);assert(plays==2)
 before=stops;env.on_message(demo,'cancel',{})
 assert(not status.busy and stops>before and demo.motion.remaining==0)
-print('PASS nature: previews, dark/bright lightning, random/stable geometry, timing, repeat lock, sound and cancellation')
+print('PASS nature: 0.5s silent charge, exact bolt/audio boundary, full-screen/explicit targets, stable geometry and cancellation')

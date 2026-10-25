@@ -29,17 +29,8 @@ def paint_svg(f,svg,defs,parent):
 
 def cloud(f,parent,channels=None):
     svg,defs=svg_asset('environment/rain-cloud')
-    body=f.node('cloud-body',parent)
-    if channels:f.bind(14,channels.index('cloud_y'))
-    # Rive's exporter emits foreground first. The bolt starts behind the cloud.
-    if channels:
-        dark=f.node('cloud-dark',body,opacity=0);f.bind(18,channels.index('dark_alpha'))
-        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
-        silhouette.set('fill','#080e1f');draw_path(f,silhouette,dark)
-        flash=f.node('cloud-flash',body,opacity=0);f.bind(18,channels.index('flash_alpha'))
-        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
-        silhouette.set('fill','rgba(197,213,255,.5)');draw_path(f,silhouette,flash)
-    draw_group(f,svg,body,defs)
+    # Foreground first: an upward or nearby shot must remain visible over the
+    # cloud, as well as reaching targets below it.
     if channels:
         bolt=f.node('lightning',parent,opacity=0);f.bind(18,channels.index('bolt_alpha'))
         lines=[]
@@ -50,6 +41,16 @@ def cloud(f,parent,channels=None):
         for stroke,width in (('#fff8dd',1.8),('rgba(150,195,255,.35)',6)):
             for d,bindings in lines:
                 draw_path(f,path(d,stroke=stroke,stroke_width=width,stroke_linecap='round',stroke_linejoin='round'),bolt,vertex_channels=bindings)
+    body=f.node('cloud-body',parent)
+    if channels:f.bind(14,channels.index('cloud_y'))
+    if channels:
+        dark=f.node('cloud-dark',body,opacity=0);f.bind(18,channels.index('dark_alpha'))
+        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
+        silhouette.set('fill','#080e1f');draw_path(f,silhouette,dark)
+        flash=f.node('cloud-flash',body,opacity=0);f.bind(18,channels.index('flash_alpha'))
+        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
+        silhouette.set('fill','rgba(197,213,255,.5)');draw_path(f,silhouette,flash)
+    draw_group(f,svg,body,defs)
     for i,(x,phase) in enumerate(DROPS):
         node=f.node('rain-'+str(i),parent,x,36+phase*100)
         if channels:
@@ -130,8 +131,9 @@ def nature():
     finish_file(f,'nature','Preview')
     rows=['-- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.',
           f'return {{bolt_points={BOLT_POINTS},fork_points={FORK_POINTS},',
-          '-- Targets cover the screen below the cloud in its local vector coordinates.',
-          'target={min_x=-126,max_x=126,min_y=75,max_y=250},drops={']
+          '-- Preview: full 480x800 artboard, including above and beside the cloud.',
+          'preview={x=240,y=300,scale=1.7,width=480,height=800},',
+          'target={min_x=-240/1.7,max_x=240/1.7,min_y=-300/1.7,max_y=500/1.7},drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
     (ROOT/'defold/rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 
