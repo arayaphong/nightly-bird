@@ -75,6 +75,8 @@ with sync_playwright() as playwright:
     def touch(kind, fingers):
         session.send('Input.dispatchTouchEvent', {'type': kind, 'touchPoints': fingers})
 
+    touch('touchStart', [finger(90, 500, 7)]); frames(4)
+    touch('touchEnd', []); frames(6)
     initial = snapshot('equipment-mobile-none.png')
     assert toggles(initial) == [False]*4
     flight = finger(240, 155, 1)

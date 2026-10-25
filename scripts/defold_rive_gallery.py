@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Build a static vector character grid and three small animated previews."""
+import math
+import xml.etree.ElementTree as ET
+from defold_rive_bird import ROOT,start_file,finish_file,draw_group,draw_path,path,transform
+
+PUFFS=[(-60,1,26),(-36,-5,32),(-12,4,28),(12,-6,30),(36,2,25),(60,0,29)]
+DROPS=[(-62+i*7.3,(i*.173)%1) for i in range(18)]
+
+def svg_asset(relative):
+    svg=ET.parse(ROOT/f'assets/svg/{relative}.svg').getroot()
+    return svg,{g.get('id'):g for g in svg.iter() if g.get('id')}
+
+def radial(name,r,core,edge,fx=0,fy=0):
+    g=ET.Element('radialGradient',{'id':name,'gradientUnits':'userSpaceOnUse','fx':str(fx),'fy':str(fy),'r':str(r)})
+    ET.SubElement(g,'stop',{'offset':'0','stop-color':core})
+    ET.SubElement(g,'stop',{'offset':'1','stop-color':edge})
+    return g
+
+def ellipse(r,fill):
+    return path(f'M{r} 0 A{r} {r} 0 0 1 {-r} 0 A{r} {r} 0 0 1 {r} 0 Z',fill)
+
+def paint_svg(f,svg,defs,parent):
+    for group in reversed([g for g in svg if g.get('data-sprite') is not None and g.get('display')!='none']):
+        a,b,c,d,x,y=transform(group.get('transform'));sx=math.hypot(a,b)
+        node=f.node(group.get('id'),parent,x,y,math.atan2(b,a),sx,(a*d-b*c)/sx)
+        draw_group(f,group,node,defs)
+
+def cloud(f,parent,channels=None):
+    for i in reversed(range(len(PUFFS))):
+        x,y,r=PUFFS[i]
+        node=f.node('puff-'+str(i),parent,x,y)
+        if channels:f.bind(14,channels.index('puff_y_'+str(i)))
+        defs={'puff':radial('puff',r,'#5b6181','#2b2f47',0,-r*.3)}
+        draw_path(f,ellipse(r,'url(#puff)'),node,defs)
+    for i,(x,phase) in enumerate(DROPS):
+        node=f.node('rain-'+str(i),parent,x,18+phase*115)
+        if channels:
+            f.bind(13,channels.index('rain_x_'+str(i)));f.bind(14,channels.index('rain_y_'+str(i)))
+            f.bind(18,channels.index('rain_alpha_'+str(i)))
+        draw_path(f,path('M0 0 L-3 9',stroke='rgba(150,175,220,.55)',stroke_width=1.2,stroke_linecap='round'),node)
+
+def firefly(f,parent,channels=None):
+    svg,defs=svg_asset('items/firefly')
+    for g in reversed([g for g in svg if g.get('data-sprite') is not None]):
+        a,b,c,d,x,y=transform(g.get('transform'))
+        node=f.node(g.get('id'),parent,x,y,math.atan2(b,a))
+        if channels and g.get('id') in ('wing-left','wing-right'):
+            f.bind(17,channels.index(g.get('id').replace('-','_')))
+        if channels and g.get('id')=='lamp':
+            yellow=f.node('lamp-yellow',node,opacity=.5);f.bind(18,channels.index('lamp_mix'))
+            for p in reversed(list(g)):
+                q=ET.fromstring(ET.tostring(p));q.set('fill','#ffec3c');draw_path(f,q,yellow)
+        draw_group(f,g,node,defs)
+    radius=24 if channels else 7
+    glow=f.node('glow',parent)
+    if channels:
+        f.bind(16,channels.index('glow_scale'));f.bind(17,channels.index('glow_scale'))
+        f.bind(18,channels.index('glow_alpha'))
+    defs={'glow':radial('glow',radius,'rgba(190,255,90,.8)','rgba(60,220,0,0)')}
+    draw_path(f,ellipse(radius,'url(#glow)'),glow,defs)
+
+def balloon(f,parent):
+    svg,defs=svg_asset('items/balloon');paint_svg(f,svg,defs,parent)
+    draw_path(f,path('M0 1.1 Q-.18 1.8 0 2.5',stroke='rgba(230,230,240,.7)',stroke_width=.014),parent)
+
+def gallery():
+    f=start_file({'ready':1},'Characters',480,800,'GalleryControls')
+    root=f.node('gallery');f.bind(18,0)
+    entries=[('bird','characters/bird',(-20,-40,560,500)),
+             ('fish','characters/fish',(0,0,1536,1024)),
+             ('hawk','characters/hawk',(0,0,1400,1100))]
+    for i,key in enumerate(('bird','fish','hawk','firefly','balloon','cloud')):
+        x,y=90+(i%3)*150,800-(500-(i//3)*200)
+        icon=f.node(key+'-icon',root,x,y-36)
+        if i<3:
+            _,source,bounds=entries[i];bx,by,w,h=bounds;scale=min(108/w,94/h)
+            svg,defs=svg_asset(source)
+            if key=='fish':
+                fitted=f.node('fit',icon,(bx+w/2)*scale,-(by+h/2)*scale,sx=-scale,sy=scale)
+            else:fitted=f.node('fit',icon,-(bx+w/2)*scale,-(by+h/2)*scale,sx=scale,sy=scale)
+            paint_svg(f,svg,defs,fitted)
+        elif key=='firefly':firefly(f,f.node('fit',icon,sx=5,sy=5))
+        elif key=='balloon':balloon(f,f.node('fit',icon,0,-18,sx=30,sy=30))
+        else:cloud(f,f.node('fit',icon,0,-20,sx=.58,sy=.58))
+        draw_path(f,path(f'M{x-66} {y-85} L{x+66} {y-85} L{x+66} {y+85} L{x-66} {y+85} Z',
+                         '#152136',stroke='#344965',stroke_width=1),root)
+    finish_file(f,'gallery','Gallery')
+
+def nature():
+    channels={'show_firefly':0,'show_balloon':0,'show_cloud':0,
+              'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6,
+              'balloon_y':300,'balloon_rotation':0}
+    for i,(_,y,_) in enumerate(PUFFS):channels['puff_y_'+str(i)]=y
+    for i,(x,phase) in enumerate(DROPS):
+        channels.update({f'rain_x_{i}':x,f'rain_y_{i}':18+phase*115,f'rain_alpha_{i}':.7})
+    keys=list(channels);f=start_file(channels,'Nature',480,800,'NatureControls')
+    for name in ('firefly','balloon','cloud'):
+        scale={'firefly':6,'balloon':90,'cloud':1.7}[name]
+        node=f.node(name,x=240,y=320 if name=='firefly' else 300,sx=scale,sy=scale,opacity=0)
+        f.bind(18,keys.index('show_'+name))
+        if name=='firefly':firefly(f,node,keys)
+        elif name=='balloon':
+            f.bind(14,keys.index('balloon_y'));f.bind(15,keys.index('balloon_rotation'));balloon(f,node)
+        else:cloud(f,node,keys)
+    finish_file(f,'nature','Preview')
+    rows=['-- Generated preview layout; cloud geometry follows the JS puff/rain painter.','return {puffs={']
+    rows.extend(f'    {{x={x},y={y},r={r}}},' for x,y,r in PUFFS)
+    rows.append('},drops={')
+    rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
+    (ROOT/'defold/rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
+
+if __name__=='__main__':gallery();nature()

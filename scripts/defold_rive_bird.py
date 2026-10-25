@@ -112,16 +112,27 @@ def draw_path(f,element,parent,definitions=None):
         paint=f.obj(kind,props,True)
         if value.startswith('url(#'):
             gradient=definitions[value[5:-1]]
-            assert gradient.tag.endswith('linearGradient')
             assert gradient.get('gradientUnits')=='userSpaceOnUse'
             t=transform(element.get('transform')).transform(transform(gradient.get('gradientTransform')))
-            x1,y1=t.transformPoint((float(gradient.get('x1',0)),float(gradient.get('y1',0))))
-            x2,y2=t.transformPoint((float(gradient.get('x2',1)),float(gradient.get('y2',0))))
-            grad=f.obj(22,{5:paint,42:x1,33:y1,34:x2,35:y2},True)
+            radial=gradient.tag.endswith('radialGradient')
+            inner=0
+            if radial:
+                # Rive radial paints are concentric. Keep the SVG focal point
+                # and its inner stop radius for small vector highlights.
+                cx=float(gradient.get('fx',gradient.get('cx',0)))
+                cy=float(gradient.get('fy',gradient.get('cy',0)))
+                radius=float(gradient.get('r',1));inner=float(gradient.get('fr',0))/radius
+                x1,y1=t.transformPoint((cx,cy));x2,y2=t.transformPoint((cx+radius,cy))
+            else:
+                assert gradient.tag.endswith('linearGradient')
+                x1,y1=t.transformPoint((float(gradient.get('x1',0)),float(gradient.get('y1',0))))
+                x2,y2=t.transformPoint((float(gradient.get('x2',1)),float(gradient.get('y2',0))))
+            grad=f.obj(17 if radial else 22,{5:paint,42:x1,33:y1,34:x2,35:y2},True)
+            if inner:f.obj(19,{5:grad,38:color(list(gradient)[0].get('stop-color')),39:0},True)
             for stop in gradient:
                 offset=stop.get('offset','0')
                 pos=float(offset[:-1])/100 if offset.endswith('%') else float(offset)
-                f.obj(19,{5:grad,38:color(stop.get('stop-color')),39:pos},True)
+                f.obj(19,{5:grad,38:color(stop.get('stop-color')),39:inner+(1-inner)*pos},True)
         else:f.obj(18,{5:paint,37:color(value)},True)
     return shape
 

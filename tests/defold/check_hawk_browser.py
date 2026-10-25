@@ -44,6 +44,7 @@ with sync_playwright() as p:
     if max(im.getpixel((x,y)))>70:ys.append(y)
   assert ys,'Hawk artwork is missing'
   return max(ys)-min(ys)
+ touch('touchStart',90,500);frames(4);touch('touchEnd');frames(6)
  swipe(400,70);swipe(400,70)
  flight=snap('rive-hawk-flight.png');assert ready(flight)
  x,y=pt(260,12);assert flight.getpixel((round(x),round(y)))[1]>200,'Third indicator not selected'

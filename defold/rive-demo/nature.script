@@ -1,0 +1,30 @@
+local motion=require('rive-demo.nature-motion')
+local function sync(self)
+    if not self.vm then self.vm=rive.get_view_model_instance('#nature') end
+    if not self.vm then return end
+    for name,value in pairs(motion.values(self.motion,self.page)) do
+        if self.last[name]~=value then
+            rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value
+        end
+    end
+end
+function init(self)
+    self.motion=motion.new();self.last={};self.active=false;self.page='home'
+    msg.post('#nature','disable')
+end
+function update(self,dt)
+    local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
+    if w~=self.width or h~=self.height then
+        self.width,self.height=w,h;local scale=math.min(w/480,h/800)
+        go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
+    end
+    if self.active then motion.step(self.motion,dt);sync(self) end
+end
+function on_message(self,id,message)
+    if id==hash('page') then
+        self.page=message.name
+        self.active=self.page=='firefly' or self.page=='balloon' or self.page=='cloud'
+        if self.active then sync(self) end
+        msg.post('#nature',self.active and 'enable' or 'disable')
+    end
+end

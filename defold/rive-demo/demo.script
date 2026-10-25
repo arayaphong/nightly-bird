@@ -1,5 +1,6 @@
 local motion=require('rive-demo.motion')
 local equipment=require('rive-demo.equipment')
+local pages=require('rive-demo.pages')
 local function clear_input(self)
     self.motion.held=false
     msg.post('/ui#gui','clear_input')
@@ -16,7 +17,8 @@ local function play_wing(self)
     end)
 end
 function init(self)
-    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.page='bird'
+    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.page='home'
+    msg.post('#bird','disable');msg.post('/icons#icons','disable')
     self.vm=rive.get_view_model_instance('#bird')
     -- The command-queue view model may become available after initialization.
     window.set_listener(function(self,event)
@@ -75,7 +77,7 @@ function update(self,dt)
 end
 function on_message(self,id,message)
     if id==hash('page') then
-        if message.name~='bird' and message.name~='fish' and message.name~='hawk' then return end
+        if not pages.valid(message.name) then return end
         self.page=message.name
         clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
         self.motion.wants_sound=false
@@ -83,6 +85,8 @@ function on_message(self,id,message)
         msg.post('/icons#icons',self.page=='bird' and 'enable' or 'disable')
         msg.post('/fish#script','active',{active=self.page=='fish'})
         msg.post('/hawk#script','active',{active=self.page=='hawk'})
+        msg.post('/gallery#script','active',{active=self.page=='home'})
+        msg.post('/nature#script','page',{name=self.page})
         return
     end
     if self.page and self.page~='bird' then return end

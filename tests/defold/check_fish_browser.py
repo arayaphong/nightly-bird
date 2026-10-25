@@ -32,6 +32,7 @@ with sync_playwright() as p:
     if red>225 and 140<green<235 and blue<45:pixels.append((x,y))
   assert len(pixels)>15,('Fish eye missing',len(pixels))
   return [sum(p[i] for p in pixels)/len(pixels) for i in [0,1]]
+ touch('touchStart',90,500);frames(4);touch('touchEnd');frames(6)
  before=snap('rive-fish-bird.png')
  swipe(400,70,560)
  right=snap('rive-fish-mobile-right.png');right_eye=eye(right)
