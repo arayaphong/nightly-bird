@@ -25,20 +25,28 @@ for i=1,180 do m.step(s,1/120) end
 near(m.values(s).eye_open,1)
 near(m.values(s).upper_beak,0)
 assert(s.moving)
--- Three crunch cues at the start of each closing stroke, once per bite.
-local chew=m.new();chew.held=true;chew.chew=1.48
-local times={};local elapsed=0
+-- Exercise the real controller: one sound per trigger across all three bites.
+local plays,stops=0,0
+local env=setmetatable({
+    hash=function(v) return v end,
+    sound={play=function(id) assert(id=='#chew');plays=plays+1 end,
+           stop=function(id) assert(id=='#chew');stops=stops+1 end},
+    rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
+          get_view_model_instance=function() return nil end},
+}, {__index=_G})
+setfenv(assert(loadfile('defold/rive-demo/demo.script')),env)()
+local demo={motion=m.new(),items=require('rive-demo.equipment').new(),width=480,height=800}
+env.on_message(demo,'chew',{})
+assert(plays==1 and stops==1)
+local peaks=0;local previous,previous_previous=0,0
 for i=1,120 do
-    local dt=({1/60,.025,.013})[(i-1)%3+1]
-    elapsed=elapsed+dt;m.step(chew,dt)
-    if chew.chew_sound then times[#times+1]=elapsed end
+    env.update(demo,1/60)
+    local amount=(m.values(demo.motion).cheek_scale-1)/.055
+    if previous>previous_previous and previous>=amount and previous>.9 then peaks=peaks+1 end
+    previous_previous,previous=previous,amount
 end
-assert(#times==3)
-for i,t in ipairs(times) do assert(t>=.2+.4*(i-1)-1e-9 and t<.225+.4*(i-1)+1e-9) end
-assert(chew.moving and chew.wants_sound and not chew.chew_sound)
--- Restarting halfway through a bite resets the schedule with the animation.
-chew.chew=1.48;m.step(chew,.19);assert(not chew.chew_sound)
-chew.chew=1.48;m.step(chew,.19);assert(not chew.chew_sound)
-m.step(chew,.02);assert(chew.chew_sound)
-m.step(chew,.01);assert(not chew.chew_sound)
+assert(peaks==3 and plays==1 and demo.motion.chew==0)
+env.on_message(demo,'chew',{});env.update(demo,.033)
+env.on_message(demo,'chew',{});env.update(demo,.033)
+assert(plays==3 and stops==3)
 print('PASS Rive motion: phase continuity, coast to rest, repress, sound requests and independent blink/chew')

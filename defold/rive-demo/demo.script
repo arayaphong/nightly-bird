@@ -16,14 +16,14 @@ local function play_wing(self)
     end)
 end
 function init(self)
-    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.chew_audio=false
+    self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false
     self.vm=rive.get_view_model_instance('#bird')
     -- The command-queue view model may become available after initialization.
     window.set_listener(function(self,event)
         if event==window.WINDOW_EVENT_FOCUS_LOST then
             clear_input(self);sound.stop('#wing');self.playing=false
             self.motion.wants_sound=false
-            sound.stop('#chew');self.chew_audio=false
+            sound.stop('#chew')
         end
     end)
     print('RIVE_BIRD_READY')
@@ -42,11 +42,6 @@ function update(self,dt)
         go.set_position(vmath.vector3(width/2,height/2,0),'/icons')
     end
     motion.step(self.motion,math.min(dt,.033))
-    if self.chew_audio and self.motion.chew_sound then
-        sound.stop('#chew')
-        sound.play('#chew')
-        print('CHEW_SOUND')
-    end
     equipment.step(self.items,dt)
     if not self.vm then self.vm=rive.get_view_model_instance('#bird') end
     if not self.vm then return end
@@ -80,7 +75,9 @@ function on_message(self,id,message)
     if id==hash('flight') then self.motion.held=message.held
     elseif id==hash('blink') then self.motion.blink=.18;print('BLINK_TRIGGER')
     elseif id==hash('chew') then
-        sound.stop('#chew');self.chew_audio=true;self.motion.chew=1.48
+        self.motion.chew=1.48
+        -- One recording covers the full three-bite animation.
+        sound.stop('#chew');sound.play('#chew')
         print('CHEW_TRIGGER')
     end
     if id==hash('toggle_equipment') then
