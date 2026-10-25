@@ -215,7 +215,9 @@ def build():
     root=f.node('svg-origin',x=20,y=40)
     source=ET.parse(ROOT/'assets/svg/characters/bird.svg').getroot()
     ids={g.get('id'):g for g in source if g.get('id')}
-    order=['field','wing-back','body','coat','sling','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','hood','eye-left','eye-left-white','eye-left-lid','eye-right','eye-right-white','eye-right-lid','eyebrows','mouth','beak-upper','beak-lower','magnet','gun','helmet']
+    # The original feet are already paths in body. Draw the magnet underneath
+    # that group so those same toes grip it; never add a second set of feet.
+    order=['field','wing-back','magnet','body','coat','sling','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','hood','eye-left','eye-left-white','eye-left-lid','eye-right','eye-right-white','eye-right-lid','eyebrows','mouth','beak-upper','beak-lower','gun','helmet']
     for key in reversed(order):
         if key in (*ITEMS,'coat','hood','field','sling'):
             equipment(f,key,root,list(channels));continue

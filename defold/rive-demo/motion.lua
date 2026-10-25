@@ -2,7 +2,7 @@
 local M = {}
 local TAU, REST = math.pi*2, math.pi/2
 function M.new()
-    return {angle=REST,stop=REST,spin=0,held=false,moving=false,wants_sound=false,blink=0,chew=0}
+    return {angle=REST,stop=REST,spin=0,held=false,moving=false,wants_sound=false,blink=0,chew=0,chew_sound=false}
 end
 function M.step(s, dt)
     local before=s.angle
@@ -18,7 +18,18 @@ function M.step(s, dt)
         s.angle=s.angle-TAU*48
         if s.stop then s.stop=s.stop-TAU*48 end
     end
+    local chew_before=s.chew
     s.blink=math.max(0,s.blink-dt);s.chew=math.max(0,s.chew-dt)
+    s.chew_sound=false
+    -- Begin each crunch as the jaw starts closing (.2/.6/1.0 seconds).
+    -- Crossing detection handles mixed frame times without replaying an event.
+    if chew_before>0 then
+        local before,after=1.48-chew_before,1.48-s.chew
+        for i=0,2 do
+            local bite=.2+.4*i
+            if before<bite and after>=bite then s.chew_sound=true;break end
+        end
+    end
 end
 function M.values(s)
     local wing=-math.cos(s.angle)

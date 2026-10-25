@@ -6,8 +6,5 @@
       <path d=" M-42 23.1 L-42 0 L-42 0 A42 42 0 0 1 42 0 L42 23.1" fill="none" stroke="#e8343f" data-scorched-stroke="#411616" stroke-width="22" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
       <path d=" M-42 23.1 L-42 39.9 M42 23.1 L42 39.9" fill="none" stroke="#d9dde6" data-scorched-stroke="#3e3b3a" stroke-width="22" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
       <path d=" M-33.97871 -24.68698 A42 42 0 0 1 6.57025 -41.48291" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="6.6" stroke-linecap="butt" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
-      <path d=" M-24 -56.73237 Q-8 -41.33237 -18 -24.83237" fill="none" stroke="#e8a012" data-scorched-stroke="#412d0c" stroke-width="10" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
-      <path d=" M-4 -61.8 Q12 -46.4 2 -29.9" fill="none" stroke="#e8a012" data-scorched-stroke="#412d0c" stroke-width="10" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
-      <path d=" M16 -56.73237 Q32 -41.33237 22 -24.83237" fill="none" stroke="#e8a012" data-scorched-stroke="#412d0c" stroke-width="10" stroke-linecap="round" stroke-linejoin="miter" opacity="1" transform="matrix(1 0 0 1 0 0)"/>
   </g>
 </svg>
