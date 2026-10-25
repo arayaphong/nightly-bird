@@ -22,7 +22,8 @@ motion modules never depend on Studio/App navigation or GUI APIs.
 
 `studio/catalog.lua` lists component-test categories. `scenarios/catalog.lua`
 currently has no entries; its menu truthfully says no integrated scenes exist.
-The other Studio categories likewise mark their test suites as future work.
+Studio's scenery category now lists the isolated night-sky fixture; rules/items
+still marks its test suite as future work.
 
 ## Shared features
 
@@ -41,13 +42,21 @@ The other Studio categories likewise mark their test suites as future work.
 - `shared/objects/firefly/`, `balloon/`, `rain_cloud/`: each has its own Rive
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.
+- `shared/scenery/night_sky/`: reusable two-layer Rive sky, generated particle
+  layout and Lua motion. Stars always drift left slowly and twinkle; sparse
+  dust follows a smoothly changing wind with small gusts and edge wrapping.
+  Ten selections combine left/right with five elevations (−80…+80°, up positive).
+  `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
+  Folding only changes the controls; it never resets or pauses the wind/scene.
 - `shared/rules/flight.lua`: rendering-independent flight/pickup/water/score rules
   retained from the old prototype with unit tests. There is no sprite controller,
   session singleton, factory, atlas, sheet or raster scenery left in Defold.
 - `shared/input/gestures.lua`: touch/mouse swipe and tap distinction.
 - `shared/render/`: Rive/GUI render passes. SDF Mitr and full font shaping remain.
 
-Each Rive feature's `visual.riv` is generated from SVG into native vector paths.
+Character/object `visual.riv` files are generated from SVG into native vector paths.
+The night sky is generated directly as vector circles, strokes and radial fills
+by `scripts/defold_rive_night_sky.py`, with its matching Lua layout committed.
 The gallery artwork and equipment icon layout are Studio presentation resources.
 Firefly/balloon/cloud have separate reusable artboards rather than one bundled
 three-object preview. `studio/characters/objects/preview.script` coordinates their

@@ -1,0 +1,5 @@
+scene: "/shared/scenery/night_sky/visual.rivescene"
+artboard: "NightSky"
+default_state_machine: "Sky"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

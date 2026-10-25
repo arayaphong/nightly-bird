@@ -35,7 +35,7 @@ with sync_playwright() as p:
   raw=page.screenshot();(ART/name).write_bytes(raw);return Image.open(io.BytesIO(raw)).convert('RGB')
  route('home');home=snap('refactor-main-menu.png')
  tap(240,475);route('studio');snap('refactor-studio-menu.png')
- tap(240,370);route('scenery');snap('refactor-scenery-empty.png')
+ tap(240,370);route('scenery');snap('refactor-scenery-menu.png')
  tap(48,752);route('studio')
  tap(240,240);route('rules_and_items');key('Escape');route('studio')
  tap(240,500);route('characters');snap('refactor-character-gallery.png')

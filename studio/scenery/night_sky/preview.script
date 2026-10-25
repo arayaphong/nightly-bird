@@ -1,0 +1,34 @@
+local motion=require('shared.scenery.night_sky.motion')
+function init(self)
+    self.motion=motion.new();self.last={};self.active=false
+    msg.post('#sky','disable')
+end
+local function publish(self)
+    msg.post('/sky_controls#gui','wind_status',{side=self.motion.side,step=self.motion.step})
+end
+function update(self,dt)
+    if not self.active then return end
+    local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
+    if w~=self.width or h~=self.height then
+        self.width,self.height=w,h
+        go.set_position(vmath.vector3(w/2,h/2,0))
+        go.set_scale(vmath.vector3(w/480,h/800,1))
+    end
+    motion.step(self.motion,dt)
+    if not self.vm then self.vm=rive.get_view_model_instance('#sky') end
+    if self.vm then
+        for name,value in pairs(motion.values(self.motion)) do
+            if self.last[name]~=value then
+                rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value
+            end
+        end
+    end
+end
+function on_message(self,id,message)
+    if id==hash('active') then
+        self.active=message.active;msg.post('#sky',self.active and 'enable' or 'disable')
+        if self.active then publish(self) end
+    elseif id==hash('wind') and self.active then
+        if motion.select(self.motion,message.side,message.step) then publish(self) end
+    end
+end

@@ -176,9 +176,9 @@ def start_file(channels,name,width,height,view_model='BirdControls'):
 
 ARTWORK_PATHS={'bird': 'shared/characters/red_bird/visual.riv', 'fish': 'shared/characters/fish/visual.riv', 'hawk': 'shared/characters/hawk/visual.riv', 'equipment-icons': 'studio/characters/red_bird/equipment_icons.riv', 'gallery': 'studio/characters/gallery/visual.riv', 'firefly': 'shared/objects/firefly/visual.riv', 'balloon': 'shared/objects/balloon/visual.riv', 'cloud': 'shared/objects/rain_cloud/visual.riv'}
 
-def finish_file(f,name,state_machine='Bird'):
+def finish_file(f,name,state_machine='Bird',destination=None):
     f.obj(53,{55:state_machine});f.obj(57);f.obj(63);f.obj(62);f.obj(64)
-    dest=ROOT/ARTWORK_PATHS[name];dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(f.data)
+    dest=ROOT/(destination or ARTWORK_PATHS[name]);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(f.data)
     print(f'{dest}: {len(f.data)} bytes, {f.index} vector components, zero raster images')
 
 ITEMS=('magnet','gun','helmet','suit')

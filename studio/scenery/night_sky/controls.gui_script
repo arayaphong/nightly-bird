@@ -1,0 +1,132 @@
+local gestures=require('shared.input.gestures')
+local sky=require('shared.scenery.night_sky.motion')
+local WHITE=vmath.vector4(.94,.97,1,1)
+local MUTED=vmath.vector4(.62,.72,.85,1)
+local ACCENT=vmath.vector4(.74,1,.35,1)
+local DARK=vmath.vector4(.04,.08,.12,1)
+local PANEL=vmath.vector4(.045,.085,.13,.98)
+local BUTTON=vmath.vector4(.085,.14,.21,1)
+local function box(x,y,w,h,color)
+    local n=gui.new_box_node(vmath.vector3(x,y,0),vmath.vector3(w,h,0));gui.set_color(n,color);return n
+end
+local function text(x,y,value,size,color)
+    local n=gui.new_text_node(vmath.vector3(x,y,0),value)
+    gui.set_font(n,'main');gui.set_scale(n,vmath.vector3(size/32,size/32,1))
+    gui.set_color(n,color or WHITE);gui.set_outline(n,vmath.vector4());gui.set_shadow(n,vmath.vector4())
+    return n
+end
+local function child(n,parent)
+    gui.set_parent(n,parent,true);gui.set_inherit_alpha(n,false);return n
+end
+local function line(parent,x,y,x1,y1,x2,y2,color)
+    local n=child(box(x+(x1+x2)/2,y+(y1+y2)/2,
+        math.sqrt((x2-x1)^2+(y2-y1)^2),2,color),parent)
+    gui.set_rotation(n,vmath.vector3(0,0,math.deg(math.atan2(y2-y1,x2-x1))));return n
+end
+local function arrow(parent,x,y,angle,color)
+    local c,s=math.cos(angle),math.sin(angle)
+    local function segment(x1,y1,x2,y2)
+        return line(parent,x,y,x1*c-y1*s,x1*s+y1*c,x2*c-y2*s,x2*s+y2*c,color)
+    end
+    return {segment(-12,0,12,0),segment(12,0,3,6),segment(12,0,3,-6)}
+end
+local function clear(self) self.contacts={};self.gestures=gestures.new() end
+local function angle_label(step)
+    local value=sky.angles[step];return (value>0 and '+' or '')..value..'°'
+end
+local function refresh(self)
+    gui.set_enabled(self.root,self.active)
+    gui.set_enabled(self.body,not self.collapsed)
+    -- The header is a child of the full-screen root centered at (240,400).
+    gui.set_position(self.header,vmath.vector3(0,self.collapsed and -372 or -172,0))
+    gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
+    local a=math.rad(sky.angles[self.step]);a=math.atan2(math.sin(a),self.side*math.cos(a))
+    gui.set_rotation(self.current_arrow,vmath.vector3(0,0,math.deg(a)))
+    for _,n in ipairs(self.chevron_up) do gui.set_enabled(n,self.collapsed) end
+    for _,n in ipairs(self.chevron_down) do gui.set_enabled(n,not self.collapsed) end
+    for _,button in ipairs(self.buttons) do
+        local selected=button.side==self.side and button.step==self.step
+        gui.set_color(button.node,selected and ACCENT or BUTTON)
+        gui.set_color(button.label,selected and DARK or WHITE)
+        for _,n in ipairs(button.arrow) do gui.set_color(n,selected and DARK or WHITE) end
+    end
+end
+local function select(self,side,step)
+    self.side,self.step=side,step;refresh(self)
+    msg.post('/night_sky#script','wind',{side=side,step=step})
+end
+function init(self)
+    msg.post('.','acquire_input_focus')
+    self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.buttons={};clear(self)
+    self.root=box(240,400,480,800,vmath.vector4())
+    child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
+    child(text(275,718,'STUDIO · SCENERY',12,MUTED),self.root)
+    self.body=child(box(240,100,480,200,PANEL),self.root)
+    for row,side in ipairs({-1,1}) do
+        local y=row==1 and 146 or 66
+        child(text(30,y,side==-1 and 'ซ้าย' or 'ขวา',13,MUTED),self.body)
+        for step,value in ipairs(sky.angles) do
+            local x=96+(step-1)*82
+            local b={side=side,step=step,node=child(box(x,y,70,64,BUTTON),self.body)}
+            b.label=child(text(x,y-18,angle_label(step),15),self.body)
+            local a=math.rad(value)
+            b.arrow=arrow(self.body,x,y+10,math.atan2(math.sin(a),side*math.cos(a)),WHITE)
+            self.buttons[#self.buttons+1]=b
+        end
+    end
+    child(text(240,12,'Space: พับแถบ · T: สลับฝั่ง · ← →: เลือกมุม',11,MUTED),self.body)
+    self.header=child(box(240,28,480,56,PANEL),self.root)
+    child(text(78,28,'ทิศทางลม',17,WHITE),self.header)
+    self.current=child(text(335,28,'',16,WHITE),self.header)
+    self.current_arrow=child(box(263,28,1,1,vmath.vector4()),self.header)
+    arrow(self.current_arrow,263,28,0,ACCENT)
+    self.chevron_up={line(self.header,447,28,-7,-3,0,4,MUTED),line(self.header,447,28,0,4,7,-3,MUTED)}
+    self.chevron_down={line(self.header,447,28,-7,3,0,-4,MUTED),line(self.header,447,28,0,-4,7,3,MUTED)}
+    local system=sys.get_sys_info().system_name
+    self.touch_device=system=='Android' or system=='iPhone OS'
+    if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
+    refresh(self)
+end
+function on_message(self,id,message)
+    if id==hash('route') then self.active=message.name=='night_sky';clear(self);refresh(self)
+    elseif id==hash('clear_input') then clear(self)
+    elseif id==hash('wind_status') then self.side,self.step=message.side,message.step;refresh(self) end
+end
+local function button_at(self,x,y)
+    if gui.pick_node(self.header,x,y) then return 'fold' end
+    if not self.collapsed then
+        for i,b in ipairs(self.buttons) do if gui.pick_node(b.node,x,y) then return i end end
+    end
+end
+local function activate(self,button)
+    if button=='fold' then self.collapsed=not self.collapsed;refresh(self)
+    elseif type(button)=='number' then
+        local b=self.buttons[button];select(self,b.side,b.step)
+    end
+end
+local function pointer(self,id,a)
+    if not a.x or not a.y then return end
+    if a.pressed then gestures.begin(self.gestures,id,a.x,a.y,button_at(self,a.x,a.y));self.contacts[id]=true end
+    if not self.contacts[id] then return end
+    gestures.move(self.gestures,id,a.x,a.y)
+    if a.released then
+        local result=gestures.finish(self.gestures,id,a.x,a.y);self.contacts[id]=nil
+        if result.tap and result.tap==button_at(self,a.x,a.y) then activate(self,result.tap) end
+    end
+end
+function on_input(self,id,a)
+    if not self.active or id==hash('escape') then return false end
+    if id==hash('touch') then
+        self.touch_device=true;for _,finger in ipairs(a.touch or {}) do pointer(self,finger.id,finger) end;return true
+    end
+    if id==hash('pointer') or (id==nil and self.contacts.mouse) then
+        if not self.touch_device then pointer(self,'mouse',a) end;return true
+    end
+    if a.pressed then
+        if id==hash('activate') then activate(self,'fold')
+        elseif id==hash('turn') then select(self,-self.side,self.step)
+        elseif id==hash('next_page') then select(self,self.side,math.min(5,self.step+1))
+        elseif id==hash('previous_page') then select(self,self.side,math.max(1,self.step-1)) end
+    end
+    return true
+end
