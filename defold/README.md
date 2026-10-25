@@ -1,6 +1,6 @@
 # Nightly Bird — Defold / Rive vector proof
 
-Version 0.7.1 opens with a six-character vector gallery. Artwork is drawn from
+Version 0.7.2 opens with a six-character vector gallery. Artwork is drawn from
 real cubic vector paths in `rive-demo/bird.riv`; no PNG sprite or flipbook is used
 for it. The original SVG remains the artwork source. The earlier flight slice
 is retained under `game/`, `objects/` and `main/` for later migration work.
@@ -28,8 +28,12 @@ is retained under `game/`, `objects/` and `main/` for later migration work.
   a floating pink balloon. The rain cloud uses **design A**: one asymmetric
   silhouette with broad flowing shadow bands, shared by its gallery thumbnail
   and preview. The original blue-purple palette and falling rain remain.
-- The cloud's **ฟ้าแลบ** button (or **Space**) triggers a 0.48-second vector
-  lightning flash and the original `thunder.wav` once. The button pauses during
+- The cloud's **ฟ้าแลบ** button (or **Space**) triggers a 0.72-second vector
+  lightning action: the cloud alternates dark and bright before recovering.
+  Each action samples a new endpoint across the screen below the cloud and a
+  new jagged path/branch; geometry stays fixed throughout that action's flashes.
+  A local random generator varies strikes without resetting global randomness.
+  The original `thunder.wav` plays once. The button pauses during
   the action and returns automatically; repeated input cannot extend it.
   Leaving the page or losing focus cancels the flash and stops thunder.
 - Bird input/audio stops when leaving its page; equipment stays equipped on return.

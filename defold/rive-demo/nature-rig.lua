@@ -1,5 +1,7 @@
--- Generated rain layout; the cloud silhouette is design A in rain-cloud.svg.
-return {drops={
+-- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.
+return {bolt_points=8,fork_points=3,
+-- Targets cover the screen below the cloud in its local vector coordinates.
+target={min_x=-126,max_x=126,min_y=75,max_y=250},drops={
     {x=-62,phase=0},
     {x=-54.700000000000003,phase=0.17299999999999999},
     {x=-47.399999999999999,phase=0.34599999999999997},

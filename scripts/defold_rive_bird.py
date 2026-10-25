@@ -89,7 +89,7 @@ def color(value):
     assert value.startswith('#') and len(value)==7,value
     return 0xff000000|int(value[1:],16)
 
-def draw_path(f,element,parent,definitions=None):
+def draw_path(f,element,parent,definitions=None,vertex_channels=None):
     shape=f.obj(3,{5:parent,18:float(element.get('opacity','1'))},True)
     for points,closed in contours(element.get('d'),transform(element.get('transform'))):
         path=f.obj(16,{5:shape,32:int(closed)},True)
@@ -100,6 +100,9 @@ def draw_path(f,element,parent,definitions=None):
                 if p:
                     dx,dy=p[0]-x,p[1]-y;props[angle_key]=math.atan2(dy,dx);props[distance_key]=math.hypot(dx,dy)
             f.obj(6,props,True)
+            if vertex_channels:
+                channel_x,channel_y=vertex_channels[vertex_index]
+                f.bind(24,channel_x);f.bind(25,channel_y)
             if element.get('data-mouth') and vertex_index in (1,2):
                 f.bind(24,12+(vertex_index-1)*2);f.bind(25,13+(vertex_index-1)*2)
     for attr,kind in [('fill',20),('stroke',24)]:

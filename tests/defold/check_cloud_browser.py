@@ -29,7 +29,7 @@ with sync_playwright() as p:
         const raf=window.requestAnimationFrame.bind(window);
         window.requestAnimationFrame=fn=>raf(t=>{
             fn(t);
-            if(window.__captureCloud && window.__cloudFrames.length<30){
+            if(window.__captureCloud && window.__cloudFrames.length<50){
                 const c=document.querySelector('canvas');
                 if(c && c.width)window.__cloudFrames.push(c.toDataURL());
             }
@@ -54,25 +54,41 @@ with sync_playwright() as p:
         x,y=pt(130,190);red,green,blue=im.getpixel((round(x),round(y)))
         return red>120 and green>200 and blue<150
     screenshot('rive-cloud-gallery.png')
-    tap(390,300);assert ready(screenshot('rive-cloud-design-a.png'))
-    page.evaluate('window.__energy=0;window.__cloudFrames=[];window.__captureCloud=true')
-    tap(240,190,1);page.wait_for_timeout(750);frames(4)
-    page.evaluate('window.__captureCloud=false')
-    assert ready(screenshot('rive-cloud-recovered.png')),'Action button did not recover'
-    assert page.evaluate('window.__energy')>1e-6,'Thunder produced no audio'
-    best=None;best_count=0;busy_seen=False
-    for data in page.evaluate('window.__cloudFrames'):
-        raw=base64.b64decode(data.split(',',1)[1]);im=Image.open(io.BytesIO(raw)).convert('RGB')
-        # Bolt lies below the cloud, away from the text and action button.
-        count=sum(1 for y in range(round(im.height*.47),round(im.height*.66))
-                  for x in range(round(im.width*.38),round(im.width*.65))
-                  if min(im.getpixel((x,y)))>180)
-        red,green,blue=im.getpixel((round(im.width*130/480),round(im.height*610/800)))
-        busy_seen|=not (red>120 and green>200 and blue<150)
-        if count>best_count:best,best_count=raw,count
-    assert best_count>15,('Vector lightning did not render',best_count)
+    tap(390,300);baseline=screenshot('rive-cloud-design-a.png');assert ready(baseline)
+    samples=[(x,y) for x in (.36,.44,.52,.60) for y in (.35,.38,.40)]
+    def luma(colors):return sum(.2126*a+.7152*b+.0722*c for a,b,c in colors)/len(colors)
+    baseline_luma=luma([baseline.getpixel(tuple(round(v) for v in pt(x*480,(1-y)*800))) for x,y in samples])
+    dark=None;bright=None;dark_luma=1e9;bright_luma=0;positions=[];best_count=0;busy_seen=False
+    for action in range(3):
+        page.evaluate('window.__energy=0;window.__cloudFrames=[];window.__captureCloud=true')
+        tap(240,190,1);page.wait_for_timeout(850);frames(4)
+        page.evaluate('window.__captureCloud=false')
+        assert ready(screenshot('rive-cloud-recovered.png')),'Action button did not recover'
+        assert page.evaluate('window.__energy')>1e-6,'Thunder produced no audio'
+        best=None;action_count=0;position=None
+        for data in page.evaluate('window.__cloudFrames'):
+            raw=base64.b64decode(data.split(',',1)[1]);im=Image.open(io.BytesIO(raw)).convert('RGB')
+            level=luma([im.getpixel((round(im.width*x),round(im.height*y))) for x,y in samples])
+            if level<dark_luma:dark,dark_luma=raw,level
+            if level>bright_luma:bright,bright_luma=raw,level
+            # Check across the screen under the cloud, above the action UI.
+            points=[(x,y) for y in range(round(im.height*.46),round(im.height*.70))
+                    for x in range(round(im.width*.04),round(im.width*.96))
+                    if min(im.getpixel((x,y)))>180]
+            red,green,blue=im.getpixel((round(im.width*130/480),round(im.height*610/800)))
+            busy_seen|=not (red>120 and green>200 and blue<150)
+            if len(points)>action_count:
+                best,action_count=raw,len(points)
+                position=(min(x for x,y in points),max(x for x,y in points),max(y for x,y in points))
+        assert action_count>15,('Vector lightning did not render',action,action_count)
+        positions.append(position);best_count=max(best_count,action_count)
+        (ART/f'rive-cloud-random-strike-{action+1}.png').write_bytes(best)
+    assert dark_luma<baseline_luma*.65,('Cloud never darkened',dark_luma,baseline_luma)
+    assert bright_luma>baseline_luma*1.2,('Cloud never brightened',bright_luma,baseline_luma)
+    assert len(set(positions))>1,('Rendered lightning positions did not vary',positions)
     assert busy_seen,'Action never showed its busy button'
-    (ART/'rive-cloud-lightning.png').write_bytes(best)
+    (ART/'rive-cloud-dark.png').write_bytes(dark)
+    (ART/'rive-cloud-lightning.png').write_bytes(bright)
     # Keyboard action works too. Returning home during it clears the state.
     page.evaluate('window.__energy=0')
     page.keyboard.down('Space');frames(2);page.keyboard.up('Space')
@@ -81,7 +97,8 @@ with sync_playwright() as p:
     assert ready(screenshot('rive-cloud-reentered.png')),'Leaving did not reset the action'
     errors=[s for s in logs if any(t in s for t in ['ERROR:','PAGEERROR','GL_INVALID'])]
     assert not errors,errors
-    result={'vector_lightning_pixels':best_count,'busy_and_recovery':'passed',
+    result={'vector_lightning_pixels':best_count,'random_strike_bounds':positions,
+            'cloud_luma':{'normal':baseline_luma,'dark':dark_luma,'bright':bright_luma},'busy_and_recovery':'passed',
             'touch_and_keyboard':'passed','thunder_audio':'passed','leave_resets':'passed','errors':errors}
     (ART/'rive-cloud-browser-test.json').write_text(json.dumps(result,indent=2))
     print(json.dumps(result));browser.close()

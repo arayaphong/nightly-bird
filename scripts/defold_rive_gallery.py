@@ -5,6 +5,8 @@ import xml.etree.ElementTree as ET
 from defold_rive_bird import ROOT,start_file,finish_file,draw_group,draw_path,path,transform
 
 DROPS=[(-62+i*7.3,(i*.173)%1) for i in range(18)]
+BOLT_POINTS=8
+FORK_POINTS=3
 
 def svg_asset(relative):
     svg=ET.parse(ROOT/f'assets/svg/{relative}.svg').getroot()
@@ -31,18 +33,23 @@ def cloud(f,parent,channels=None):
     if channels:f.bind(14,channels.index('cloud_y'))
     # Rive's exporter emits foreground first. The bolt starts behind the cloud.
     if channels:
+        dark=f.node('cloud-dark',body,opacity=0);f.bind(18,channels.index('dark_alpha'))
+        silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
+        silhouette.set('fill','#080e1f');draw_path(f,silhouette,dark)
         flash=f.node('cloud-flash',body,opacity=0);f.bind(18,channels.index('flash_alpha'))
         silhouette=ET.fromstring(ET.tostring(defs['silhouette']))
         silhouette.set('fill','rgba(197,213,255,.5)');draw_path(f,silhouette,flash)
     draw_group(f,svg,body,defs)
     if channels:
         bolt=f.node('lightning',parent,opacity=0);f.bind(18,channels.index('bolt_alpha'))
-        main='M12 23 L-3 53 L9 61 L-10 90 L1 95 L-16 131'
-        fork='M9 61 L31 78 L25 94'
-        for d in (main,fork):
-            draw_path(f,path(d,stroke='#fff8dd',stroke_width=1.8,stroke_linecap='round',stroke_linejoin='round'),bolt)
-        for d in (main,fork):
-            draw_path(f,path(d,stroke='rgba(150,195,255,.35)',stroke_width=6,stroke_linecap='round',stroke_linejoin='round'),bolt)
+        lines=[]
+        for name,count in (('bolt',BOLT_POINTS),('fork',FORK_POINTS)):
+            d='M0 23 '+' '.join(f'L0 {23+i*15}' for i in range(1,count))
+            bindings=[(channels.index(f'{name}_x_{i}'),channels.index(f'{name}_y_{i}')) for i in range(count)]
+            lines.append((d,bindings))
+        for stroke,width in (('#fff8dd',1.8),('rgba(150,195,255,.35)',6)):
+            for d,bindings in lines:
+                draw_path(f,path(d,stroke=stroke,stroke_width=width,stroke_linecap='round',stroke_linejoin='round'),bolt,vertex_channels=bindings)
     for i,(x,phase) in enumerate(DROPS):
         node=f.node('rain-'+str(i),parent,x,36+phase*100)
         if channels:
@@ -51,6 +58,7 @@ def cloud(f,parent,channels=None):
         draw_path(f,path('M0 0 L-3 9',stroke='rgba(150,175,220,.55)',stroke_width=1.2,stroke_linecap='round'),node)
     if channels:
         glow=f.node('lightning-glow',parent,0,45,opacity=0);f.bind(18,channels.index('flash_alpha'))
+        f.bind(13,channels.index('strike_glow_x'));f.bind(14,channels.index('strike_glow_y'))
         defs={'flash':radial('flash',140,'rgba(140,175,255,.32)','rgba(80,130,255,0)')}
         draw_path(f,ellipse(140,'url(#flash)'),glow,defs)
 
@@ -104,7 +112,10 @@ def gallery():
 def nature():
     channels={'show_firefly':0,'show_balloon':0,'show_cloud':0,
               'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6,
-              'balloon_y':300,'balloon_rotation':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0}
+              'balloon_y':300,'balloon_rotation':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,
+              'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}
+    for name,count in (('bolt',BOLT_POINTS),('fork',FORK_POINTS)):
+        for i in range(count):channels.update({f'{name}_x_{i}':0,f'{name}_y_{i}':23+i*15})
     for i,(x,phase) in enumerate(DROPS):
         channels.update({f'rain_x_{i}':x,f'rain_y_{i}':36+phase*100,f'rain_alpha_{i}':.7})
     keys=list(channels);f=start_file(channels,'Nature',480,800,'NatureControls')
@@ -117,7 +128,10 @@ def nature():
             f.bind(14,keys.index('balloon_y'));f.bind(15,keys.index('balloon_rotation'));balloon(f,node)
         else:cloud(f,node,keys)
     finish_file(f,'nature','Preview')
-    rows=['-- Generated rain layout; the cloud silhouette is design A in rain-cloud.svg.','return {drops={']
+    rows=['-- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.',
+          f'return {{bolt_points={BOLT_POINTS},fork_points={FORK_POINTS},',
+          '-- Targets cover the screen below the cloud in its local vector coordinates.',
+          'target={min_x=-126,max_x=126,min_y=75,max_y=250},drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
     (ROOT/'defold/rive-demo/nature-rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 
