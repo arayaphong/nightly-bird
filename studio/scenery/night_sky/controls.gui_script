@@ -1,5 +1,6 @@
 local gestures=require('shared.input.gestures')
 local sky=require('shared.scenery.night_sky.motion')
+local water=require('shared.scenery.water.motion')
 local WHITE=vmath.vector4(.94,.97,1,1)
 local MUTED=vmath.vector4(.62,.72,.85,1)
 local ACCENT=vmath.vector4(.74,1,.35,1)
@@ -30,7 +31,7 @@ local function arrow(parent,x,y,angle,color)
     end
     return {segment(-12,0,12,0),segment(12,0,3,6),segment(12,0,3,-6)}
 end
-local function clear(self) self.contacts={};self.gestures=gestures.new() end
+local function clear(self) self.contacts={};self.gestures=gestures.new();self.slider_id=nil end
 local function angle_label(step)
     local value=sky.angles[step];return (value>0 and '+' or '')..value..'°'
 end
@@ -42,6 +43,15 @@ local function refresh(self)
     gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
     gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' px/s')
     gui.set_color(self.star_speed_label,self.star_speed==sky.STAR_SPEEDS[2] and ACCENT or WHITE)
+    gui.set_enabled(self.water_controls,self.page=='night_water')
+    gui.set_text(self.water_level_label,'ระดับน้ำ: '..math.floor(self.water_level*100+.5)..'%')
+    local progress=(self.water_level-water.MIN_LEVEL)/(water.MAX_LEVEL-water.MIN_LEVEL)
+    local width=230*progress
+    -- Children are relative to the water-controls root at (275,590).
+    gui.set_position(self.water_knob,vmath.vector3(-115+width,-12,0))
+    gui.set_position(self.water_fill,vmath.vector3(-115+width/2,-12,0))
+    gui.set_size(self.water_fill,vmath.vector3(math.max(1,width),4,0))
+    gui.set_enabled(self.water_fill,progress>0)
     local a=math.rad(sky.angles[self.step]);a=math.atan2(math.sin(a),self.side*math.cos(a))
     gui.set_rotation(self.current_arrow,vmath.vector3(0,0,math.deg(a)))
     for _,n in ipairs(self.chevron_up) do gui.set_enabled(n,self.collapsed) end
@@ -60,12 +70,22 @@ end
 function init(self)
     msg.post('.','acquire_input_focus')
     self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=sky.STAR_SPEEDS[1];self.buttons={};clear(self)
+    self.water_level=water.DEFAULT_LEVEL
     self.root=box(240,400,480,800,vmath.vector4())
     self.title=child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
     child(text(275,718,'STUDIO · SCENERY',12,MUTED),self.root)
     self.star_speed_button=child(box(275,674,260,44,BUTTON),self.root)
     self.star_speed_label=child(text(275,674,'',16,WHITE),self.root)
     child(text(275,639,'แตะเพื่อสลับ '..sky.STAR_SPEEDS[1]..' / '..sky.STAR_SPEEDS[2],12,MUTED),self.root)
+    self.water_controls=child(box(275,590,290,76,vmath.vector4()),self.root)
+    self.water_level_label=child(text(275,612,'',16,WHITE),self.water_controls)
+    self.water_hit=child(box(275,578,260,44,vmath.vector4()),self.water_controls)
+    child(box(275,578,230,4,vmath.vector4(.2,.3,.4,1)),self.water_controls)
+    self.water_fill=child(box(275,578,1,4,ACCENT),self.water_controls)
+    self.water_knob=child(gui.new_pie_node(vmath.vector3(275,578,0),vmath.vector3(22,22,0)),self.water_controls)
+    gui.set_color(self.water_knob,ACCENT)
+    child(text(132,578,'0%',12,MUTED),self.water_controls)
+    child(text(419,578,'100%',12,MUTED),self.water_controls)
     self.body=child(box(240,100,480,200,PANEL),self.root)
     for row,side in ipairs({-1,1}) do
         local y=row==1 and 146 or 66
@@ -100,10 +120,13 @@ function on_message(self,id,message)
         clear(self);refresh(self)
     elseif id==hash('clear_input') then clear(self)
     elseif id==hash('wind_status') and message.page==self.page then
-        self.side,self.step,self.star_speed=message.side,message.step,message.star_speed;refresh(self)
+        self.side,self.step,self.star_speed=message.side,message.step,message.star_speed
+        if self.slider_id==nil then self.water_level=message.water_level end
+        refresh(self)
     end
 end
 local function button_at(self,x,y)
+    if self.page=='night_water' and gui.pick_node(self.water_hit,x,y) then return 'water_level' end
     if gui.pick_node(self.star_speed_button,x,y) then return 'star_speed' end
     if gui.pick_node(self.header,x,y) then return 'fold' end
     if not self.collapsed then
@@ -118,7 +141,22 @@ local function activate(self,button)
     end
 end
 local function pointer(self,id,a)
-    if not a.x or not a.y then return end
+    if not a.x or not a.y then
+        if a.released and self.slider_id==id then self.slider_id=nil end
+        return
+    end
+    local function slide()
+        local progress=math.max(0,math.min(1,(a.x-160)/230))
+        self.water_level=water.MIN_LEVEL+(water.MAX_LEVEL-water.MIN_LEVEL)*progress
+        refresh(self);msg.post(self.target,'water_level',{level=self.water_level})
+    end
+    if self.slider_id~=nil then
+        if self.slider_id==id then slide();if a.released then self.slider_id=nil end end
+        return
+    end
+    if a.pressed and button_at(self,a.x,a.y)=='water_level' and next(self.contacts)==nil then
+        self.slider_id=id;slide();return
+    end
     if a.pressed then gestures.begin(self.gestures,id,a.x,a.y,button_at(self,a.x,a.y));self.contacts[id]=true end
     if not self.contacts[id] then return end
     gestures.move(self.gestures,id,a.x,a.y)
@@ -132,7 +170,7 @@ function on_input(self,id,a)
     if id==hash('touch') then
         self.touch_device=true;for _,finger in ipairs(a.touch or {}) do pointer(self,finger.id,finger) end;return true
     end
-    if id==hash('pointer') or (id==nil and self.contacts.mouse) then
+    if id==hash('pointer') or (id==nil and (self.contacts.mouse or self.slider_id=='mouse')) then
         if not self.touch_device then pointer(self,'mouse',a) end;return true
     end
     if a.pressed then

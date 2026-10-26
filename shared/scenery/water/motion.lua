@@ -1,10 +1,14 @@
 -- Travelling swells, shared by the opaque water body and its surface strokes.
 local rig=require('shared.scenery.water.rig')
-local M={}
-function M.new() return {time=0} end
+local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=1-rig.base_y/800}
+function M.new() return {time=0,level=M.DEFAULT_LEVEL} end
+function M.set_level(s,level)
+    if type(level)~='number' or level~=level or math.abs(level)==math.huge then return false end
+    s.level=math.max(M.MIN_LEVEL,math.min(M.MAX_LEVEL,level));return true
+end
 function M.step(s,dt) s.time=s.time+math.max(0,dt) end
 function M.surface_y(s,x)
-    local y=rig.base_y
+    local y=800*(1-s.level)
     for _,w in ipairs(rig.waves) do y=y+w.amplitude*math.sin(w.k*x+w.rate*s.time+w.phase) end
     return y
 end

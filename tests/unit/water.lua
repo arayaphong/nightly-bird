@@ -3,6 +3,28 @@ local m=require('shared.scenery.water.motion')
 local rig=require('shared.scenery.water.rig')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
 local s=m.new();local original=m.surface_y(s,100)
+near(s.level,.35)
+local level_test=m.new();m.step(level_test,2.3)
+local phase=level_test.time;local before=m.values(level_test)
+assert(m.set_level(level_test,.75));near(level_test.time,phase)
+local after=m.values(level_test)
+for i=0,rig.points-1 do
+    near(after['water_y_'..i]-before['water_y_'..i],-320)
+    near(after['water_out_'..i],before['water_out_'..i])
+    near(after['water_length_'..i],before['water_length_'..i])
+end
+assert(m.set_level(level_test,-1));near(level_test.level,0)
+assert(m.set_level(level_test,2));near(level_test.level,1)
+assert(not m.set_level(level_test,0/0) and not m.set_level(level_test,math.huge) and not m.set_level(level_test,'bad'))
+near(level_test.level,1)
+for _,level in ipairs({0,.2,.35,.75,1}) do
+    m.set_level(level_test,level)
+    for i=0,rig.points-1 do
+        local y=m.values(level_test)['water_y_'..i]
+        assert(math.abs(y-800*(1-level))<=8.5)
+        assert(y<824,'Water surface passed below the opaque body bottom')
+    end
+end
 local function cubic(a,b,c,d,t) return (1-t)^3*a+3*(1-t)^2*t*b+3*(1-t)*t*t*c+t^3*d end
 for frame=1,240 do
     local dt=({.013,.025,.15})[(frame-1)%3+1];m.step(s,dt)

@@ -60,6 +60,9 @@ still marks its test suite as future work.
   water group in the common sky Rive artboard, disabled for the original fixture.
   `studio/scenery/night_water/preview.go` enables it through the shared presenter's
   `with_water` property, retaining separate animation/wind/star-speed state.
+  Water level is a clamped 0–1 value in the shared wave state. Studio's live
+  slider moves the body's upper edge and surface strokes together, preserving
+  phase and fixture state across navigation; it is hidden in the original sky.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.
