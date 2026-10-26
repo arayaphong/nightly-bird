@@ -26,11 +26,11 @@ with sync_playwright() as p:
  def crop(im,x1,y1,x2,y2):
   a,z=pt(x1,y1),pt(x2,y2);return im.crop(tuple(round(v) for v in (*a,*z)))
  def speed(im):return crop(im,155,690,395,658)
- def slider_hits(im):
-  y=round(pt(0,586)[1]);left=round(pt(145,0)[0]);right=round(pt(405,0)[0])
+ def slider_hits(im,track=578):
+  y=round(pt(0,track+8)[1]);left=round(pt(145,0)[0]);right=round(pt(405,0)[0])
   return [x for x in range(left,right) if (lambda rgb:rgb[0]>120 and rgb[1]>180 and rgb[2]<150)(im.getpixel((x,y)))]
- def slider_level(im):
-  xs=slider_hits(im);assert xs,'Water slider knob is missing'
+ def slider_level(im,track=578):
+  xs=slider_hits(im,track);assert xs,'Water slider knob is missing'
   center=((min(xs)+max(xs))/2-r['x'])/r['width']*480
   return (center-160)/230*100
  def finger(kind,x=None,y=None):
@@ -38,11 +38,11 @@ with sync_playwright() as p:
   if x is not None:
    x,y=pt(x,y);points=[{'id':1,'x':x,'y':y}]
   session.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':points})
- def set_level(level):
-  before=slider_level(snap());start=160+230*before/100;end=160+230*level/100
-  finger('touchStart',start,578);frames(2)
-  for i in range(1,5):finger('touchMove',start+(end-start)*i/4,578);frames(2)
-  live=snap();assert abs(slider_level(live)-max(0,min(100,level)))<2,'Slider did not update during touch drag'
+ def set_level(level,track=578):
+  before=slider_level(snap(),track);start=160+230*before/100;end=160+230*level/100
+  finger('touchStart',start,track);frames(2)
+  for i in range(1,5):finger('touchMove',start+(end-start)*i/4,track);frames(2)
+  live=snap();assert abs(slider_level(live,track)-max(0,min(100,level)))<2,'Slider did not update during touch drag'
   finger('touchEnd');frames(5);return live
  def wave_at(im,level):
   line=crop(im,10,800*level/100+18,110,800*level/100-18)
@@ -56,9 +56,17 @@ with sync_playwright() as p:
    row=[band.getpixel((x,y)) for x in range(band.width)]
    assert all(max(p[k] for p in row)-min(p[k] for p in row)<=2 for k in range(3)),'Particle/glow leaked into water'
   return band
+ def wave_span(im):
+  area=crop(im,10,318,375,242);ys=[]
+  for x in range(5,area.width-5):
+   hits=[y for y in range(area.height) if (lambda rgb:rgb[0]>55 and rgb[2]-rgb[0]>30)(area.getpixel((x,y)))]
+   if hits:ys.append(sum(hits)/len(hits))
+  assert len(ys)>area.width*.8,'Surface disappeared during roughness adjustment'
+  return max(ys)-min(ys),area
  home=snap();tap(240,475);tap(240,370);menu=snap('water-studio-menu.png')
  tap(240,370);first=snap('water-initial.png');slow=speed(first)
  assert abs(slider_level(first)-35)<2,'Default water level changed'
+ assert abs(slider_level(first,500)-25)<2,'Default roughness must reproduce Legacy'
  band=deep_water(first);edge=crop(first,10,310,470,250)
  # The surface must visibly curve across the screen.
  ys=[]
@@ -74,13 +82,22 @@ with sync_playwright() as p:
  # Moving tessellation can round the fixed gradient by one output level.
  # Row uniformity above still catches visible particle cores, halos and tails.
  assert max(hi for lo,hi in ImageChops.difference(band,deep_water(moved)).getextrema())<=2,'Particles showed through the moving water'
+ flat=set_level(0,500);flat_span,_=wave_span(flat);assert flat_span<2.5,'Minimum roughness did not flatten the water'
+ rough=set_level(100,500);rough_span,rough_line=wave_span(rough)
+ assert rough_span>flat_span+8,'Roughness did not increase visible wave height'
+ assert abs(slider_level(rough)-35)<2,'Roughness changed the mean water level'
+ snap('water-roughness-100.png');frames(30)
+ assert ImageChops.difference(rough_line,wave_span(snap())[1]).getbbox(),'Rough waves stopped animating'
+ set_level(25,500)
  wave_at(set_level(75),75);snap('water-level-75.png')
  wave_at(set_level(20),20);snap('water-level-20.png')
  dry=set_level(-15);dry_band=crop(dry,12,210,468,80)
  assert sum(max(p)<8 for p in dry_band.get_flattened_data())/(dry_band.width*dry_band.height)>.95,'Minimum level did not lower the water'
  deep_water(set_level(115));snap('water-level-100.png')
  settled=set_level(50);before_wave=wave_at(settled,50);frames(30)
+ assert abs(slider_level(settled,500)-25)<2,'Water level changed the roughness slider'
  assert ImageChops.difference(before_wave,wave_at(snap(),50)).getbbox(),'Adjusting the level stopped the waves'
+ set_level(55,500)
  # Changing wind and star speed must not reveal particles underneath the wave.
  tap(275,674);fast=speed(snap());assert ImageChops.difference(slow,fast).getbbox()
  tap(435,28);tap(96,66);tap(435,228);frames(45)
@@ -91,9 +108,11 @@ with sync_playwright() as p:
  assert sum(max(p)<8 for p in old_band.get_flattened_data())/(old_band.width*old_band.height)>.95,'Original sky unexpectedly gained water'
  assert ImageChops.difference(slow,speed(sky)).getbbox() is None,'Fixture speed state was shared'
  assert not slider_hits(sky),'Water slider leaked into the original sky'
+ assert not slider_hits(sky,500),'Roughness slider leaked into the original sky'
  tap(48,752);tap(240,370);again=snap('water-reentered.png')
  assert ImageChops.difference(fast,speed(again)).getbbox() is None,'Water fixture speed reset on reentry'
  assert abs(slider_level(again)-50)<2,'Water level reset on reentry'
+ assert abs(slider_level(again,500)-55)<2,'Wave roughness reset on reentry'
  deep_water(again)
  for _ in range(3):
   page.keyboard.down('Escape');frames(2);page.keyboard.up('Escape');frames(5)
@@ -111,7 +130,12 @@ with sync_playwright() as p:
  assert abs(slider_level(snap('water-mouse-drag.png'))-60)<2,'Mouse drag did not update the water live'
  page.mouse.up();frames(3);x,y=pt(160,578);page.mouse.move(x,y);frames(3)
  assert abs(slider_level(snap())-60)<2,'Mouse release did not end slider capture'
+ x,y=pt(160+230*.25,500);page.mouse.move(x,y);page.mouse.down();frames(2)
+ x,y=pt(160+230*.9,500);page.mouse.move(x,y,steps=5);frames(3)
+ mouse_rough=snap('water-mouse-roughness.png')
+ assert abs(slider_level(mouse_rough,500)-90)<2 and abs(slider_level(mouse_rough)-60)<2,'Mouse roughness drag changed the wrong slider'
+ page.mouse.up();frames(3)
  errors=[s for s in logs if any(v in s for v in ['ERROR:','PAGEERROR','GL_INVALID'])]
  assert not errors,errors
- result={'touch_slider_0_to_100':'passed','mouse_slider':'passed','level_persistence_and_live_waves':'passed','legacy_ripples_and_lunar_shimmer':'passed','opaque_water_no_particles':'passed','wind_and_star_controls':'passed','original_scene_unchanged':'passed','independent_fixture_state':'passed','nested_back_and_reentry':'passed','errors':errors}
+ result={'roughness_height_and_flat_water':'passed','independent_roughness_and_level':'passed','touch_slider_0_to_100':'passed','mouse_slider':'passed','level_persistence_and_live_waves':'passed','legacy_ripples_and_lunar_shimmer':'passed','opaque_water_no_particles':'passed','wind_and_star_controls':'passed','original_scene_unchanged':'passed','independent_fixture_state':'passed','nested_back_and_reentry':'passed','errors':errors}
  (ART/'water-test.json').write_text(json.dumps(result,indent=2));print(json.dumps(result));b.close()

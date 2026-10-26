@@ -1,17 +1,47 @@
 -- Ripple line and lunar shimmer ported from legacy environment-painter.js.
 local rig=require('shared.scenery.water.rig')
-local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=1-rig.base_y/rig.height}
-function M.new() return {time=0,level=M.DEFAULT_LEVEL} end
+local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=1-rig.base_y/rig.height,DEFAULT_ROUGHNESS=.25}
+function M.new() return {time=0,wave_time=0,level=M.DEFAULT_LEVEL,roughness=M.DEFAULT_ROUGHNESS} end
 function M.set_level(s,level)
     if type(level)~='number' or level~=level or math.abs(level)==math.huge then return false end
     s.level=math.max(M.MIN_LEVEL,math.min(M.MAX_LEVEL,level));return true
 end
-function M.step(s,dt) s.time=s.time+math.max(0,dt) end
+function M.set_roughness(s,value)
+    if type(value)~='number' or value~=value or math.abs(value)==math.huge then return false end
+    s.roughness=math.max(0,math.min(1,value));return true
+end
+local function profile(s)
+    if s.roughness<=M.DEFAULT_ROUGHNESS then
+        local t=s.roughness/M.DEFAULT_ROUGHNESS
+        return t,.35+.65*t,0
+    end
+    local t=(s.roughness-M.DEFAULT_ROUGHNESS)/(1-M.DEFAULT_ROUGHNESS)
+    return 1+4*t,1+1.5*t,t*t
+end
+function M.step(s,dt)
+    dt=math.max(0,dt);local _,speed=profile(s)
+    s.time=s.time+dt;s.wave_time=s.wave_time+dt*speed
+end
 function M.base_y(s) return rig.height*(1-s.level) end
 function M.surface_y(s,x)
-    local y=M.base_y(s)
-    for _,w in ipairs(rig.waves) do y=y+w.amplitude*math.sin(w.k*x+w.rate*s.time+w.phase) end
+    local y=M.base_y(s);local height,_,chop=profile(s)
+    for _,w in ipairs(rig.waves) do y=y+height*w.amplitude*math.sin(w.k*x+w.rate*s.wave_time+w.phase) end
+    if chop>0 then
+        y=y+chop*(3*math.sin(x*.071+s.wave_time*4.1+.7)+2*math.sin(x*.113-s.wave_time*3.3+2.2))
+    end
     return y
+end
+local function rendered_y(s,x)
+    local left=rig.min_x+math.floor((x-rig.min_x)/rig.step)*rig.step
+    local t=(x-left)/rig.step
+    return M.surface_y(s,left)*(1-t)+M.surface_y(s,left+rig.step)*t
+end
+local function glint_floor(s,left,right)
+    local y=math.max(rendered_y(s,left),rendered_y(s,right))
+    local first=math.ceil((left-rig.min_x)/rig.step)
+    local last=math.floor((right-rig.min_x)/rig.step)
+    for i=first,last do y=math.max(y,M.surface_y(s,rig.min_x+i*rig.step)) end
+    return y+1
 end
 function M.values(s)
     local base=M.base_y(s)
@@ -23,8 +53,11 @@ function M.values(s)
     end
     for i=0,rig.reflections-1 do
         local width=18+math.sin(s.time*2+i)*8+i*1.5
-        v['water_reflect_x_'..i]=rig.moon_x-width/2+math.sin(s.time*1.7+i*1.3)*6
-        v['water_reflect_y_'..i]=base+8+i*(rig.height-base)/14
+        local x=rig.moon_x-width/2+math.sin(s.time*1.7+i*1.3)*6
+        local y=base+8+i*(rig.height-base)/14
+        if s.roughness>M.DEFAULT_ROUGHNESS then y=math.max(y,glint_floor(s,x,x+width)) end
+        v['water_reflect_x_'..i]=x
+        v['water_reflect_y_'..i]=y
         v['water_reflect_width_'..i]=width
         v['water_reflect_alpha_'..i]=.28*(1-i/14)
     end

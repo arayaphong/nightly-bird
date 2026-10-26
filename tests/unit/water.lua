@@ -4,6 +4,36 @@ local rig=require('shared.scenery.water.rig')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
 local s=m.new();local original=m.surface_y(s,100)
 near(s.level,.35)
+near(s.roughness,.25)
+local storm=m.new();m.step(storm,2.3)
+local old_time,old_wave,old_level=storm.time,storm.wave_time,storm.level
+local function span(state)
+    local lo,hi=math.huge,-math.huge
+    for i=0,rig.points-1 do local y=m.surface_y(state,rig.min_x+i*rig.step);lo=math.min(lo,y);hi=math.max(hi,y) end
+    return hi-lo
+end
+local legacy_span=span(storm)
+assert(m.set_roughness(storm,1));near(storm.time,old_time);near(storm.wave_time,old_wave);near(storm.level,old_level)
+assert(span(storm)>legacy_span*2,'Roughness did not raise the waves')
+m.step(storm,.5);assert(storm.wave_time-old_wave>.5 and storm.time-old_time==.5)
+assert(m.set_roughness(storm,-1));near(storm.roughness,0)
+for i=0,rig.points-1 do near(m.surface_y(storm,rig.min_x+i*rig.step),m.base_y(storm)) end
+assert(m.set_roughness(storm,2));near(storm.roughness,1)
+assert(not m.set_roughness(storm,0/0) and not m.set_roughness(storm,math.huge) and not m.set_roughness(storm,'bad'))
+for _,level in ipairs({0,.35,1}) do
+    m.set_level(storm,level);m.step(storm,.13);local v=m.values(storm)
+    for i=0,rig.points-1 do
+        local y=v['water_y_'..i]
+        assert(math.abs(y-m.base_y(storm))<=23.500001 and y<824,'Rough waves escaped the opaque body')
+    end
+    for i=0,rig.reflections-1 do
+        local left=v['water_reflect_x_'..i];local right=left+v['water_reflect_width_'..i]
+        for j=0,rig.points-1 do
+            local x=rig.min_x+j*rig.step
+            if x>=left and x<=right then assert(v['water_reflect_y_'..i]>v['water_y_'..j],'Rough wave exposed a lunar glint in the sky') end
+        end
+    end
+end
 local level_test=m.new();m.step(level_test,2.3)
 local phase=level_test.time;local before=m.values(level_test)
 assert(m.set_level(level_test,.75));near(level_test.time,phase)

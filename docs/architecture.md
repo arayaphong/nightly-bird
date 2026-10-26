@@ -66,6 +66,10 @@ still marks its test suite as future work.
   Water level is a clamped 0–1 value in the shared wave state. Studio's live
   slider moves the body's upper edge and surface strokes together, preserving
   phase and fixture state across navigation; it is hidden in the original sky.
+  A second slider controls roughness: flat at 0%, exact Legacy at 25%, and
+  higher/faster ripples with extra harmonics above 25%. Its integrated wave
+  clock avoids phase jumps during adjustment, independently of mean level and
+  the reflection clock. Glints remain under the local surface at rough settings.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.

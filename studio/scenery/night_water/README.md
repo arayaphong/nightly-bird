@@ -23,6 +23,13 @@ together while keeping the wave phase. Dragging beyond the track clamps to its
 endpoints, and the fixture retains its level on reentry. The original sky has
 no water slider. Global back/focus loss clears an unfinished drag.
 
+A second slider, ความสูง/ปั่นป่วนคลื่น, controls height and agitation together:
+0% is flat, the default 25% reproduces Legacy, and 100% increases wave height,
+phase speed and adds smaller irregular ripples. A separate integrated wave
+clock preserves phase when adjusting it. Mean level and the lunar shimmer
+clock stay independent. Both sliders retain their fixture state and support
+touch/mouse capture. In rough water, moon-light bars stay below the local wave.
+
 Reusable wave math/layout: `shared/scenery/water/`. Vector exporter:
 `scripts/defold_rive_water.py`, called by `scripts/defold_rive_night_sky.py`.
 The common Rive artboard contains an optional water group; the original sky
