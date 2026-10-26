@@ -1,0 +1,14 @@
+{
+  "width": 480,
+  "height": 800,
+  "points": 63,
+  "step": 8,
+  "min_x": -8,
+  "base_y": 520,
+  "moon_x": 432,
+  "reflections": 14,
+  "line_color": "rgba(170,215,255,.55)",
+  "line_width": 2,
+  "top_color": "#123a5c",
+  "bottom_color": "#030914"
+}

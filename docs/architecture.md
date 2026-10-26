@@ -54,8 +54,11 @@ still marks its test suite as future work.
   circular arcs and halo retain a uniform world scale on tall or wide screens.
   Its source is `assets/svg/environment/crescent-moon.svg`; the hollow side is
   transparent geometry, so distant stars remain visible through it.
-- `shared/scenery/water/`: travelling wave math and generated layout. The water
-  body and surface strokes share animated cubic vertices/tangents. Its opaque
+- `shared/scenery/water/`: legacy `drawWater` ripples, palette and lunar shimmer.
+  The surface retains its 8px samples, 2.2px/1.5px amplitudes and opposite phase
+  speeds. Fourteen moon-reflection bars use the original formulas, anchored to
+  the current moon. Star reflections remain omitted. Body and line share the
+  sampled boundary, and the depth gradient follows the water level. Its opaque
   fill hides every sky layer below the wave. The exporter embeds an optional
   water group in the common sky Rive artboard, disabled for the original fixture.
   `studio/scenery/night_water/preview.go` enables it through the shared presenter's

@@ -54,7 +54,7 @@ def build():
         d=(f'M0 {-width} C{-length*.35} {-width*.65} {-length*.8} {-width*.1} {-length} 0 '
            f'C{-length*.8} {width*.1} {-length*.35} {width*.65} 0 {width} Z')
         draw_path(f,path(d,'url(#dust-tail)'),node,{'dust-tail':tail})
-    middle=f.node('crescent-moon',x=432,y=86)
+    middle=f.node('crescent-moon',x=water.MOON_X,y=86)
     f.bind(16,keys['moon_scale_x']);f.bind(17,keys['moon_scale_y'])
     moon,moon_defs=svg_asset('environment/crescent-moon')
     draw_group(f,moon,middle,moon_defs)

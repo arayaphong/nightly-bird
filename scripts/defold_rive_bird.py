@@ -89,7 +89,7 @@ def color(value):
     assert value.startswith('#') and len(value)==7,value
     return 0xff000000|int(value[1:],16)
 
-def draw_path(f,element,parent,definitions=None,vertex_channels=None,vertex_handle_channels=None):
+def draw_path(f,element,parent,definitions=None,vertex_channels=None,gradient_channels=None):
     shape=f.obj(3,{5:parent,18:float(element.get('opacity','1'))},True)
     for points,closed in contours(element.get('d'),transform(element.get('transform'))):
         path=f.obj(16,{5:shape,32:int(closed)},True)
@@ -104,8 +104,6 @@ def draw_path(f,element,parent,definitions=None,vertex_channels=None,vertex_hand
                 channel_x,channel_y=vertex_channels[vertex_index]
                 if channel_x is not None:f.bind(24,channel_x)
                 if channel_y is not None:f.bind(25,channel_y)
-            if vertex_handle_channels:
-                for key,channel in vertex_handle_channels[vertex_index].items():f.bind(key,channel)
             if element.get('data-mouth') and vertex_index in (1,2):
                 f.bind(24,12+(vertex_index-1)*2);f.bind(25,13+(vertex_index-1)*2)
     for attr,kind in [('fill',20),('stroke',24)]:
@@ -134,6 +132,8 @@ def draw_path(f,element,parent,definitions=None,vertex_channels=None,vertex_hand
                 x1,y1=t.transformPoint((float(gradient.get('x1',0)),float(gradient.get('y1',0))))
                 x2,y2=t.transformPoint((float(gradient.get('x2',1)),float(gradient.get('y2',0))))
             grad=f.obj(17 if radial else 22,{5:paint,42:x1,33:y1,34:x2,35:y2},True)
+            if gradient_channels:
+                for key,channel in gradient_channels.get(value[5:-1],{}).items():f.bind(key,channel)
             if inner:f.obj(19,{5:grad,38:color(list(gradient)[0].get('stop-color')),39:0},True)
             for stop in gradient:
                 offset=stop.get('offset','0')

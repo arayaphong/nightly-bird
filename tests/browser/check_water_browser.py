@@ -46,10 +46,11 @@ with sync_playwright() as p:
   finger('touchEnd');frames(5);return live
  def wave_at(im,level):
   line=crop(im,10,800*level/100+18,110,800*level/100-18)
-  assert sum(red>80 for red,green,blue in line.get_flattened_data())>35,'Surface did not follow the slider'
+  assert sum(red>55 for red,green,blue in line.get_flattened_data())>35,'Surface did not follow the slider'
   return line
  def deep_water(im):
-  band=crop(im,12,210,468,80)
+  # Lunar shimmer occupies the strip under the moon; test particle masking left of it.
+  band=crop(im,12,210,375,80)
   assert all(blue>red+10 and blue>15 and red<35 and green<65 for red,green,blue in band.get_flattened_data()),'Stars/dust visible in opaque water or water missing'
   for y in range(band.height):
    row=[band.getpixel((x,y)) for x in range(band.width)]
@@ -62,11 +63,14 @@ with sync_playwright() as p:
  # The surface must visibly curve across the screen.
  ys=[]
  for x in range(5,edge.width-5):
-  hits=[y for y in range(edge.height) if edge.getpixel((x,y))[0]>80]
+  hits=[y for y in range(edge.height) if edge.getpixel((x,y))[0]>55]
   if hits:ys.append(min(hits,key=lambda y:abs(y-edge.height/2)))
- assert len(ys)>edge.width*.85 and max(ys)-min(ys)>4,'Vector wave is missing or flat'
+ assert len(ys)>edge.width*.85 and max(ys)-min(ys)>2,'Legacy ripple line is missing or flat'
+ reflection=crop(first,395,270,475,65)
+ assert sum(red>40 for red,green,blue in reflection.get_flattened_data())>15,'Legacy lunar shimmer is missing'
  frames(60);moved=snap('water-wave-moved.png')
  assert ImageChops.difference(edge,crop(moved,10,310,470,250)).getbbox(),'Wave animation stayed still'
+ assert ImageChops.difference(reflection,crop(moved,395,270,475,65)).getbbox(),'Lunar shimmer stayed still'
  # Moving tessellation can round the fixed gradient by one output level.
  # Row uniformity above still catches visible particle cores, halos and tails.
  assert max(hi for lo,hi in ImageChops.difference(band,deep_water(moved)).getextrema())<=2,'Particles showed through the moving water'
@@ -109,5 +113,5 @@ with sync_playwright() as p:
  assert abs(slider_level(snap())-60)<2,'Mouse release did not end slider capture'
  errors=[s for s in logs if any(v in s for v in ['ERROR:','PAGEERROR','GL_INVALID'])]
  assert not errors,errors
- result={'touch_slider_0_to_100':'passed','mouse_slider':'passed','level_persistence_and_live_waves':'passed','animated_curved_surface':'passed','opaque_water_no_particles':'passed','wind_and_star_controls':'passed','original_scene_unchanged':'passed','independent_fixture_state':'passed','nested_back_and_reentry':'passed','errors':errors}
+ result={'touch_slider_0_to_100':'passed','mouse_slider':'passed','level_persistence_and_live_waves':'passed','legacy_ripples_and_lunar_shimmer':'passed','opaque_water_no_particles':'passed','wind_and_star_controls':'passed','original_scene_unchanged':'passed','independent_fixture_state':'passed','nested_back_and_reentry':'passed','errors':errors}
  (ART/'water-test.json').write_text(json.dumps(result,indent=2));print(json.dumps(result));b.close()
