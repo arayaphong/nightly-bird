@@ -73,8 +73,24 @@ for _,state in ipairs({a,b}) do
     for _,v in pairs(m.values(state)) do assert(v==v and math.abs(v)<math.huge) end
 end
 local before=a.time;m.step(a,-1);near(a.time,before)
+-- Zero counts hide both layers and stop advancing their particles. Restoring
+-- a subset must leave the rest hidden without changing other fixtures.
+local sparse=m.new();local star_x,dust_x=sparse.stars[1].x,sparse.dust[1].x
+assert(m.set_count(sparse,'star',0) and m.set_count(sparse,'dust',0))
+m.step(sparse,2);near(sparse.stars[1].x,star_x);near(sparse.dust[1].x,dust_x)
+local values=m.values(sparse)
+assert(values.star_0_alpha==0 and values.dust_0_alpha==0 and not values.star_0_x and not values.dust_0_x)
+assert(m.set_count(sparse,'star',3) and m.set_count(sparse,'dust',2))
+m.step(sparse,.1);values=m.values(sparse)
+assert(values.star_2_x and not values.star_3_x and values.star_3_alpha==0)
+assert(values.dust_1_x and not values.dust_2_x and values.dust_2_alpha==0)
+assert(m.new().star_count==72 and m.new().dust_count==26)
+assert(m.set_count(sparse,'star',1000) and sparse.star_count==72)
+assert(m.set_count(sparse,'dust',-1) and sparse.dust_count==0)
+assert(not m.set_count(sparse,'star',0/0) and not m.set_count(sparse,'dust',math.huge))
+assert(not m.set_count(sparse,'invalid',2))
 -- Controller activation must not advance hidden previews or replace their state.
-local channels,enabled,status={},nil,nil
+local channels,enabled,status,writes={},nil,nil,0
 local fish_frame=nil
 local width,height,scale=1280,720,nil
 local env=setmetatable({hash=function(v) return v end,
@@ -83,7 +99,7 @@ local env=setmetatable({hash=function(v) return v end,
     end},
     rive={get_projection_matrix=function() return {m00=2/width,m11=2/height} end,
         get_view_model_instance=function() return 1 end,
-        cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value end}},
+        cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value;writes=writes+1 end}},
     go={property=function(_,v) return v end,set_position=function() end,set_scale=function(v) scale=v end},
     vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end}}, {__index=_G})
 setfenv(assert(loadfile('studio/scenery/night_sky/preview.script')),env)()
@@ -133,4 +149,12 @@ env.on_message(fish_scene,'water_level',{level=.4});env.update(fish_scene,.1);ne
 near(wet.water.level,.65)
 local old_frame=fish_frame
 env.on_message(fish_scene,'active',{active=false});env.update(fish_scene,1);assert(fish_frame==old_frame)
+local empty={};env.init(empty);env.on_message(empty,'active',{active=true})
+env.on_message(empty,'star_count',{count=0});env.on_message(empty,'dust_count',{count=0})
+assert(status.star_count==0 and status.dust_count==0)
+env.update(empty,.1);assert(channels.star_0_alpha==0 and channels.dust_0_alpha==0)
+local previous_writes=writes;env.update(empty,.1)
+assert(writes==previous_writes,'Disabled particles must not send changing Rive properties')
+env.on_message(empty,'star_count',{count=1});env.update(empty,.1)
+assert(channels.star_0_alpha>0 and channels.star_1_alpha==0 and channels.dust_0_alpha==0)
 print('PASS night sky: slow staggered flares, fixed 32/64 stars, continuity, 10 winds, wrapping and lifecycle')

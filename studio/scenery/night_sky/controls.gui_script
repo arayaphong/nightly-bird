@@ -31,7 +31,7 @@ local function arrow(parent,x,y,angle,color)
     end
     return {segment(-12,0,12,0),segment(12,0,3,6),segment(12,0,3,-6)}
 end
-local function slider(parent,x,y)
+local function slider(parent,x,y,maximum)
     local s={root=child(box(x,y+12,300,76,vmath.vector4()),parent)}
     s.label=child(text(x,y+34,'',20,WHITE),s.root)
     s.hit=child(box(x,y,260,44,vmath.vector4()),s.root)
@@ -39,7 +39,8 @@ local function slider(parent,x,y)
     s.fill=child(box(x,y,1,4,ACCENT),s.root)
     s.knob=child(gui.new_pie_node(vmath.vector3(x,y,0),vmath.vector3(22,22,0)),s.root)
     gui.set_color(s.knob,ACCENT)
-    child(text(x-143,y,'0%',15,MUTED),s.root);child(text(x+144,y,'100%',15,MUTED),s.root)
+    child(text(x-143,y,maximum and '0' or '0%',15,MUTED),s.root)
+    child(text(x+144,y,maximum and tostring(maximum) or '100%',15,MUTED),s.root)
     return s
 end
 local function update_slider(s,value,caption,enabled)
@@ -71,6 +72,14 @@ local function refresh(self)
     gui.set_color(self.star_speed_label,self.star_speed==sky.STAR_SPEEDS[2] and ACCENT or WHITE)
     update_slider(self.level_slider,self.water_level,'ระดับน้ำ: ',self.page=='night_water')
     update_slider(self.rough_slider,self.water_roughness,'ความสูง/ปั่นป่วนคลื่น: ',self.page=='night_water')
+    local counts=self.page=='night_sky' or self.page=='night_water'
+    local count_y=self.page=='night_water' and 490 or 590
+    gui.set_position(self.star_slider.root,vmath.vector3(0,count_y+12-360,0))
+    gui.set_position(self.dust_slider.root,vmath.vector3(410,count_y+12-360,0))
+    update_slider(self.star_slider,self.star_count/sky.MAX_STARS,'',counts)
+    update_slider(self.dust_slider,self.dust_count/sky.MAX_DUST,'',counts)
+    gui.set_text(self.star_slider.label,'ดาว: '..self.star_count..(self.star_count==0 and ' (ปิด)' or ' ดวง'))
+    gui.set_text(self.dust_slider.label,'ฝุ่น: '..self.dust_count..(self.dust_count==0 and ' (ปิด)' or ' เม็ด'))
     local a=math.rad(sky.angles[self.step]);a=math.atan2(math.sin(a),self.side*math.cos(a))
     gui.set_rotation(self.current_arrow,vmath.vector3(0,0,math.deg(a)))
     for _,n in ipairs(self.chevron_up) do gui.set_enabled(n,self.collapsed) end
@@ -90,6 +99,7 @@ function init(self)
     msg.post('.','acquire_input_focus')
     self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=sky.STAR_SPEEDS[1];self.buttons={};clear(self)
     self.water_level=water.DEFAULT_LEVEL;self.water_roughness=water.DEFAULT_ROUGHNESS
+    self.star_count=sky.MAX_STARS;self.dust_count=sky.MAX_DUST
     self.water_visible=true;self.fish_visible=true
     self.root=box(640,360,1280,720,vmath.vector4())
     self.title=child(text(640,668,'ท้องฟ้ากลางคืน',26,WHITE),self.root)
@@ -103,6 +113,8 @@ function init(self)
     self.fish_toggle_label=child(text(810,596,'',20,WHITE),self.root)
     self.visibility_nodes={self.water_toggle,self.water_toggle_label,self.fish_toggle,self.fish_toggle_label}
     self.level_slider=slider(self.root,640,590);self.rough_slider=slider(self.root,1050,590)
+    self.star_slider=slider(self.root,640,490,sky.MAX_STARS);self.dust_slider=slider(self.root,1050,490,sky.MAX_DUST)
+    self.sliders={water_level=self.level_slider,water_roughness=self.rough_slider,star_count=self.star_slider,dust_count=self.dust_slider}
     child(text(1050,564,'25% = Legacy',14,MUTED),self.rough_slider.root)
     self.body=child(box(640,100,900,200,PANEL),self.root)
     for row,side in ipairs({-1,1}) do
@@ -142,6 +154,8 @@ function on_message(self,id,message)
         self.water_visible=message.water_visible;self.fish_visible=message.fish_visible
         if self.slider_kind~='water_level' then self.water_level=message.water_level end
         if self.slider_kind~='water_roughness' then self.water_roughness=message.water_roughness end
+        if self.slider_kind~='star_count' then self.star_count=message.star_count end
+        if self.slider_kind~='dust_count' then self.dust_count=message.dust_count end
         refresh(self)
     end
 end
@@ -155,6 +169,8 @@ local function button_at(self,x,y)
         if gui.pick_node(self.level_slider.hit,x,y) then return 'water_level' end
         if gui.pick_node(self.rough_slider.hit,x,y) then return 'water_roughness' end
     end
+    if gui.pick_node(self.star_slider.hit,x,y) then return 'star_count' end
+    if gui.pick_node(self.dust_slider.hit,x,y) then return 'dust_count' end
     if gui.pick_node(self.star_speed_button,x,y) then return 'star_speed' end
     if gui.pick_node(self.header,x,y) then return 'fold' end
     if not self.collapsed then
@@ -175,10 +191,14 @@ local function pointer(self,id,a)
         return
     end
     local function slide()
-        local hit=self.slider_kind=='water_roughness' and self.rough_slider.hit or self.level_slider.hit
+        local hit=self.sliders[self.slider_kind].hit
         local local_point=gui.screen_to_local(hit,vmath.vector3(a.screen_x or a.x,a.screen_y or a.y,0))
         local progress=math.max(0,math.min(1,(local_point.x+115)/230))
-        if self.slider_kind=='water_roughness' then
+        if self.slider_kind=='star_count' or self.slider_kind=='dust_count' then
+            local maximum=self.slider_kind=='star_count' and sky.MAX_STARS or sky.MAX_DUST
+            self[self.slider_kind]=math.floor(progress*maximum+.5)
+            refresh(self);msg.post(self.target,self.slider_kind,{count=self[self.slider_kind]})
+        elseif self.slider_kind=='water_roughness' then
             self.water_roughness=progress
             refresh(self);msg.post(self.target,'water_roughness',{roughness=progress})
         else
@@ -191,7 +211,7 @@ local function pointer(self,id,a)
         return
     end
     local kind=a.pressed and button_at(self,a.x,a.y)
-    if (kind=='water_level' or kind=='water_roughness') and next(self.contacts)==nil then
+    if self.sliders[kind] and next(self.contacts)==nil then
         self.slider_id=id;self.slider_kind=kind;slide();return
     end
     if a.pressed then gestures.begin(self.gestures,id,a.x,a.y,button_at(self,a.x,a.y));self.contacts[id]=true end

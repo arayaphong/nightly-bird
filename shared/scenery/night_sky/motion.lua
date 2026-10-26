@@ -1,7 +1,8 @@
 -- Reusable two-layer sky. Angles are elevation from the selected horizontal.
 -- Positions use the Rive artboard's x-right/y-down coordinates.
 local layout=require('shared.scenery.night_sky.layout')
-local M={angles={-80,-40,0,40,80},SPEED=42,STAR_SPEEDS={32,64},DUST_FLASH_PERIOD=6}
+local M={angles={-80,-40,0,40,80},SPEED=42,STAR_SPEEDS={32,64},DUST_FLASH_PERIOD=6,
+    MAX_STARS=#layout.stars,MAX_DUST=#layout.dust}
 local function copy(source)
     local out={};for i,p in ipairs(source) do local q={};for k,v in pairs(p) do q[k]=v end;out[i]=q end
     return out
@@ -9,7 +10,12 @@ end
 function M.new()
     return {time=0,side=-1,step=3,star_speed=M.STAR_SPEEDS[1],vx=-M.SPEED,vy=0,
             width=layout.width,left=0,
-            stars=copy(layout.stars),dust=copy(layout.dust)}
+            stars=copy(layout.stars),dust=copy(layout.dust),star_count=M.MAX_STARS,dust_count=M.MAX_DUST}
+end
+function M.set_count(s,kind,count)
+    local maximum=kind=='star' and M.MAX_STARS or kind=='dust' and M.MAX_DUST
+    if not maximum or type(count)~='number' or count~=count or math.abs(count)==math.huge then return false end
+    s[kind..'_count']=math.max(0,math.min(maximum,math.floor(count+.5)));return true
 end
 function M.set_width(s,width)
     s.width=width;s.left=(layout.width-width)/2
@@ -35,11 +41,13 @@ local function advance(s,dt)
     s.time=s.time+dt
     local tx,ty=M.target(s);local blend=1-math.exp(-dt*7)
     s.vx=s.vx+(tx-s.vx)*blend;s.vy=s.vy+(ty-s.vy)*blend
-    for _,p in ipairs(s.stars) do
+    for i=1,s.star_count do
+        local p=s.stars[i]
         p.x=s.left+wrap(p.x-s.left-s.star_speed*dt,s.width)
         p.alpha=.3+.65*(.5+.5*math.sin(s.time*p.rate+p.phase))
     end
-    for _,p in ipairs(s.dust) do
+    for i=1,s.dust_count do
+        local p=s.dust[i]
         local gust=1+.14*math.sin(s.time*.8+p.phase)
         local curl=1.4*math.sin(s.time*1.7+p.phase)
         local speed=math.sqrt(s.vx*s.vx+s.vy*s.vy)
@@ -58,12 +66,16 @@ end
 function M.values(s)
     local v={}
     for i,p in ipairs(s.stars) do
-        v['star_'..(i-1)..'_x']=p.x;v['star_'..(i-1)..'_alpha']=p.alpha or .6
+        v['star_'..(i-1)..'_alpha']=i<=s.star_count and (p.alpha or .6) or 0
+        if i<=s.star_count then v['star_'..(i-1)..'_x']=p.x end
     end
     for i,p in ipairs(s.dust) do
         local prefix='dust_'..(i-1)..'_'
-        v[prefix..'x']=p.x;v[prefix..'y']=p.y
-        v[prefix..'angle']=p.angle or math.pi;v[prefix..'alpha']=p.opacity or dust_alpha(p,s.time)
+        v[prefix..'alpha']=i<=s.dust_count and (p.opacity or dust_alpha(p,s.time)) or 0
+        if i<=s.dust_count then
+            v[prefix..'x']=p.x;v[prefix..'y']=p.y
+            v[prefix..'angle']=p.angle or math.pi
+        end
     end
     return v
 end
