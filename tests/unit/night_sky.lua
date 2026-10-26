@@ -75,13 +75,14 @@ end
 local before=a.time;m.step(a,-1);near(a.time,before)
 -- Controller activation must not advance hidden previews or replace their state.
 local channels,enabled,status={},nil,nil
+local width,height,scale=480,800,nil
 local env=setmetatable({hash=function(v) return v end,
     msg={post=function(url,id,data) if url=='#sky' then enabled=id else status=data end end},
-    rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
+    rive={get_projection_matrix=function() return {m00=2/width,m11=2/height} end,
         get_view_model_instance=function() return 1 end,
         cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value end}},
-    go={set_position=function() end,set_scale=function() end},
-    vmath={vector3=function(...) return {...} end}}, {__index=_G})
+    go={set_position=function() end,set_scale=function(v) scale=v end},
+    vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end}}, {__index=_G})
 setfenv(assert(loadfile('studio/scenery/night_sky/preview.script')),env)()
 local preview={};env.init(preview);assert(enabled=='disable')
 env.update(preview,1);near(preview.motion.time,0);assert(next(channels)==nil)
@@ -89,6 +90,13 @@ env.on_message(preview,'active',{active=true});assert(enabled=='enable' and stat
 assert(status.star_speed==32)
 env.on_message(preview,'toggle_star_speed',{});assert(status.star_speed==64)
 env.update(preview,.1);assert(channels.star_0_x and channels.dust_0_angle)
+-- Circular SVG arcs must remain circular on tall/wide native viewports.
+for _,size in ipairs({{480,800},{480,1200},{960,800},{1920,1080}}) do
+    width,height=size[1],size[2];env.update(preview,0)
+    local uniform=math.min(width/480,height/800)
+    near(scale.x*channels.moon_scale_x,uniform)
+    near(scale.y*channels.moon_scale_y,uniform)
+end
 env.on_message(preview,'wind',{side=1,step=5});assert(status.side==1 and status.step==5)
 local time=preview.motion.time
 env.on_message(preview,'active',{active=false});env.update(preview,3);near(preview.motion.time,time)

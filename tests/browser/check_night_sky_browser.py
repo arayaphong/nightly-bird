@@ -39,8 +39,8 @@ with sync_playwright() as p:
   return found
  home=snap();tap(240,475);tap(240,370);scenery=snap('night-sky-menu.png')
  tap(240,500);initial=snap('night-sky-collapsed.png')
- moon=crop(initial,20,710,110,615)
- assert sum(1 for red,green,blue in moon.get_flattened_data() if red>150 and green>140 and red-blue>10)>150,'Upper-left crescent moon is missing'
+ moon=crop(initial,392,760,477,670)
+ assert sum(1 for red,green,blue in moon.get_flattened_data() if red>150 and green>140 and red-blue>10)>150,'Upper-right crescent moon is missing'
  assert selected(initial)==[],'Panel should start folded'
  def speed_label(im):return crop(im,155,690,395,658)
  slow=speed_label(initial)

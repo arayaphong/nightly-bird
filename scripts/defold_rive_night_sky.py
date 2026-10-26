@@ -28,6 +28,7 @@ def build():
         channels.update({f'dust_{i}_x':p['x'],f'dust_{i}_y':p['y'],
                          f'dust_{i}_angle':math.pi,
                          f'dust_{i}_alpha':p['alpha']*(.2+.8*(.5+.5*math.sin(p['phase']))**3)})
+    channels.update(moon_scale_x=1,moon_scale_y=1)
     keys={k:i for i,k in enumerate(channels)}
     f=start_file(channels,'NightSky',480,800,'NightSkyControls')
     # Front-to-back emission: dust, static moon, moving stars, black backdrop.
@@ -49,7 +50,8 @@ def build():
         d=(f'M0 {-width} C{-length*.35} {-width*.65} {-length*.8} {-width*.1} {-length} 0 '
            f'C{-length*.8} {width*.1} {-length*.35} {width*.65} 0 {width} Z')
         draw_path(f,path(d,'url(#dust-tail)'),node,{'dust-tail':tail})
-    middle=f.node('crescent-moon',x=66,y=136)
+    middle=f.node('crescent-moon',x=432,y=86)
+    f.bind(16,keys['moon_scale_x']);f.bind(17,keys['moon_scale_y'])
     moon,moon_defs=svg_asset('environment/crescent-moon')
     draw_group(f,moon,middle,moon_defs)
     back=f.node('distant-stars')

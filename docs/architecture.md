@@ -49,7 +49,9 @@ still marks its test suite as future work.
   Each dust fleck slowly flares and fades on a staggered six-second cycle.
   Its short gradient-filled tail tapers to a point behind its actual velocity;
   core, halo and tail share the same flare opacity without growing the core.
-  A static warm ivory crescent at the upper left sits between stars and dust.
+  A static warm ivory crescent at the upper right sits between stars and dust.
+  Local Rive scale channels compensate for viewport stretching so the moon's
+  circular arcs and halo retain a uniform world scale on tall or wide screens.
   Its source is `assets/svg/environment/crescent-moon.svg`; the hollow side is
   transparent geometry, so distant stars remain visible through it.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
