@@ -16,6 +16,34 @@ local function label(self,x,y,size,color,width,height)
     return node
 end
 local function set(node,value) gui.set_text(node,value) end
+local function flow_renderer(self)
+    local rows={{self.renderer,22},{self.vendor,20},{self.version,18},{self.details,17}}
+    local key=gui.get_text(self.renderer)..'\n'..gui.get_text(self.vendor)..'\n'..gui.get_text(self.version)..'\n'..gui.get_text(self.details)
+    if key==self.renderer_layout_key then return end
+    self.renderer_layout_key=key
+    -- Text node height does not clip wrapped text. Measure the real lines and
+    -- place each field below the previous one, fitting the whole left column.
+    local font=gui.get_font_resource(gui.get_font(self.renderer))
+    local shrink=1
+    while true do
+        local height=0
+        for _,row in ipairs(rows) do
+            local size=row[2]*shrink
+            gui.set_scale(row[1],vmath.vector3(size/32,size/32,1))
+            gui.set_size(row[1],vmath.vector3(530*32/size,1000,0))
+            local metrics=resource.get_text_metrics(font,gui.get_text(row[1]),{width=530*32/size,line_break=true})
+            row.height=metrics.height*size/32
+            height=height+row.height
+        end
+        if height+36<=277 then break end
+        shrink=shrink*.9
+    end
+    local y=422
+    for _,row in ipairs(rows) do
+        gui.set_position(row[1],vmath.vector3(70-640,y-360,0))
+        y=y-row.height-12
+    end
+end
 local function refresh(self)
     local info=system.collect();local web=info.web;local engine=info.engine;local os=info.system
     set(self.build,'Nightly Bird '..sys.get_config_string('project.version','?')..' · Defold '..(engine.version or '?')..' · '..(os.system_name or '?'))
@@ -45,6 +73,7 @@ local function refresh(self)
         set(self.dpr,'Device pixel ratio: ไม่มีข้อมูล')
         set(self.workload,'กล้องเกม: สูง 720 world units')
     end
+    flow_renderer(self)
     local current=performance.current
     set(self.fps,current and string.format('หน้านี้: %.1f FPS · %.1f ms/เฟรม',current.fps,current.frame_ms) or 'หน้านี้: กำลังวัด...')
     set(self.slowest,current and string.format('เฟรมช้าที่สุดในช่วงล่าสุด: %.1f ms',current.slowest_ms) or '')
