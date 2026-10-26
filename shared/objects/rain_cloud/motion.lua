@@ -14,9 +14,15 @@ function M.preview_target(x,y)
     -- accepts a target relative to the cloud, so a game can supply its bird pose.
     return {x=(x-rig.preview.x)/rig.preview.scale,y=(y-rig.preview.y)/rig.preview.scale}
 end
+function M.set_preview_size(s,width,height)
+    local p=rig.preview
+    local left,top=(p.width-width)/2,(p.height-height)/2
+    s.target_bounds={min_x=(left-p.x)/p.scale,max_x=(left+width-p.x)/p.scale,
+        min_y=(top-p.y)/p.scale,max_y=(top+height-p.y)/p.scale}
+end
 function M.strike(s,target)
     if s.remaining>0 then return false end
-    local bounds=rig.target
+    local bounds=s.target_bounds or rig.target
     local x1,y1
     if target then x1,y1=target.x,target.y
     else x1,y1=random(s,bounds.min_x,bounds.max_x),random(s,bounds.min_y,bounds.max_y) end

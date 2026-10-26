@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.characters.red_bird.motion')
 local equipment=require('shared.items.equipment')
 local function clear_input(self)
@@ -22,15 +23,14 @@ function init(self)
     print('RIVE_BIRD_READY')
 end
 function update(self,dt)
-    -- Game coordinates are window points, adjusted by Rive's display scale.
-    -- Fit the 480x800 reference just like the GUI, including high-DPI screens.
+    -- Character fixtures fit the same safe 16:9 frame as their GUI.
     local projection=rive.get_projection_matrix()
     local width,height=2/projection.m00,2/projection.m11
     if width~=self.width or height~=self.height then
         self.width,self.height=width,height
-        local scale=math.min(width/480,height/800)
-        go.set_scale(vmath.vector3(.52*scale,.52*scale,1))
-        go.set_position(vmath.vector3(width/2-10*scale,height/2+150*scale,0))
+        local scale=viewport.fit(width,height)
+        go.set_scale(vmath.vector3(.72*scale,.72*scale,1))
+        go.set_position(vmath.vector3(width/2-280*scale,height/2,0))
         go.set_scale(vmath.vector3(scale,scale,1),'/icons')
         go.set_position(vmath.vector3(width/2,height/2,0),'/icons')
     end

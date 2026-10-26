@@ -1,15 +1,16 @@
 [project]
 title = Nightly Bird
 dependencies#0 = https://github.com/defold/extension-rive/archive/0283d4ecb604953057385ca5a4fae7130c776ae9.zip
-version = 0.8.16
+version = 0.8.17
 
 [bootstrap]
 main_collection = /app/main.collectionc
 render = /shared/render/vector.renderc
 
 [display]
-width = 480
-height = 800
+width = 1280
+height = 720
+dynamic_orientation = 0
 high_dpi = 1
 samples = 0
 
@@ -26,13 +27,13 @@ clear_color_blue = 0.10
 clear_color_alpha = 1.0
 
 [html5]
-scale_mode = fit
+scale_mode = stretch
 custom_heap_size = 1
 heap_size = 64
 
 [android]
 package = com.arayaphong.nightlybird.defoldhello
-version_code = 35
+version_code = 36
 input_method = HiddenInputField
 
 [physics]

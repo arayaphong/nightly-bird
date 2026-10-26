@@ -43,19 +43,19 @@ still marks its test suite as future work.
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.
 - `shared/scenery/night_sky/`: reusable layered Rive sky, generated particle
-  layout and Lua motion. All stars drift left at a fixed 32 or 64 px/s and twinkle;
+  layout and Lua motion. All stars drift left at a fixed 32 or 64 world units/s and twinkle;
   a separate Studio toggle selects their shared speed (default 32). Sparse
   dust follows a smoothly changing wind with small gusts and edge wrapping.
   Each dust fleck slowly flares and fades on a staggered six-second cycle.
   Its short gradient-filled tail tapers to a point behind its actual velocity;
   core, halo and tail share the same flare opacity without growing the core.
   A static warm ivory crescent at the upper right sits between stars and dust.
-  Local Rive scale channels compensate for viewport stretching so the moon's
-  circular arcs and halo retain a uniform world scale on tall or wide screens.
+  A uniform 720-unit-high camera preserves the moon's circular arcs and halo;
+  its anchor follows the visible right edge on wide screens.
   Its source is `assets/svg/environment/crescent-moon.svg`; the hollow side is
   transparent geometry, so distant stars remain visible through it.
 - `shared/scenery/water/`: legacy `drawWater` ripples, palette and lunar shimmer.
-  The surface retains its 8px samples, 2.2px/1.5px amplitudes and opposite phase
+  At 16:9 the surface retains its 8-unit samples, 2.2/1.5-unit amplitudes and opposite phase
   speeds. Fourteen moon-reflection bars use the original formulas, anchored to
   the current moon. Star reflections remain omitted. Body and line share the
   sampled boundary, and the depth gradient follows the water level. Its opaque
@@ -94,11 +94,14 @@ inspection screens; it does not define their motion or lightning rules.
 
 Cloud motion accepts a cloud-local target with `strike(state, {x=..., y=...})`.
 Omit the target for full-artboard random aiming. `preview_target(x,y)` converts
-480×800 x-right/y-down coordinates for the Studio controller's optional
+1280×720 x-right/y-down coordinates for the Studio controller's optional
 `lightning` message fields `target_x`/`target_y`. Future game code converts bird
 world coordinates to cloud-local coordinates before calling the same model.
 Charging flashes dark/bright twice in 0.2 s while silent; the cloud returns to
 its original color and the one discharge event starts bolt and thunder together.
+
+See [landscape.md](landscape.md) for the 1280×720 Studio layout, world/camera
+contract, browser rotation behavior and web test delivery.
 
 ## Add work in the right place
 

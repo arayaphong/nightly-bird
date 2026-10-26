@@ -65,7 +65,7 @@ for n=1,80 do
     assert(m.strike(seeded) and m.strike(matching))
     local a,b=m.values(seeded,'cloud'),m.values(matching,'cloud')
     local x,y=a.bolt_x_7,a.bolt_y_7
-    assert(x>=-240/1.7 and x<=240/1.7 and y>=-300/1.7 and y<=500/1.7,'Endpoint outside screen bounds')
+    assert(x>=-640/1.7 and x<=640/1.7 and y>=-300/1.7 and y<=420/1.7,'Endpoint outside screen bounds')
     assert(not previous or x~=previous.x or y~=previous.y,'Repeated endpoint')
     assert(a.fork_x_0==a.bolt_x_3 and a.fork_y_0==a.bolt_y_3,'Detached lightning branch')
     for i=0,7 do
@@ -74,7 +74,7 @@ for n=1,80 do
     minx,maxx=math.min(minx,x),math.max(maxx,x);miny,maxy=math.min(miny,y),math.max(maxy,y)
     previous={x=x,y=y};m.step(seeded,1);m.step(matching,1)
 end
-assert(minx<-120 and maxx>120 and miny<-140 and maxy>250,'Random targets missed part of the screen')
+assert(minx<-300 and maxx>300 and miny<-140 and maxy>200,'Random targets missed part of the screen')
 -- Explicit bird targets are hit exactly in any direction, including very near
 -- the cloud and outside preview bounds. No downward-only aiming or clamping.
 for _,target in ipairs({{x=0,y=-150},{x=-135,y=-6},{x=135,y=-6},{x=0,y=270},
@@ -84,18 +84,31 @@ for _,target in ipairs({{x=0,y=-150},{x=-135,y=-6},{x=135,y=-6},{x=0,y=270},
     for _,value in pairs(v) do assert(value==value and math.abs(value)<math.huge,'Invalid near-target geometry') end
 end
 local corner=m.preview_target(0,0)
-assert(corner.x==-240/1.7 and corner.y==-300/1.7)
+assert(corner.x==-640/1.7 and corner.y==-300/1.7)
+-- Wide/narrow inspection windows still allow lightning across the full canvas.
+for _,size in ipairs({{1900,720},{1280,900}}) do
+    local wide=m.new(12345);m.set_preview_size(wide,size[1],size[2])
+    local bounds=wide.target_bounds;local outside=false
+    for i=1,80 do
+        assert(m.strike(wide));local v=m.values(wide)
+        assert(v.bolt_x_7>=bounds.min_x and v.bolt_x_7<=bounds.max_x)
+        assert(v.bolt_y_7>=bounds.min_y and v.bolt_y_7<=bounds.max_y)
+        outside=outside or math.abs(v.bolt_x_7)>640/1.7 or v.bolt_y_7>420/1.7 or v.bolt_y_7<-300/1.7
+        m.step(wide,1)
+    end
+    assert(outside,'Responsive lightning stayed inside the reference artboard')
+end
 -- Controller gates both the animation and one original thunder recording.
 local plays,stops,status=0,0,nil
 local env=setmetatable({hash=function(v) return v end,
     msg={post=function(_,id,data) if id=='cloud_status' then status=data end end},
     sound={stop=function(id) assert(id=='#thunder');stops=stops+1 end,
            play=function(id) assert(id=='#thunder');plays=plays+1 end},
-    rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
+    rive={get_projection_matrix=function() return {m00=2/1280,m11=2/720} end,
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
 setfenv(assert(loadfile('studio/characters/objects/preview.script')),env)()
-local demo={};env.init(demo);demo.width,demo.height=480,800
+local demo={};env.init(demo);demo.width,demo.height=1280,720
 env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='firefly'});env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='cloud'});env.on_message(demo,'lightning',{})

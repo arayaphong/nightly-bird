@@ -31,15 +31,15 @@ local function arrow(parent,x,y,angle,color)
     end
     return {segment(-12,0,12,0),segment(12,0,3,6),segment(12,0,3,-6)}
 end
-local function slider(parent,y)
-    local s={root=child(box(275,y+12,300,76,vmath.vector4()),parent)}
-    s.label=child(text(275,y+34,'',15,WHITE),s.root)
-    s.hit=child(box(275,y,260,44,vmath.vector4()),s.root)
-    child(box(275,y,230,4,vmath.vector4(.2,.3,.4,1)),s.root)
-    s.fill=child(box(275,y,1,4,ACCENT),s.root)
-    s.knob=child(gui.new_pie_node(vmath.vector3(275,y,0),vmath.vector3(22,22,0)),s.root)
+local function slider(parent,x,y)
+    local s={root=child(box(x,y+12,300,76,vmath.vector4()),parent)}
+    s.label=child(text(x,y+34,'',20,WHITE),s.root)
+    s.hit=child(box(x,y,260,44,vmath.vector4()),s.root)
+    child(box(x,y,230,4,vmath.vector4(.2,.3,.4,1)),s.root)
+    s.fill=child(box(x,y,1,4,ACCENT),s.root)
+    s.knob=child(gui.new_pie_node(vmath.vector3(x,y,0),vmath.vector3(22,22,0)),s.root)
     gui.set_color(s.knob,ACCENT)
-    child(text(132,y,'0%',12,MUTED),s.root);child(text(419,y,'100%',12,MUTED),s.root)
+    child(text(x-143,y,'0%',15,MUTED),s.root);child(text(x+144,y,'100%',15,MUTED),s.root)
     return s
 end
 local function update_slider(s,value,caption,enabled)
@@ -57,10 +57,10 @@ end
 local function refresh(self)
     gui.set_enabled(self.root,self.active)
     gui.set_enabled(self.body,not self.collapsed)
-    -- The header is a child of the full-screen root centered at (240,400).
-    gui.set_position(self.header,vmath.vector3(0,self.collapsed and -372 or -172,0))
+    -- The header is a child of the full-screen root centered at (640,360).
+    gui.set_position(self.header,vmath.vector3(0,self.collapsed and -332 or -132,0))
     gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
-    gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' px/s')
+    gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' หน่วย/วิ')
     gui.set_color(self.star_speed_label,self.star_speed==sky.STAR_SPEEDS[2] and ACCENT or WHITE)
     update_slider(self.level_slider,self.water_level,'ระดับน้ำ: ',self.page=='night_water' or self.page=='fish_test')
     update_slider(self.rough_slider,self.water_roughness,'ความสูง/ปั่นป่วนคลื่น: ',self.page=='night_water' or self.page=='fish_test')
@@ -83,35 +83,35 @@ function init(self)
     msg.post('.','acquire_input_focus')
     self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=sky.STAR_SPEEDS[1];self.buttons={};clear(self)
     self.water_level=water.DEFAULT_LEVEL;self.water_roughness=water.DEFAULT_ROUGHNESS
-    self.root=box(240,400,480,800,vmath.vector4())
-    self.title=child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
-    child(text(275,718,'STUDIO · SCENERY',12,MUTED),self.root)
-    self.star_speed_button=child(box(275,674,260,44,BUTTON),self.root)
-    self.star_speed_label=child(text(275,674,'',16,WHITE),self.root)
-    child(text(275,639,'แตะเพื่อสลับ '..sky.STAR_SPEEDS[1]..' / '..sky.STAR_SPEEDS[2],12,MUTED),self.root)
-    self.level_slider=slider(self.root,578);self.rough_slider=slider(self.root,500)
-    child(text(275,474,'25% = Legacy',11,MUTED),self.rough_slider.root)
-    self.body=child(box(240,100,480,200,PANEL),self.root)
+    self.root=box(640,360,1280,720,vmath.vector4())
+    self.title=child(text(640,668,'ท้องฟ้ากลางคืน',26,WHITE),self.root)
+    child(text(640,641,'STUDIO · SCENERY',12,MUTED),self.root)
+    self.star_speed_button=child(box(230,596,280,48,BUTTON),self.root)
+    self.star_speed_label=child(text(230,596,'',20,WHITE),self.root)
+    child(text(230,560,'แตะเพื่อสลับ '..sky.STAR_SPEEDS[1]..' / '..sky.STAR_SPEEDS[2]..' หน่วย/วิ',16,MUTED),self.root)
+    self.level_slider=slider(self.root,640,590);self.rough_slider=slider(self.root,1050,590)
+    child(text(1050,564,'25% = Legacy',14,MUTED),self.rough_slider.root)
+    self.body=child(box(640,100,900,200,PANEL),self.root)
     for row,side in ipairs({-1,1}) do
         local y=row==1 and 146 or 66
-        child(text(30,y,side==-1 and 'ซ้าย' or 'ขวา',13,MUTED),self.body)
+        child(text(340,y,side==-1 and 'ซ้าย' or 'ขวา',16,MUTED),self.body)
         for step,value in ipairs(sky.angles) do
-            local x=96+(step-1)*82
-            local b={side=side,step=step,node=child(box(x,y,70,64,BUTTON),self.body)}
-            b.label=child(text(x,y-18,angle_label(step),15),self.body)
+            local x=440+(step-1)*100
+            local b={side=side,step=step,node=child(box(x,y,80,64,BUTTON),self.body)}
+            b.label=child(text(x,y-18,angle_label(step),16),self.body)
             local a=math.rad(value)
             b.arrow=arrow(self.body,x,y+10,math.atan2(math.sin(a),side*math.cos(a)),WHITE)
             self.buttons[#self.buttons+1]=b
         end
     end
-    child(text(240,12,'Space: พับแถบ · T: สลับฝั่ง · ← →: เลือกมุม',11,MUTED),self.body)
-    self.header=child(box(240,28,480,56,PANEL),self.root)
-    child(text(78,28,'ทิศทางลม',17,WHITE),self.header)
-    self.current=child(text(335,28,'',16,WHITE),self.header)
-    self.current_arrow=child(box(263,28,1,1,vmath.vector4()),self.header)
-    arrow(self.current_arrow,263,28,0,ACCENT)
-    self.chevron_up={line(self.header,447,28,-7,-3,0,4,MUTED),line(self.header,447,28,0,4,7,-3,MUTED)}
-    self.chevron_down={line(self.header,447,28,-7,3,0,-4,MUTED),line(self.header,447,28,0,-4,7,3,MUTED)}
+    child(text(640,12,'Space: พับแถบ · T: สลับฝั่ง · ← →: เลือกมุม',13,MUTED),self.body)
+    self.header=child(box(640,28,900,56,PANEL),self.root)
+    child(text(400,28,'ทิศทางลม',18,WHITE),self.header)
+    self.current=child(text(730,28,'',18,WHITE),self.header)
+    self.current_arrow=child(box(650,28,1,1,vmath.vector4()),self.header)
+    arrow(self.current_arrow,650,28,0,ACCENT)
+    self.chevron_up={line(self.header,1040,28,-7,-3,0,4,MUTED),line(self.header,1040,28,0,4,7,-3,MUTED)}
+    self.chevron_down={line(self.header,1040,28,-7,3,0,-4,MUTED),line(self.header,1040,28,0,-4,7,3,MUTED)}
     local system=sys.get_sys_info().system_name
     self.touch_device=system=='Android' or system=='iPhone OS'
     if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
@@ -155,7 +155,9 @@ local function pointer(self,id,a)
         return
     end
     local function slide()
-        local progress=math.max(0,math.min(1,(a.x-160)/230))
+        local hit=self.slider_kind=='water_roughness' and self.rough_slider.hit or self.level_slider.hit
+        local local_point=gui.screen_to_local(hit,vmath.vector3(a.screen_x or a.x,a.screen_y or a.y,0))
+        local progress=math.max(0,math.min(1,(local_point.x+115)/230))
         if self.slider_kind=='water_roughness' then
             self.water_roughness=progress
             refresh(self);msg.post(self.target,'water_roughness',{roughness=progress})

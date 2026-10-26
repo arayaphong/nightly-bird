@@ -1,7 +1,13 @@
 -- Ripple line and lunar shimmer ported from legacy environment-painter.js.
 local rig=require('shared.scenery.water.rig')
 local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=.2,DEFAULT_ROUGHNESS=.6,LEGACY_ROUGHNESS=.25}
-function M.new() return {time=0,wave_time=0,level=M.DEFAULT_LEVEL,roughness=M.DEFAULT_ROUGHNESS} end
+function M.new() return {time=0,wave_time=0,level=M.DEFAULT_LEVEL,roughness=M.DEFAULT_ROUGHNESS,width=rig.width} end
+function M.set_width(s,width) s.width=width end
+local function mesh(s)
+    local width=s.width or rig.width
+    return (rig.width-width)/2+rig.min_x,(width-2*rig.min_x)/(rig.points-1)
+end
+function M.sample_x(s,index) local left,step=mesh(s);return left+index*step end
 function M.set_level(s,level)
     if type(level)~='number' or level~=level or math.abs(level)==math.huge then return false end
     s.level=math.max(M.MIN_LEVEL,math.min(M.MAX_LEVEL,level));return true
@@ -37,15 +43,17 @@ function M.surface_y(s,x)
     return y
 end
 local function rendered_y(s,x)
-    local left=rig.min_x+math.floor((x-rig.min_x)/rig.step)*rig.step
-    local t=(x-left)/rig.step
-    return M.surface_y(s,left)*(1-t)+M.surface_y(s,left+rig.step)*t
+    local edge,step=mesh(s)
+    local left=edge+math.floor((x-edge)/step)*step
+    local t=(x-left)/step
+    return M.surface_y(s,left)*(1-t)+M.surface_y(s,left+step)*t
 end
 local function glint_floor(s,left,right)
     local y=math.max(rendered_y(s,left),rendered_y(s,right))
-    local first=math.ceil((left-rig.min_x)/rig.step)
-    local last=math.floor((right-rig.min_x)/rig.step)
-    for i=first,last do y=math.max(y,M.surface_y(s,rig.min_x+i*rig.step)) end
+    local edge,step=mesh(s)
+    local first=math.ceil((left-edge)/step)
+    local last=math.floor((right-edge)/step)
+    for i=first,last do y=math.max(y,M.surface_y(s,edge+i*step)) end
     return y+1
 end
 function M.values(s)
@@ -53,12 +61,13 @@ function M.values(s)
     -- Keep a non-zero paint axis at 0% water; the geometry is offscreen there.
     local v={water_alpha=1,water_gradient_y=math.min(base,rig.height-.001)}
     for i=0,rig.points-1 do
-        local x=rig.min_x+i*rig.step
+        local x=M.sample_x(s,i);v['water_x_'..i]=x
         v['water_y_'..i]=M.surface_y(s,x)
     end
     for i=0,rig.reflections-1 do
         local width=18+math.sin(s.time*2+i)*8+i*1.5
-        local x=rig.moon_x-width/2+math.sin(s.time*1.7+i*1.3)*6
+        local moon_x=rig.moon_x+((s.width or rig.width)-rig.width)/2
+        local x=moon_x-width/2+math.sin(s.time*1.7+i*1.3)*6
         local y=base+8+i*(rig.height-base)/14
         if s.roughness>M.LEGACY_ROUGHNESS then y=math.max(y,glint_floor(s,x,x+width)) end
         v['water_reflect_x_'..i]=x

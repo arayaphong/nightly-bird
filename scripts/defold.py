@@ -19,6 +19,7 @@ import zipfile
 from defold_test import run as test_rules
 from check_project import check as check_project
 from defold_rive_plugin import prepare as prepare_rive_plugin
+from defold_rive_resize import prepare as prepare_rive_resize
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT
@@ -82,6 +83,7 @@ def build(target):
     subprocess.run([java, *options, "-jar", str(bob.resolve()),
                     "--root", str(PROJECT), "resolve"], check=True, cwd=ROOT)
     prepare_rive_plugin(PROJECT, bob, java)
+    prepare_rive_resize(PROJECT)
     subprocess.run([
         java, *options, "-jar", str(bob.resolve()),
         "--root", str(PROJECT), "--archive", "--platform", platform,
@@ -104,6 +106,17 @@ def build(target):
     if not index:
         raise RuntimeError("Build finished without an HTML5 index.html.")
     shutil.copytree(PROJECT / "scripts/web_preview", index.parent, dirs_exist_ok=True)
+    # Install before EngineLoader starts, so its registered resize callback
+    # uses the landscape canvas and the fixed-height world camera.
+    document=index.read_text()
+    marker='EngineLoader.load("canvas", "NightlyBird");'
+    if marker not in document:
+        raise RuntimeError("HTML5 loader marker changed; cannot install landscape framing.")
+    position=document.rfind('<script',0,document.index(marker))
+    if position<0:
+        raise RuntimeError("HTML5 start script missing.")
+    document=document[:position]+'<script src="landscape.js"></script>\n'+document[position:]
+    index.write_text(document)
     print(f"HTML5 bundle: {index.parent.relative_to(ROOT)}", flush=True)
     print("Preview: python3 scripts/defold.py serve", flush=True)
 

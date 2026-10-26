@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.characters.fish.motion')
 function init(self)
     self.motion=motion.new();self.last={};self.active=false
@@ -8,9 +9,9 @@ function update(self,dt)
     local w,h=2/p.m00,2/p.m11
     if w~=self.width or h~=self.height then
         self.width,self.height=w,h
-        local scale=math.min(w/480,h/800)
-        go.set_scale(vmath.vector3(.24*scale,.24*scale,1))
-        go.set_position(vmath.vector3(w/2,h/2+80*scale,0))
+        local scale=viewport.fit(w,h)
+        go.set_scale(vmath.vector3(.30*scale,.30*scale,1))
+        go.set_position(vmath.vector3(w/2-220*scale,h/2,0))
     end
     if not self.active then return end
     motion.step(self.motion,math.min(dt,.033))

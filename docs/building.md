@@ -91,26 +91,23 @@ DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_hawk_parity.mjs
 ```
 
-An optional browser check (Playwright, Chromium and Pillow) tests the rendered
-mobile UI: a second finger toggles all four items while the first keeps flight
-held, releasing settles, and tapping again removes each item exactly once:
+The landscape browser suite (Playwright, Chromium and Pillow) checks all Studio
+routes and actions, water/fish visibility, slider input, independent scene state,
+live rotation and ultrawide framing:
 
 ```sh
-python3 tests/browser/check_equipment_browser.py http://127.0.0.1:8080/
-python3 tests/browser/check_fish_browser.py http://127.0.0.1:8080/
-python3 tests/browser/check_hawk_browser.py http://127.0.0.1:8080/
-python3 tests/browser/check_gallery_browser.py http://127.0.0.1:8080/
-python3 tests/browser/check_cloud_browser.py http://127.0.0.1:8080/
+python3 tests/browser/check_landscape_browser.py http://127.0.0.1:8080/
 ```
 
-The fish browser check exercises actual swipes in both directions, automatic
-swimming, the turn button and upright facing, restoration of the bird page, and
-swiping over an equipment card without activating it. Fish parity compares the
-Lua channels with the actual JS painter and `Shark.afterPhysics` over 3600 frames,
-including swimming continuously across the 50-tail-cycle boundary.
-Hawk parity compares 3600 flight/dive frames with the original JS painter and
-flap update. Its browser check covers three-page navigation, dive sound,
-the three-second button/pose recovery, repeat locking and cancellation on exit.
+Historical pixel suites for portrait 0.8.16 are retained under
+`tests/browser/portrait/`; see `tests/browser/README.md`. Lua unit and original-JS
+parity checks continue to cover the detailed wing/fish/hawk motion, animation
+phases, dive duration, audio events and cancellation rules.
+
+Web is the default test delivery. The existing private preview is
+https://nightly-bird-studio-arayaphong.arme555.chatgpt.site and is updated from
+`defold/development` independently of the legacy GitHub Pages branch. Build APK
+only when requested. See [landscape.md](landscape.md) for the camera/layout model.
 
 
 See [architecture.md](architecture.md) for the current folder responsibilities.

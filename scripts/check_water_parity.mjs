@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createEnvironmentPainter } from '../legacy/src/visuals/environment-painter.js';
 const spec=JSON.parse(readFileSync(new URL('../shared/scenery/water/rig.json',import.meta.url)));
-const viewport={width:480,height:800,waterY:520},session={time:0};
+const viewport={width:spec.width,height:spec.height,waterY:spec.base_y},session={time:0};
 let points=[],rects=[],gradients=[],lineStyle,lineWidth;
 const stack=[];
 const cx={globalAlpha:1,
@@ -18,12 +18,12 @@ const cx={globalAlpha:1,
 const painter=createEnvironmentPainter({bird:{},enemies:{},session,viewport,world:{stars:[]}},cx,{});
 const levels=[.35,.75,0,.2,1],dts=[1/60,1/120,.025,.013,.15],expected=[];
 for(let i=0;i<1200;i++){
- const level=levels[Math.floor(i/120)%levels.length];viewport.waterY=800*(1-level);session.time+=dts[i%dts.length];
+ const level=levels[Math.floor(i/120)%levels.length];viewport.waterY=spec.height*(1-level);session.time+=dts[i%dts.length];
  points=[];rects=[];gradients=[];painter.drawWater();
  if(lineStyle!==spec.line_color||lineWidth!==spec.line_width)throw Error('Legacy surface style differs');
  if(JSON.stringify(gradients[0].stops)!==JSON.stringify([[0,spec.top_color],[1,spec.bottom_color]]))throw Error('Legacy water palette differs');
  const glints=rects.filter(r=>r.color==='#ffeec8');
- if(points.length!==61||glints.length!==spec.reflections)throw Error('Legacy sample/glint count differs');
+ if(points.length!==spec.width/spec.step+1||glints.length!==spec.reflections)throw Error('Legacy sample/glint count differs');
  const row=[viewport.waterY,...points.map(p=>p[1])];
  // Only the anchor moves from legacy's 0.8*width to the current upper-right moon.
  for(const r of glints)row.push(r.x-viewport.width*.8,r.y,r.w,r.alpha);
@@ -36,7 +36,7 @@ local levels={.35,.75,0,.2,1};local dts={1/60,1/120,.025,.013,.15}
 for i=0,1199 do
  m.set_level(s,levels[math.floor(i/120)%#levels+1]);m.step(s,dts[i%#dts+1]);local v=m.values(s)
  local row={m.base_y(s)}
- for x=0,480,8 do row[#row+1]=v['water_y_'..((x-rig.min_x)/rig.step)] end
+ for x=0,rig.width,8 do row[#row+1]=v['water_y_'..((x-rig.min_x)/rig.step)] end
  for j=0,rig.reflections-1 do
   row[#row+1]=v['water_reflect_x_'..j]-rig.moon_x;row[#row+1]=v['water_reflect_y_'..j]
   row[#row+1]=v['water_reflect_width_'..j];row[#row+1]=v['water_reflect_alpha_'..j]

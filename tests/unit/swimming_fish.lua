@@ -21,14 +21,14 @@ water.set_roughness(w,.25);assert(math.abs(water.amplitude(w)-3.7)<1e-7)
 for _,roughness in ipairs({0,.25,.6,1}) do
  for _,level in ipairs({0,.01,.04,.2,.8,1}) do
   w.roughness=roughness;w.level=level
-  for _,aspect in ipairs({{1,1},{2,1},{1,2},{.7,1.8}}) do
-   m.step(s,0,w,aspect[1],aspect[2])
+  for _,aspect in ipairs({1280,1920,2560,960}) do
+   m.step(s,0,w,aspect)
    if s.visible then
     local b=s.bounds
-    assert(s.scale>0 and s.scale<=m.BASE_SCALE*math.min(unpack(aspect)))
+    assert(s.scale>0 and s.scale<=m.BASE_SCALE)
     assert(s.x>=b.left and s.x<=b.right and s.y>=b.top and s.y<=b.bottom)
     assert(s.y-b.ry>=water.base_y(w)+water.amplitude(w)+5.99999)
-    assert(s.y+b.ry<800)
+    assert(s.y+b.ry<720)
    else assert(level<=.04) end
   end
  end
@@ -49,7 +49,7 @@ local env=setmetatable({hash=function(v) return v end,
 },{__index=_G})
 setfenv(assert(loadfile('studio/scenery/fish/actor.script')),env)()
 local actor={};env.init(actor);assert(enabled=='disable')
-local frame={dt=.1,width=960,height=800,level=.2,roughness=.6}
+local frame={dt=.1,width=2560,height=1080,level=.2,roughness=.6}
 env.on_message(actor,'water_frame',frame);assert(not position)
 env.on_message(actor,'active',{active=true});env.on_message(actor,'water_frame',frame)
 assert(enabled=='enable' and position.z==-.1 and scale.x==scale.y and channels.tail)

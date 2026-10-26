@@ -4,6 +4,10 @@
 ภาพตัวละครและวัตถุยังเป็นเวกเตอร์จริงจาก SVG ไม่มี sprite sheet หรือ flipbook
 ฟอนต์ไทยใช้ Mitr พร้อมระบบจัดวางสระและวรรณยุกต์ของ HarfBuzz/SkriBidi
 
+ทุกหน้าของ Studio ใช้แนวนอน กรอบออกแบบ 1280×720 และรักษาสัดส่วนเวกเตอร์
+ทดลองเว็บผ่าน [Studio Preview](https://nightly-bird-studio-arayaphong.arme555.chatgpt.site)
+(เข้าสู่ระบบด้วยบัญชีเจ้าของ) รายละเอียดอยู่ที่ [landscape.md](docs/landscape.md)
+
 ## พื้นที่ทำงาน
 
 - **Studio** — ออกแบบและทดสอบส่วนประกอบทีละหน่วย: ตัวละคร/วัตถุ,
@@ -31,6 +35,7 @@ shared/              ส่วนประกอบที่ Studio / Scenarios 
   characters/        red_bird, fish, hawk: motion, rig, และภาพ Rive
   objects/           firefly, balloon, rain_cloud: motion และภาพ Rive
   items/             กลไกการติดตั้งไอเท็ม
+  display/           หน่วยโลกและกล้องแนวนอน
   input/             กลไก gesture
   render/            การวาดเวกเตอร์และ GUI
   rules/             กติกา Lua ที่ไม่ผูกกับ renderer

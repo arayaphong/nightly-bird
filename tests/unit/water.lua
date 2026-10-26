@@ -5,7 +5,7 @@ local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring
 local s=m.new()
 near(s.level,.2)
 near(s.roughness,.6)
-m.set_level(s,.35);m.set_roughness(s,m.LEGACY_ROUGHNESS)
+m.set_level(s,.2);m.set_roughness(s,m.LEGACY_ROUGHNESS)
 local original=m.surface_y(s,100)
 local storm=m.new();m.set_roughness(storm,m.LEGACY_ROUGHNESS);m.step(storm,2.3)
 local old_time,old_wave,old_level=storm.time,storm.wave_time,storm.level
@@ -26,7 +26,7 @@ for _,level in ipairs({0,.35,1}) do
     m.set_level(storm,level);m.step(storm,.13);local v=m.values(storm)
     for i=0,rig.points-1 do
         local y=v['water_y_'..i]
-        assert(math.abs(y-m.base_y(storm))<=23.500001 and y<824,'Rough waves escaped the opaque body')
+        assert(math.abs(y-m.base_y(storm))<=23.500001 and y<744,'Rough waves escaped the opaque body')
     end
     for i=0,rig.reflections-1 do
         local left=v['water_reflect_x_'..i];local right=left+v['water_reflect_width_'..i]
@@ -41,7 +41,7 @@ local phase=level_test.time;local before=m.values(level_test)
 assert(m.set_level(level_test,.75));near(level_test.time,phase)
 local after=m.values(level_test)
 for i=0,rig.points-1 do
-    near(after['water_y_'..i]-before['water_y_'..i],-440)
+    near(after['water_y_'..i]-before['water_y_'..i],-396)
 end
 assert(m.set_level(level_test,-1));near(level_test.level,0)
 assert(m.set_level(level_test,2));near(level_test.level,1)
@@ -51,8 +51,8 @@ for _,level in ipairs({0,.2,.35,.75,1}) do
     m.set_level(level_test,level)
     for i=0,rig.points-1 do
         local y=m.values(level_test)['water_y_'..i]
-        assert(math.abs(y-800*(1-level))<=3.700001)
-        assert(y<824,'Water surface passed below the opaque body bottom')
+        assert(math.abs(y-720*(1-level))<=3.700001)
+        assert(y<744,'Water surface passed below the opaque body bottom')
     end
 end
 for frame=1,240 do
@@ -75,5 +75,5 @@ assert(math.abs(m.surface_y(s,100)-original)>.1,'Water stayed still')
 local time=s.time;m.step(s,-2);near(s.time,time)
 local slow,fast=m.new(),m.new();m.step(slow,1);for i=1,60 do m.step(fast,1/60) end
 near(m.surface_y(slow,117),m.surface_y(fast,117))
-assert(rig.min_x<0 and rig.min_x+(rig.points-1)*rig.step>480,'Wave must cover both viewport edges')
+assert(rig.min_x<0 and rig.min_x+(rig.points-1)*rig.step>1280,'Wave must cover both viewport edges')
 print('PASS water: legacy ripples/lunar shimmer, bounded heights, phase-preserving levels and frame-rate independence')

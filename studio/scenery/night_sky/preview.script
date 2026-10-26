@@ -1,5 +1,6 @@
 local motion=require('shared.scenery.night_sky.motion')
 local water=require('shared.scenery.water.motion')
+local viewport=require('shared.display.viewport')
 go.property('with_water',false)
 go.property('with_fish',false)
 function init(self)
@@ -13,11 +14,13 @@ end
 function update(self,dt)
     if not self.active then return end
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
+    local camera=viewport.camera(w,h)
     if w~=self.width or h~=self.height then
         self.width,self.height=w,h
         go.set_position(vmath.vector3(w/2,h/2,0))
-        go.set_scale(vmath.vector3(w/480,h/800,1))
+        go.set_scale(vmath.vector3(camera.scale,camera.scale,1))
     end
+    motion.set_width(self.motion,camera.width);water.set_width(self.water,camera.width)
     motion.step(self.motion,dt)
     if self.with_water then water.step(self.water,dt) end
     if self.with_fish then
@@ -27,9 +30,9 @@ function update(self,dt)
     if not self.vm then self.vm=rive.get_view_model_instance('#sky') end
     if self.vm then
         local values=motion.values(self.motion)
-        -- The sky fills the viewport, but the moon keeps a uniform world scale.
-        local sx,sy=w/480,h/800;local uniform=math.min(sx,sy)
-        values.moon_scale_x=uniform/sx;values.moon_scale_y=uniform/sy
+        values.moon_scale_x=1;values.moon_scale_y=1
+        values.moon_x=viewport.moon_x(camera.width)
+        values.sky_left=camera.left-8;values.sky_right=camera.right+8
         values.water_alpha=0
         if self.with_water then for name,value in pairs(water.values(self.water)) do values[name]=value end end
         for name,value in pairs(values) do

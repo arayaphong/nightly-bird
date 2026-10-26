@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.characters.hawk.motion')
 local function publish(self)
     local busy=self.motion.remaining>0
@@ -20,9 +21,9 @@ function update(self,dt)
     local w,h=2/p.m00,2/p.m11
     if w~=self.width or h~=self.height then
         self.width,self.height=w,h
-        local scale=math.min(w/480,h/800)
-        go.set_scale(vmath.vector3(.18*scale,.18*scale,1))
-        go.set_position(vmath.vector3(w/2,h/2+70*scale,0))
+        local scale=viewport.fit(w,h)
+        go.set_scale(vmath.vector3(.28*scale,.28*scale,1))
+        go.set_position(vmath.vector3(w/2-220*scale,h/2,0))
     end
     if not self.active then return end
     -- Use the full elapsed frame time: a three-second action must not slow

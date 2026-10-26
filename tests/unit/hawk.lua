@@ -33,7 +33,7 @@ local remaining,flap,time=s.remaining,s.flap,s.time
 m.turn(s);assert(s.direction==-1 and s.remaining==remaining and s.flap==flap and s.time==time)
 m.step(s,remaining);assert(s.remaining==0 and s.direction==-1)
 -- Exercise controller audio/status and the Rive rotation/belly bindings.
-local plays=0;local status;local scale;local width,height=480,800;local numbers={}
+local plays=0;local status;local scale;local width,height=1280,720;local numbers={}
 local env=setmetatable({hash=function(v) return v end,
     msg={post=function(_,id,data) if id=='hawk_status' then status=data end end},
     sound={stop=function() end,play=function(id) assert(id=='#strike');plays=plays+1 end},
@@ -54,7 +54,7 @@ env.on_message(demo,'turn',{})
 assert(status.direction==-1 and status.busy and status.seconds==3 and plays==1)
 assert(demo.motion.flap==phase_before and demo.motion.remaining==3)
 env.update(demo,0);assert(numbers.angle==0 and numbers.belly==1 and status.turning)
-width,height=960,1600;env.update(demo,0);near(scale.x,.36);near(scale.y,.36);assert(numbers.angle==0)
+width,height=2560,1440;env.update(demo,0);near(scale.x,.56);near(scale.y,.56);assert(numbers.angle==0)
 env.on_message(demo,'dive',{});assert(plays==1)
 env.update(demo,2);assert(status.busy and status.seconds==1 and numbers.angle>0 and numbers.angle<math.pi)
 env.update(demo,1);assert(not status.busy and status.seconds==0 and demo.motion.direction==-1)
@@ -68,5 +68,5 @@ env.on_message(demo,'turn',{});env.update(demo,0)
 assert(status.direction==1 and status.turning and plays==3 and numbers.belly==-1)
 for i=1,150 do env.update(demo,1/120) end
 assert(not status.turning and math.abs(numbers.angle)<.001 and numbers.belly==1 and plays==3)
-near(scale.x,.36);near(scale.y,.36)
+near(scale.x,.56);near(scale.y,.56)
 print('PASS hawk: shark-style rotation, mid-turn reversals, independent dive timer/phase, Rive bindings and audio')

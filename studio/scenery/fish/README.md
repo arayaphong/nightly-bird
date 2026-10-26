@@ -15,7 +15,7 @@ animation preserve continuous swimming, turns, tail, fins and gills. This is a
 kinematic fixture, not a gameplay or physics simulation.
 
 Bounds include the complete animated artwork's rotational envelope and the
-maximum displacement of the current wave profile. The fish preserves its
+maximum displacement of the current wave profile. The fish uses world units/second and a 720-unit-high camera, preserving its
 proportions on any viewport, shrinks uniformly in very shallow water and hides
 when no submerged space remains. Changing water settings recomputes the bounds
 before rendering, so no part of the fish emerges into the sky or leaves the view.

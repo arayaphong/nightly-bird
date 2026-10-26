@@ -168,13 +168,15 @@ def asset(name):
     svg=ET.parse(ROOT/f'assets/svg/items/{name}.svg').getroot()
     return svg,{g.get('id'):g for g in svg.iter() if g.get('id')}
 
-def start_file(channels,name,width,height,view_model='BirdControls'):
+def start_file(channels,name,width,height,view_model='BirdControls',clip=True):
     f=File();f.obj(23)
     f.obj(435,{557:view_model})
     for channel in channels:f.obj(431,{557:channel})
     f.obj(437,{4:'Default',566:0})
     for i,value in enumerate(channels.values()):f.obj(442,{554:i,575:value})
-    f.obj(1,{4:name,7:width,8:height,583:0,236:0},True)
+    props={4:name,7:width,8:height,583:0,236:0}
+    if not clip:props[196]=0
+    f.obj(1,props,True)
     return f
 
 ARTWORK_PATHS={'bird': 'shared/characters/red_bird/visual.riv', 'fish': 'shared/characters/fish/visual.riv', 'hawk': 'shared/characters/hawk/visual.riv', 'equipment-icons': 'studio/characters/red_bird/equipment_icons.riv', 'gallery': 'studio/characters/gallery/visual.riv', 'firefly': 'shared/objects/firefly/visual.riv', 'balloon': 'shared/objects/balloon/visual.riv', 'cloud': 'shared/objects/rain_cloud/visual.riv'}
@@ -210,12 +212,12 @@ def equipment(f,key,root,channels):
 
 def icons():
     channels={'equip_'+k:0 for k in ITEMS}
-    f=start_file(channels,'Equipment',480,800)
+    f=start_file(channels,'Equipment',1280,720)
     for i,key in enumerate(ITEMS):
-        root=f.node(key+'-card',x=75+110*i,y=800-340)
+        root=f.node(key+'-card',x=850+(i%2)*230,y=720-(470-(i//2)*140))
         # SVG drawing order is reversed in the runtime component stream.
         active=f.node(key+'-active',root,opacity=0);f.bind(18,i)
-        draw_path(f,path('M-47 -53 L47 -53 L47 53 L-47 53 Z',stroke='#bdff59',stroke_width=2.5),active)
+        draw_path(f,path('M-100 -58 L100 -58 L100 58 L-100 58 Z',stroke='#bdff59',stroke_width=2.5),active)
         svg,defs=asset(key)
         x,y,w,h=map(float,svg.get('viewBox').split())
         scale=min(52/w,46/h)
@@ -223,7 +225,7 @@ def icons():
         if key=='suit':
             draw_group(f,defs['hood'],parent,defs);draw_group(f,defs['coat'],parent,defs)
         else:draw_group(f,defs[key],parent,defs)
-        draw_path(f,path('M-47 -53 L47 -53 L47 53 L-47 53 Z','#152136',stroke='#344965',stroke_width=1),root)
+        draw_path(f,path('M-100 -58 L100 -58 L100 58 L-100 58 Z','#152136',stroke='#344965',stroke_width=1),root)
     finish_file(f,'equipment-icons')
 
 def build():

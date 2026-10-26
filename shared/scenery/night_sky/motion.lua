@@ -8,7 +8,11 @@ local function copy(source)
 end
 function M.new()
     return {time=0,side=-1,step=3,star_speed=M.STAR_SPEEDS[1],vx=-M.SPEED,vy=0,
+            width=layout.width,left=0,
             stars=copy(layout.stars),dust=copy(layout.dust)}
+end
+function M.set_width(s,width)
+    s.width=width;s.left=(layout.width-width)/2
 end
 function M.select(s,side,step)
     if (side~=-1 and side~=1) or not M.angles[step] then return false end
@@ -32,7 +36,7 @@ local function advance(s,dt)
     local tx,ty=M.target(s);local blend=1-math.exp(-dt*7)
     s.vx=s.vx+(tx-s.vx)*blend;s.vy=s.vy+(ty-s.vy)*blend
     for _,p in ipairs(s.stars) do
-        p.x=wrap(p.x-s.star_speed*dt,layout.width)
+        p.x=s.left+wrap(p.x-s.left-s.star_speed*dt,s.width)
         p.alpha=.3+.65*(.5+.5*math.sin(s.time*p.rate+p.phase))
     end
     for _,p in ipairs(s.dust) do
@@ -41,7 +45,7 @@ local function advance(s,dt)
         local speed=math.sqrt(s.vx*s.vx+s.vy*s.vy)
         local dx=s.vx*p.speed*gust-s.vy/M.SPEED*curl
         local dy=s.vy*p.speed*gust+s.vx/M.SPEED*curl
-        p.x=wrap(p.x+dx*dt,layout.width);p.y=wrap(p.y+dy*dt,layout.height)
+        p.x=s.left+wrap(p.x-s.left+dx*dt,s.width);p.y=wrap(p.y+dy*dt,layout.height)
         if speed>.1 then p.angle=math.atan2(dy,dx) end
         p.opacity=dust_alpha(p,s.time)
     end

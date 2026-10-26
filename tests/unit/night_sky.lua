@@ -20,7 +20,7 @@ assert(s.star_speed==32)
 -- Every star travels the exact same distance, including wrapping/slow frames.
 -- Changing only the star speed must leave the dust motion and twinkle intact.
 local slow,fast=m.new(),m.new();m.toggle_star_speed(fast);assert(fast.star_speed==64)
-local function wrapped(v) return (v+14)%508-14 end
+local function wrapped(v) return (v+14)%(layout.width+28)-14 end
 for i=1,120 do
     local dt=({.013,.025,.15})[(i-1)%3+1]
     m.step(slow,dt);m.step(fast,dt)
@@ -63,11 +63,11 @@ for i=1,600 do
 end
 for i,p in ipairs(a.stars) do
     near(p.x,b.stars[i].x);near(p.y,b.stars[i].y);near(p.alpha,b.stars[i].alpha)
-    assert(p.alpha>=.3 and p.alpha<=.95 and p.x>=-14 and p.x<494)
+    assert(p.alpha>=.3 and p.alpha<=.95 and p.x>=-14 and p.x<1294)
 end
 for _,state in ipairs({a,b}) do
     for _,p in ipairs(state.dust) do
-        assert(p.x>=-14 and p.x<494 and p.y>=-14 and p.y<814)
+        assert(p.x>=-14 and p.x<1294 and p.y>=-14 and p.y<734)
         assert(p.opacity>=0 and p.opacity<=1 and p.angle==p.angle)
     end
     for _,v in pairs(m.values(state)) do assert(v==v and math.abs(v)<math.huge) end
@@ -76,7 +76,7 @@ local before=a.time;m.step(a,-1);near(a.time,before)
 -- Controller activation must not advance hidden previews or replace their state.
 local channels,enabled,status={},nil,nil
 local fish_frame=nil
-local width,height,scale=480,800,nil
+local width,height,scale=1280,720,nil
 local env=setmetatable({hash=function(v) return v end,
     msg={post=function(url,id,data)
         if url=='#sky' then enabled=id elseif url=='/swimming_fish#script' then fish_frame=data else status=data end
@@ -95,9 +95,9 @@ env.on_message(preview,'toggle_star_speed',{});assert(status.star_speed==64)
 env.update(preview,.1);assert(channels.star_0_x and channels.dust_0_angle)
 assert(channels.water_alpha==0,'Original sky must not show water')
 -- Circular SVG arcs must remain circular on tall/wide native viewports.
-for _,size in ipairs({{480,800},{480,1200},{960,800},{1920,1080}}) do
+for _,size in ipairs({{1280,720},{1920,1080},{2560,1080},{1024,768}}) do
     width,height=size[1],size[2];env.update(preview,0)
-    local uniform=math.min(width/480,height/800)
+    local uniform=height/720
     near(scale.x*channels.moon_scale_x,uniform)
     near(scale.y*channels.moon_scale_y,uniform)
 end

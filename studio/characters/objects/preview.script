@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.objects.rain_cloud.motion')
 local firefly=require('shared.objects.firefly.motion')
 local balloon=require('shared.objects.balloon.motion')
@@ -30,8 +31,9 @@ end
 function update(self,dt)
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
     if w~=self.width or h~=self.height then
-        self.width,self.height=w,h;local scale=math.min(w/480,h/800)
+        self.width,self.height=w,h;local scale=viewport.fit(w,h)
         go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
+        motion.set_preview_size(self.motion,w/scale,h/scale)
     end
     if self.active then
         if motion.step(self.motion,dt) then sound.stop('#thunder');sound.play('#thunder') end
