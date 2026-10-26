@@ -1,6 +1,6 @@
 -- Ripple line and lunar shimmer ported from legacy environment-painter.js.
 local rig=require('shared.scenery.water.rig')
-local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=1-rig.base_y/rig.height,DEFAULT_ROUGHNESS=.25}
+local M={MIN_LEVEL=0,MAX_LEVEL=1,DEFAULT_LEVEL=.2,DEFAULT_ROUGHNESS=.6,LEGACY_ROUGHNESS=.25}
 function M.new() return {time=0,wave_time=0,level=M.DEFAULT_LEVEL,roughness=M.DEFAULT_ROUGHNESS} end
 function M.set_level(s,level)
     if type(level)~='number' or level~=level or math.abs(level)==math.huge then return false end
@@ -11,12 +11,17 @@ function M.set_roughness(s,value)
     s.roughness=math.max(0,math.min(1,value));return true
 end
 local function profile(s)
-    if s.roughness<=M.DEFAULT_ROUGHNESS then
-        local t=s.roughness/M.DEFAULT_ROUGHNESS
+    if s.roughness<=M.LEGACY_ROUGHNESS then
+        local t=s.roughness/M.LEGACY_ROUGHNESS
         return t,.35+.65*t,0
     end
-    local t=(s.roughness-M.DEFAULT_ROUGHNESS)/(1-M.DEFAULT_ROUGHNESS)
+    local t=(s.roughness-M.LEGACY_ROUGHNESS)/(1-M.LEGACY_ROUGHNESS)
     return 1+4*t,1+1.5*t,t*t
+end
+-- Conservative crest/trough envelope, also used to keep swimmers submerged.
+function M.amplitude(s)
+    local height,_,chop=profile(s)
+    return height*3.7+chop*5
 end
 function M.step(s,dt)
     dt=math.max(0,dt);local _,speed=profile(s)
@@ -55,7 +60,7 @@ function M.values(s)
         local width=18+math.sin(s.time*2+i)*8+i*1.5
         local x=rig.moon_x-width/2+math.sin(s.time*1.7+i*1.3)*6
         local y=base+8+i*(rig.height-base)/14
-        if s.roughness>M.DEFAULT_ROUGHNESS then y=math.max(y,glint_floor(s,x,x+width)) end
+        if s.roughness>M.LEGACY_ROUGHNESS then y=math.max(y,glint_floor(s,x,x+width)) end
         v['water_reflect_x_'..i]=x
         v['water_reflect_y_'..i]=y
         v['water_reflect_width_'..i]=width

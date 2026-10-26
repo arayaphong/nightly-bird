@@ -64,7 +64,8 @@ function init(self)
         local label,button=section(self,'scenery','ฉากและฟิสิกส์','ฉาก · platform · การชน · state')
         button(500,'night_sky','ท้องฟ้ากลางคืน','ดาวระยิบระยับ · ฝุ่นเรืองแสง · ทิศทางลม')
         button(370,'night_water','ท้องฟ้าและผิวน้ำ','ท้องฟ้ากลางคืน · คลื่นเวกเตอร์เคลื่อนไหว')
-        label(240,235,'เลือกชุดทดสอบฉาก',17,MUTED)
+        button(240,'fish_test','ฉากทดสอบปลา','ปลาว่ายสุ่มขึ้นลงซ้ายขวาในน้ำ')
+        label(240,125,'เลือกชุดทดสอบฉาก',17,MUTED)
     end
     for _,item in ipairs({{'rules_and_items','กติกาและไอเท็ม','คุณสมบัติ · การติดตั้ง · ปฏิสัมพันธ์'}}) do
         local label=section(self,item[1],item[2],item[3])
@@ -128,7 +129,7 @@ function on_input(self,id,a)
         elseif self.page=='studio' then
             for i,key in ipairs({'magnet','gun','helmet'}) do if id==hash(key) then navigate(categories[i].route) end end
         elseif self.page=='scenery' then
-            if id==hash('magnet') then navigate('night_sky') elseif id==hash('gun') then navigate('night_water') end
+            if id==hash('magnet') then navigate('night_sky') elseif id==hash('gun') then navigate('night_water') elseif id==hash('helmet') then navigate('fish_test') end
         end
     end
     return self.menu_page

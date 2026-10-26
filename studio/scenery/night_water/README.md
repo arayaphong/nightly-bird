@@ -6,7 +6,7 @@ speed and wave clocks are independent from the original `night_sky` instance.
 Only the selected instance updates/renders. The common collapsible controls
 dispatch to the active fixture and ignore status messages from the other one.
 
-The lower 35% is initially opaque water. Wave shape, timing, depth colors and
+The lower 20% is initially opaque water. Wave shape, timing, depth colors and
 lunar shimmer are ported from `legacy/src/visuals/environment-painter.js`'s
 `drawWater`: 8px surface samples with 2.2px and 1.5px ripples, phase speeds
 +2.4 and −1.3, the original translucent 2px line, and 14 animated moon-light bars.
@@ -18,13 +18,13 @@ adaptation of the legacy rectangular fill masks dust cores, halos and pointed
 tails below the moving wave. Its original depth gradient follows the level.
 
 The horizontal slider below the star-speed toggle adjusts mean water level
-from 0–100%, initially 35%. Touch or mouse dragging updates the surface/body
+from 0–100%, initially 20%. Touch or mouse dragging updates the surface/body
 together while keeping the wave phase. Dragging beyond the track clamps to its
 endpoints, and the fixture retains its level on reentry. The original sky has
 no water slider. Global back/focus loss clears an unfinished drag.
 
 A second slider, ความสูง/ปั่นป่วนคลื่น, controls height and agitation together:
-0% is flat, the default 25% reproduces Legacy, and 100% increases wave height,
+0% is flat, 25% reproduces Legacy, the default is 60%, and 100% increases wave height,
 phase speed and adds smaller irregular ripples. A separate integrated wave
 clock preserves phase when adjusting it. Mean level and the lunar shimmer
 clock stay independent. Both sliders retain their fixture state and support

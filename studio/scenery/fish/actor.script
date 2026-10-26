@@ -1,0 +1,29 @@
+local swim=require('shared.scenery.fish.motion')
+function init(self)
+    self.motion=swim.new();self.active=false;self.last={};self.visible=false
+    msg.post('#fish','disable')
+end
+local function visible(self,value)
+    if value~=self.visible then self.visible=value;msg.post('#fish',value and 'enable' or 'disable') end
+end
+function on_message(self,id,m)
+    if id==hash('active') then
+        self.active=m.active
+        -- Wait for the active water presenter before showing or resuming the fish.
+        if not self.active then visible(self,false) end
+    elseif id==hash('water_frame') and self.active then
+        local sx,sy=m.width/480,m.height/800
+        swim.step(self.motion,m.dt,{level=m.level,roughness=m.roughness},sx,sy)
+        visible(self,self.motion.visible)
+        if not self.visible then return end
+        go.set_scale(vmath.vector3(self.motion.scale,self.motion.scale,1))
+        -- Rive's render pass draws this depth after the opaque scenery.
+        go.set_position(vmath.vector3(self.motion.x*sx,(800-self.motion.y)*sy,-.1))
+        if not self.vm then self.vm=rive.get_view_model_instance('#fish') end
+        if self.vm then
+            for name,value in pairs(swim.values(self.motion)) do
+                if self.last[name]~=value then rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value end
+            end
+        end
+    end
+end

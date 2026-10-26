@@ -75,9 +75,12 @@ end
 local before=a.time;m.step(a,-1);near(a.time,before)
 -- Controller activation must not advance hidden previews or replace their state.
 local channels,enabled,status={},nil,nil
+local fish_frame=nil
 local width,height,scale=480,800,nil
 local env=setmetatable({hash=function(v) return v end,
-    msg={post=function(url,id,data) if url=='#sky' then enabled=id else status=data end end},
+    msg={post=function(url,id,data)
+        if url=='#sky' then enabled=id elseif url=='/swimming_fish#script' then fish_frame=data else status=data end
+    end},
     rive={get_projection_matrix=function() return {m00=2/width,m11=2/height} end,
         get_view_model_instance=function() return 1 end,
         cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value end}},
@@ -112,12 +115,22 @@ env.on_message(wet,'water_level',{level=.65});near(wet.water.level,.65);near(wet
 local wave_time=wet.water.wave_time
 env.on_message(wet,'water_roughness',{roughness=.9});near(wet.water.roughness,.9);near(wet.water.wave_time,wave_time)
 near(wet.water.level,.65);near(status.water_roughness,.9)
-env.on_message(preview,'water_roughness',{roughness=1});near(preview.water.roughness,.25)
-env.on_message(preview,'water_level',{level=.9});near(preview.water.level,.35)
+env.on_message(preview,'water_roughness',{roughness=1});near(preview.water.roughness,.6)
+env.on_message(preview,'water_level',{level=.9});near(preview.water.level,.2)
 env.on_message(wet,'active',{active=false});env.update(wet,2);near(wet.water.time,.5)
 env.on_message(wet,'water_level',{level=.1});near(wet.water.level,.65)
 env.on_message(wet,'water_roughness',{roughness=0});near(wet.water.roughness,.9)
 env.on_message(wet,'active',{active=true});env.update(wet,.5);near(wet.water.time,1)
 near(status.water_level,.65)
 near(status.water_roughness,.9)
+local fish_scene={with_water=true,with_fish=true};env.init(fish_scene)
+env.on_message(fish_scene,'active',{active=true});assert(status.page=='fish_test')
+near(status.water_level,.2);near(status.water_roughness,.6)
+env.update(fish_scene,.125)
+assert(fish_frame and fish_frame.dt==.125 and fish_frame.width==width and fish_frame.height==height)
+near(fish_frame.level,.2);near(fish_frame.roughness,.6)
+env.on_message(fish_scene,'water_level',{level=.4});env.update(fish_scene,.1);near(fish_frame.level,.4)
+near(wet.water.level,.65)
+local old_frame=fish_frame
+env.on_message(fish_scene,'active',{active=false});env.update(fish_scene,1);assert(fish_frame==old_frame)
 print('PASS night sky: slow staggered flares, fixed 32/64 stars, continuity, 10 winds, wrapping and lifecycle')

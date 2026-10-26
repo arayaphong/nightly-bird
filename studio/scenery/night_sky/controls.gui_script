@@ -62,8 +62,8 @@ local function refresh(self)
     gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
     gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' px/s')
     gui.set_color(self.star_speed_label,self.star_speed==sky.STAR_SPEEDS[2] and ACCENT or WHITE)
-    update_slider(self.level_slider,self.water_level,'ระดับน้ำ: ',self.page=='night_water')
-    update_slider(self.rough_slider,self.water_roughness,'ความสูง/ปั่นป่วนคลื่น: ',self.page=='night_water')
+    update_slider(self.level_slider,self.water_level,'ระดับน้ำ: ',self.page=='night_water' or self.page=='fish_test')
+    update_slider(self.rough_slider,self.water_roughness,'ความสูง/ปั่นป่วนคลื่น: ',self.page=='night_water' or self.page=='fish_test')
     local a=math.rad(sky.angles[self.step]);a=math.atan2(math.sin(a),self.side*math.cos(a))
     gui.set_rotation(self.current_arrow,vmath.vector3(0,0,math.deg(a)))
     for _,n in ipairs(self.chevron_up) do gui.set_enabled(n,self.collapsed) end
@@ -119,9 +119,9 @@ function init(self)
 end
 function on_message(self,id,message)
     if id==hash('route') then
-        self.page=message.name;self.active=self.page=='night_sky' or self.page=='night_water'
-        self.target=self.page=='night_water' and '/night_water#script' or '/night_sky#script'
-        gui.set_text(self.title,self.page=='night_water' and 'ท้องฟ้าและผิวน้ำ' or 'ท้องฟ้ากลางคืน')
+        self.page=message.name;self.active=self.page=='night_sky' or self.page=='night_water' or self.page=='fish_test'
+        self.target='/'..(self.active and self.page or 'night_sky')..'#script'
+        gui.set_text(self.title,self.page=='fish_test' and 'ฉากทดสอบปลา' or self.page=='night_water' and 'ท้องฟ้าและผิวน้ำ' or 'ท้องฟ้ากลางคืน')
         clear(self);refresh(self)
     elseif id==hash('clear_input') then clear(self)
     elseif id==hash('wind_status') and message.page==self.page then
@@ -132,7 +132,7 @@ function on_message(self,id,message)
     end
 end
 local function button_at(self,x,y)
-    if self.page=='night_water' then
+    if self.page=='night_water' or self.page=='fish_test' then
         if gui.pick_node(self.level_slider.hit,x,y) then return 'water_level' end
         if gui.pick_node(self.rough_slider.hit,x,y) then return 'water_roughness' end
     end

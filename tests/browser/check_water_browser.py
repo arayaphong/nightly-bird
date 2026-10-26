@@ -65,8 +65,9 @@ with sync_playwright() as p:
   return max(ys)-min(ys),area
  home=snap();tap(240,475);tap(240,370);menu=snap('water-studio-menu.png')
  tap(240,370);first=snap('water-initial.png');slow=speed(first)
- assert abs(slider_level(first)-35)<2,'Default water level changed'
- assert abs(slider_level(first,500)-25)<2,'Default roughness must reproduce Legacy'
+ assert abs(slider_level(first)-20)<2,'Default water level changed'
+ assert abs(slider_level(first,500)-60)<2,'Default roughness must be 60%'
+ set_level(35);set_level(25,500);first=snap('water-legacy-profile.png')
  band=deep_water(first);edge=crop(first,10,310,470,250)
  # The surface must visibly curve across the screen.
  ys=[]
@@ -125,12 +126,12 @@ with sync_playwright() as p:
  def click(x,y):
   x,y=pt(x,y);page.mouse.move(x,y);page.mouse.down();frames(2);page.mouse.up();frames(5)
  click(240,475);click(240,370);click(240,370)
- x,y=pt(160+230*.35,578);page.mouse.move(x,y);page.mouse.down();frames(2)
+ x,y=pt(160+230*.2,578);page.mouse.move(x,y);page.mouse.down();frames(2)
  x,y=pt(160+230*.6,578);page.mouse.move(x,y,steps=5);frames(3)
  assert abs(slider_level(snap('water-mouse-drag.png'))-60)<2,'Mouse drag did not update the water live'
  page.mouse.up();frames(3);x,y=pt(160,578);page.mouse.move(x,y);frames(3)
  assert abs(slider_level(snap())-60)<2,'Mouse release did not end slider capture'
- x,y=pt(160+230*.25,500);page.mouse.move(x,y);page.mouse.down();frames(2)
+ x,y=pt(160+230*.6,500);page.mouse.move(x,y);page.mouse.down();frames(2)
  x,y=pt(160+230*.9,500);page.mouse.move(x,y,steps=5);frames(3)
  mouse_rough=snap('water-mouse-roughness.png')
  assert abs(slider_level(mouse_rough,500)-90)<2 and abs(slider_level(mouse_rough)-60)<2,'Mouse roughness drag changed the wrong slider'

@@ -63,16 +63,21 @@ still marks its test suite as future work.
   water group in the common sky Rive artboard, disabled for the original fixture.
   `studio/scenery/night_water/preview.go` enables it through the shared presenter's
   `with_water` property, retaining separate animation/wind/star-speed state.
-  Water level is a clamped 0–1 value in the shared wave state. Studio's live
+  Water level is a clamped 0–1 value in the shared wave state, default 20%. Studio's live
   slider moves the body's upper edge and surface strokes together, preserving
   phase and fixture state across navigation; it is hidden in the original sky.
   A second slider controls roughness: flat at 0%, exact Legacy at 25%, and
-  higher/faster ripples with extra harmonics above 25%. Its integrated wave
+  higher/faster ripples with extra harmonics above 25%, default 60%. Its integrated wave
   clock avoids phase jumps during adjustment, independently of mean level and
   the reflection clock. Glints remain under the local surface at rough settings.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.
+- `shared/scenery/fish/`: random bounded swimming using the existing vector fish
+  and continuous heading/tail/fin animation. `studio/scenery/fish/` combines it
+  with a separate water presenter as **ฉากทดสอบปลา**. Water level/roughness state
+  is independent from the other fixtures. The swimmer stays below the wave
+  envelope, adapts uniformly to shallow water and hides when no water remains.
 - `shared/rules/flight.lua`: rendering-independent flight/pickup/water/score rules
   retained from the old prototype with unit tests. There is no sprite controller,
   session singleton, factory, atlas, sheet or raster scenery left in Defold.

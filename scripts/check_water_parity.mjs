@@ -31,6 +31,7 @@ for(let i=0;i<1200;i++){
 }
 const lua=`package.path='./?.lua;'..package.path
 local m=require('shared.scenery.water.motion');local rig=require('shared.scenery.water.rig');local s=m.new()
+m.set_roughness(s,m.LEGACY_ROUGHNESS)
 local levels={.35,.75,0,.2,1};local dts={1/60,1/120,.025,.013,.15}
 for i=0,1199 do
  m.set_level(s,levels[math.floor(i/120)%#levels+1]);m.step(s,dts[i%#dts+1]);local v=m.values(s)

@@ -2,10 +2,12 @@ package.path='./?.lua;'..package.path
 local m=require('shared.scenery.water.motion')
 local rig=require('shared.scenery.water.rig')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
-local s=m.new();local original=m.surface_y(s,100)
-near(s.level,.35)
-near(s.roughness,.25)
-local storm=m.new();m.step(storm,2.3)
+local s=m.new()
+near(s.level,.2)
+near(s.roughness,.6)
+m.set_level(s,.35);m.set_roughness(s,m.LEGACY_ROUGHNESS)
+local original=m.surface_y(s,100)
+local storm=m.new();m.set_roughness(storm,m.LEGACY_ROUGHNESS);m.step(storm,2.3)
 local old_time,old_wave,old_level=storm.time,storm.wave_time,storm.level
 local function span(state)
     local lo,hi=math.huge,-math.huge
@@ -34,12 +36,12 @@ for _,level in ipairs({0,.35,1}) do
         end
     end
 end
-local level_test=m.new();m.step(level_test,2.3)
+local level_test=m.new();m.set_roughness(level_test,m.LEGACY_ROUGHNESS);m.step(level_test,2.3)
 local phase=level_test.time;local before=m.values(level_test)
 assert(m.set_level(level_test,.75));near(level_test.time,phase)
 local after=m.values(level_test)
 for i=0,rig.points-1 do
-    near(after['water_y_'..i]-before['water_y_'..i],-320)
+    near(after['water_y_'..i]-before['water_y_'..i],-440)
 end
 assert(m.set_level(level_test,-1));near(level_test.level,0)
 assert(m.set_level(level_test,2));near(level_test.level,1)
