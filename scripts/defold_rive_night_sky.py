@@ -13,8 +13,9 @@ def build():
     stars=[];dust=[]
     for i in range(72):
         stars.append(dict(x=random()*480,y=random()*800,radius=.45+random()*.45,
-                          phase=random()*math.tau,rate=.45+random()*1.1,
-                          speed=1.2+random()*2.2,spark=i%15==0))
+                          phase=random()*math.tau,rate=.45+random()*1.1,spark=i%15==0))
+        # Preserve the existing seeded positions after removing random speeds.
+        random()
     for i in range(26):
         dust.append(dict(x=random()*480,y=random()*800,radius=.6+random()*.35,
                          phase=random()*math.tau,speed=.7+random()*.55,

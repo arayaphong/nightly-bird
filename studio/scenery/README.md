@@ -10,6 +10,10 @@ and five elevations per side (−80°, −40°, 0°, +40°, +80°). Positive ele
 means up on either side. It starts folded with left 0° selected; folding leaves
 the animation and wind untouched. Space folds, T swaps sides, arrow keys change
 the elevation. Wind and panel state survive leaving and reentering the fixture.
+The separate star-speed toggle remains visible with the wind panel folded.
+It switches all background stars together between fixed 6 and 17 reference
+pixels/second, initially 6. Speed changes preserve positions and twinkle phases;
+the chosen speed survives leaving and reentering. Dust still follows its wind.
 
 Artwork, initial layout and motion live in `shared/scenery/night_sky/`.
 Regenerate the committed vector and layout with

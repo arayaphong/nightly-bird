@@ -40,6 +40,8 @@ local function refresh(self)
     -- The header is a child of the full-screen root centered at (240,400).
     gui.set_position(self.header,vmath.vector3(0,self.collapsed and -372 or -172,0))
     gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
+    gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' px/s')
+    gui.set_color(self.star_speed_label,self.star_speed==17 and ACCENT or WHITE)
     local a=math.rad(sky.angles[self.step]);a=math.atan2(math.sin(a),self.side*math.cos(a))
     gui.set_rotation(self.current_arrow,vmath.vector3(0,0,math.deg(a)))
     for _,n in ipairs(self.chevron_up) do gui.set_enabled(n,self.collapsed) end
@@ -57,10 +59,13 @@ local function select(self,side,step)
 end
 function init(self)
     msg.post('.','acquire_input_focus')
-    self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.buttons={};clear(self)
+    self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=6;self.buttons={};clear(self)
     self.root=box(240,400,480,800,vmath.vector4())
     child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
     child(text(275,718,'STUDIO · SCENERY',12,MUTED),self.root)
+    self.star_speed_button=child(box(275,674,260,44,BUTTON),self.root)
+    self.star_speed_label=child(text(275,674,'',16,WHITE),self.root)
+    child(text(275,639,'แตะเพื่อสลับ 6 / 17',12,MUTED),self.root)
     self.body=child(box(240,100,480,200,PANEL),self.root)
     for row,side in ipairs({-1,1}) do
         local y=row==1 and 146 or 66
@@ -90,9 +95,12 @@ end
 function on_message(self,id,message)
     if id==hash('route') then self.active=message.name=='night_sky';clear(self);refresh(self)
     elseif id==hash('clear_input') then clear(self)
-    elseif id==hash('wind_status') then self.side,self.step=message.side,message.step;refresh(self) end
+    elseif id==hash('wind_status') then
+        self.side,self.step,self.star_speed=message.side,message.step,message.star_speed;refresh(self)
+    end
 end
 local function button_at(self,x,y)
+    if gui.pick_node(self.star_speed_button,x,y) then return 'star_speed' end
     if gui.pick_node(self.header,x,y) then return 'fold' end
     if not self.collapsed then
         for i,b in ipairs(self.buttons) do if gui.pick_node(b.node,x,y) then return i end end
@@ -100,6 +108,7 @@ local function button_at(self,x,y)
 end
 local function activate(self,button)
     if button=='fold' then self.collapsed=not self.collapsed;refresh(self)
+    elseif button=='star_speed' then msg.post('/night_sky#script','toggle_star_speed')
     elseif type(button)=='number' then
         local b=self.buttons[button];select(self,b.side,b.step)
     end

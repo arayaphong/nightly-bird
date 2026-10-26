@@ -4,7 +4,7 @@ function init(self)
     msg.post('#sky','disable')
 end
 local function publish(self)
-    msg.post('/sky_controls#gui','wind_status',{side=self.motion.side,step=self.motion.step})
+    msg.post('/sky_controls#gui','wind_status',{side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed})
 end
 function update(self,dt)
     if not self.active then return end
@@ -30,5 +30,7 @@ function on_message(self,id,message)
         if self.active then publish(self) end
     elseif id==hash('wind') and self.active then
         if motion.select(self.motion,message.side,message.step) then publish(self) end
+    elseif id==hash('toggle_star_speed') and self.active then
+        motion.toggle_star_speed(self.motion);publish(self)
     end
 end

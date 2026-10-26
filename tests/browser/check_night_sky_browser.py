@@ -40,15 +40,24 @@ with sync_playwright() as p:
  home=snap();tap(240,475);tap(240,370);scenery=snap('night-sky-menu.png')
  tap(240,500);initial=snap('night-sky-collapsed.png')
  assert selected(initial)==[],'Panel should start folded'
- art=crop(initial,10,680,470,280)
+ def speed_label(im):return crop(im,155,690,395,658)
+ slow=speed_label(initial)
+ tap(275,674);fast=speed_label(snap('night-sky-speed-17.png'))
+ assert ImageChops.difference(slow,fast).getbbox(),'Star speed toggle did not update'
+ tap(275,674)
+ assert ImageChops.difference(slow,speed_label(snap())).getbbox() is None,'Toggle did not restore 6 px/s'
+ tap(275,674)
+ initial=snap()
+ art=crop(initial,10,620,470,280)
  dark=sum(1 for rgb in art.get_flattened_data() if max(rgb)<8)
  assert dark/(art.width*art.height)>.94,'Scene should have a black, sparse sky'
  # Tiny antialiased dots can cover less than one physical pixel on mobile.
  assert sum(1 for rgb in art.get_flattened_data() if max(rgb)>20)>60,'Vector sky is missing'
  frames(30);later=snap('night-sky-moving.png')
- assert ImageChops.difference(art,crop(later,10,680,470,280)).getbbox(),'Folded panel paused the sky'
+ assert ImageChops.difference(art,crop(later,10,620,470,280)).getbbox(),'Folded panel paused the sky'
  tap(435,28);expanded=snap('night-sky-expanded.png')
  assert selected(expanded)==[(0,3)],'Default wind must be left 0 degrees'
+ assert ImageChops.difference(fast,speed_label(expanded)).getbbox() is None,'Wind panel changed star speed'
  for row,y in enumerate((146,66)):
   for step in range(1,6):
    tap(96+(step-1)*82,y)
@@ -67,10 +76,12 @@ with sync_playwright() as p:
  # Global back/Esc must climb through scenery, without leaking the sky.
  tap(48,752);restored=snap('night-sky-return-menu.png')
  assert ImageChops.difference(scenery,restored).getbbox() is None,'Scene leaked into its menu'
- tap(240,500);assert selected(snap())==[(0,4)],'Wind/panel state reset on reentry'
+ tap(240,500);reentered=snap('night-sky-speed-restored.png')
+ assert selected(reentered)==[(0,4)],'Wind/panel state reset on reentry'
+ assert ImageChops.difference(fast,speed_label(reentered)).getbbox() is None,'Star speed reset on reentry'
  key('Escape');key('Escape');key('Escape')
  assert ImageChops.difference(home,snap('night-sky-home-restored.png')).getbbox() is None,'Sky leaked into home'
  errors=[s for s in logs if any(v in s for v in ['ERROR:','PAGEERROR','GL_INVALID'])]
  assert not errors,errors
- result={'sparse_black_vector_sky':'passed','animation_while_folded':'passed','ten_wind_buttons':'passed','fold_preserves_selection':'passed','hidden_buttons_and_drag':'passed','keyboard':'passed','nested_back_and_reentry':'passed','errors':errors}
+ result={'star_speed_toggle_and_persistence':'passed','sparse_black_vector_sky':'passed','animation_while_folded':'passed','ten_wind_buttons':'passed','fold_preserves_selection':'passed','hidden_buttons_and_drag':'passed','keyboard':'passed','nested_back_and_reentry':'passed','errors':errors}
  (ART/'night-sky-test.json').write_text(json.dumps(result,indent=2));print(json.dumps(result));b.close()

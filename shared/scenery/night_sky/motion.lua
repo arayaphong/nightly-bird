@@ -7,12 +7,15 @@ local function copy(source)
     return out
 end
 function M.new()
-    return {time=0,side=-1,step=3,vx=-M.SPEED,vy=0,
+    return {time=0,side=-1,step=3,star_speed=6,vx=-M.SPEED,vy=0,
             stars=copy(layout.stars),dust=copy(layout.dust)}
 end
 function M.select(s,side,step)
     if (side~=-1 and side~=1) or not M.angles[step] then return false end
     s.side,s.step=side,step;return true
+end
+function M.toggle_star_speed(s)
+    s.star_speed=s.star_speed==6 and 17 or 6
 end
 function M.target(s)
     local a=math.rad(M.angles[s.step])
@@ -24,7 +27,7 @@ local function advance(s,dt)
     local tx,ty=M.target(s);local blend=1-math.exp(-dt*7)
     s.vx=s.vx+(tx-s.vx)*blend;s.vy=s.vy+(ty-s.vy)*blend
     for _,p in ipairs(s.stars) do
-        p.x=wrap(p.x-p.speed*dt,layout.width)
+        p.x=wrap(p.x-s.star_speed*dt,layout.width)
         p.alpha=.3+.65*(.5+.5*math.sin(s.time*p.rate+p.phase))
     end
     for _,p in ipairs(s.dust) do

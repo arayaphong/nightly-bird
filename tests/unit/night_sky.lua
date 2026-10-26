@@ -3,6 +3,25 @@ local m=require('shared.scenery.night_sky.motion')
 local layout=require('shared.scenery.night_sky.layout')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
 local s=m.new();assert(s.side==-1 and s.step==3)
+assert(s.star_speed==6)
+-- Every star travels the exact same distance, including wrapping/slow frames.
+-- Changing only the star speed must leave the dust motion and twinkle intact.
+local slow,fast=m.new(),m.new();m.toggle_star_speed(fast);assert(fast.star_speed==17)
+local function wrapped(v) return (v+14)%508-14 end
+for i=1,120 do
+    local dt=({.013,.025,.15})[(i-1)%3+1]
+    m.step(slow,dt);m.step(fast,dt)
+    for j,p in ipairs(layout.stars) do
+        near(slow.stars[j].x,wrapped(p.x-6*slow.time))
+        near(fast.stars[j].x,wrapped(p.x-17*fast.time))
+        near(slow.stars[j].alpha,fast.stars[j].alpha)
+        assert(p.speed==nil,'Per-star speeds must not return')
+    end
+    for j,p in ipairs(slow.dust) do near(p.x,fast.dust[j].x);near(p.y,fast.dust[j].y) end
+end
+local px,phase,time=fast.stars[1].x,fast.stars[1].alpha,fast.time
+m.toggle_star_speed(fast);assert(fast.star_speed==6)
+near(fast.stars[1].x,px);near(fast.stars[1].alpha,phase);near(fast.time,time)
 local x,y=m.target(s);near(x,-42);near(y,0)
 assert(#s.stars==72 and #s.dust==26)
 for _,p in ipairs(s.dust) do assert(p.radius<1 and p.tail<=10) end
@@ -54,10 +73,14 @@ setfenv(assert(loadfile('studio/scenery/night_sky/preview.script')),env)()
 local preview={};env.init(preview);assert(enabled=='disable')
 env.update(preview,1);near(preview.motion.time,0);assert(next(channels)==nil)
 env.on_message(preview,'active',{active=true});assert(enabled=='enable' and status.side==-1 and status.step==3)
+assert(status.star_speed==6)
+env.on_message(preview,'toggle_star_speed',{});assert(status.star_speed==17)
 env.update(preview,.1);assert(channels.star_0_x and channels.dust_0_angle)
 env.on_message(preview,'wind',{side=1,step=5});assert(status.side==1 and status.step==5)
 local time=preview.motion.time
 env.on_message(preview,'active',{active=false});env.update(preview,3);near(preview.motion.time,time)
+env.on_message(preview,'toggle_star_speed',{});assert(preview.motion.star_speed==17)
 env.on_message(preview,'wind',{side=-1,step=1});assert(preview.motion.side==1)
 env.on_message(preview,'active',{active=true});assert(status.side==1 and status.step==5)
-print('PASS night sky: 10 directions, small sparse dust, independent twinkling/scroll, wrapping, smooth wind and preview lifecycle')
+assert(status.star_speed==17)
+print('PASS night sky: fixed 6/17 star speed, continuity, independent dust/twinkle, 10 winds, wrapping and lifecycle')
