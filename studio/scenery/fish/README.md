@@ -2,8 +2,13 @@
 
 Studio → ฉากและฟิสิกส์ → ฉากทดสอบปลา opens the third scenery fixture.
 It reuses the night sky/water vectors and the character Studio's fish Rive asset.
-Its own water defaults to 20% level and 60% height/roughness. Both sliders,
-wind and star-speed controls remain available and independent of other fixtures.
+Its own water defaults to 20% level and 60% height/roughness. The fixture has only
+two action toggles: hide/show the water together with the fish, and hide/show
+only the fish while keeping the water. Wind, star-speed and water sliders remain
+available in the other scenery fixtures. Hidden water and fish stop updating;
+the fish-only preference is retained when water is hidden and restored. The
+fish-only button is unavailable while the water is hidden. Navigation retains
+these settings independently of the other fixtures.
 
 `preview.go` owns the water presenter; `actor.go` owns the swimmer. The presenter
 sends one frame snapshot to the active fish, so the water settings, viewport and

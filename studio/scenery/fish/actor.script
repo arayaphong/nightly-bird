@@ -13,6 +13,7 @@ function on_message(self,id,m)
         -- Wait for the active water presenter before showing or resuming the fish.
         if not self.active then visible(self,false) end
     elseif id==hash('water_frame') and self.active then
+        if m.visible==false then visible(self,false);return end
         local camera=viewport.camera(m.width,m.height)
         swim.step(self.motion,m.dt,{level=m.level,roughness=m.roughness},camera.width)
         visible(self,self.motion.visible)

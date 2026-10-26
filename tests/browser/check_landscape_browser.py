@@ -75,12 +75,18 @@ with sync_playwright() as p:
  drag(640,20,45);drag(1050,60,85);adjusted=snap('water-sliders')
  assert abs(slider(adjusted,640)-45)<3 and abs(slider(adjusted,1050)-85)<3,'Touch slider scaling failed'
  back();tap(640,220);fish=snap('07-fish-scene')
- assert abs(slider(fish,640)-20)<3 and abs(slider(fish,1050)-60)<3,'Scene state was shared'
  assert fish_eye(fish)>0,'Fish was hidden behind the water'
  frames(20);swimming=snap('fish-scene-moving')
  assert ImageChops.difference(crop(fish,0,160,1280,57),crop(swimming,0,160,1280,57)).getbbox()
- drag(640,20,0);assert fish_eye(snap('fish-no-water'))==0
- drag(640,0,35);frames(5);assert fish_eye(snap('fish-water-restored'))>0
+ tap(810,596);hidden=snap('fish-only-hidden');assert fish_eye(hidden)==0
+ # Disabling only the swimmer must preserve the blue water body.
+ def has_water(im):
+  return sum(blue>red*2 and blue>green*1.3 and blue>20 for red,green,blue in crop(im,20,100,1260,20).get_flattened_data())>1000
+ assert has_water(hidden),'Fish-only toggle removed water'
+ tap(470,596);dry=snap('fish-no-water');assert fish_eye(dry)==0 and not has_water(dry)
+ tap(810,596);tap(470,596)
+ restored=snap('fish-water-restored');assert has_water(restored) and fish_eye(restored)==0,'Fish preference was lost'
+ tap(810,596);frames(5);assert fish_eye(snap('fish-visible-again'))>0
  # Live rotation keeps the landscape canvas and the controls visible.
  page.set_viewport_size({'width':390,'height':844});frames(8)
  portrait=snap('portrait-framed');r=rect();assert abs(r['width']/r['height']-16/9)<.02
@@ -88,8 +94,11 @@ with sync_playwright() as p:
  page.set_viewport_size({'width':1200,'height':540});frames(8);wide=snap('ultrawide-fish')
  assert not page.locator('#landscape-hint').is_visible()
  assert fish_eye(wide)>0
- # Both sliders must still map pointer positions correctly after resize.
- drag(640,35,50);drag(1050,60,25);wide=snap('ultrawide-sliders')
+ # Fish controls survive resizing; water controls stay in their own fixture.
+ tap(810,596);assert fish_eye(snap('ultrawide-fish-hidden'))==0
+ tap(810,596);assert fish_eye(snap('ultrawide-fish-restored'))>0
+ back();tap(640,340)
+ drag(640,45,50);drag(1050,85,25);wide=snap('ultrawide-sliders')
  assert abs(slider(wide,640)-50)<3 and abs(slider(wide,1050)-25)<3
  for _ in range(3):back()
  page.set_viewport_size({'width':844,'height':390});frames(5)

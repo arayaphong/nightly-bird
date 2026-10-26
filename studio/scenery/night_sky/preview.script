@@ -5,11 +5,12 @@ go.property('with_water',false)
 go.property('with_fish',false)
 function init(self)
     self.motion=motion.new();self.last={};self.active=false
-    self.water=water.new();self.page=self.with_fish and 'fish_test' or self.with_water and 'night_water' or 'night_sky'
+    self.water=water.new();self.water_visible=true;self.fish_visible=true
+    self.page=self.with_fish and 'fish_test' or self.with_water and 'night_water' or 'night_sky'
     msg.post('#sky','disable')
 end
 local function publish(self)
-    msg.post('/sky_controls#gui','wind_status',{page=self.page,side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed,water_level=self.water.level,water_roughness=self.water.roughness})
+    msg.post('/sky_controls#gui','wind_status',{page=self.page,side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed,water_level=self.water.level,water_roughness=self.water.roughness,water_visible=self.water_visible,fish_visible=self.fish_visible})
 end
 function update(self,dt)
     if not self.active then return end
@@ -22,10 +23,10 @@ function update(self,dt)
     end
     motion.set_width(self.motion,camera.width);water.set_width(self.water,camera.width)
     motion.step(self.motion,dt)
-    if self.with_water then water.step(self.water,dt) end
+    if self.with_water and self.water_visible then water.step(self.water,dt) end
     if self.with_fish then
         msg.post('/swimming_fish#script','water_frame',{dt=dt,width=w,height=h,
-            level=self.water.level,roughness=self.water.roughness})
+            level=self.water.level,roughness=self.water.roughness,visible=self.water_visible and self.fish_visible})
     end
     if not self.vm then self.vm=rive.get_view_model_instance('#sky') end
     if self.vm then
@@ -34,7 +35,7 @@ function update(self,dt)
         values.moon_x=viewport.moon_x(camera.width)
         values.sky_left=camera.left-8;values.sky_right=camera.right+8
         values.water_alpha=0
-        if self.with_water then for name,value in pairs(water.values(self.water)) do values[name]=value end end
+        if self.with_water and self.water_visible then for name,value in pairs(water.values(self.water)) do values[name]=value end end
         for name,value in pairs(values) do
             if self.last[name]~=value then
                 rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value
@@ -46,6 +47,10 @@ function on_message(self,id,message)
     if id==hash('active') then
         self.active=message.active;msg.post('#sky',self.active and 'enable' or 'disable')
         if self.active then publish(self) end
+    elseif id==hash('toggle_water') and self.active and self.with_fish then
+        self.water_visible=not self.water_visible;publish(self)
+    elseif id==hash('toggle_fish') and self.active and self.with_fish and self.water_visible then
+        self.fish_visible=not self.fish_visible;publish(self)
     elseif id==hash('wind') and self.active then
         if motion.select(self.motion,message.side,message.step) then publish(self) end
     elseif id==hash('toggle_star_speed') and self.active then
