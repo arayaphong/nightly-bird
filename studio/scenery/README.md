@@ -14,6 +14,10 @@ The separate star-speed toggle remains visible with the wind panel folded.
 It switches all background stars together between fixed 32 and 64 reference
 pixels/second, initially 32. Speed changes preserve positions and twinkle phases;
 the chosen speed survives leaving and reentering. Dust still follows its wind.
+Dust flares and fades smoothly over six seconds, with a different phase per
+fleck. The short tails are filled vector wedges with curved edges, fading to
+pointed tips behind the travel direction. The halo brightens with the flare;
+particle count, core size and the 32/64 star speeds stay the same.
 
 Artwork, initial layout and motion live in `shared/scenery/night_sky/`.
 Regenerate the committed vector and layout with

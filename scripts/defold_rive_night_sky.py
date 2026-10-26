@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate two sparse, reusable night-sky layers as Rive vector paths."""
 import math
+import xml.etree.ElementTree as ET
 from defold_rive_bird import ROOT,start_file,finish_file,draw_path,path
 from defold_rive_gallery import radial,ellipse
 
@@ -25,7 +26,8 @@ def build():
         channels.update({f'star_{i}_x':p['x'],f'star_{i}_alpha':.6})
     for i,p in enumerate(dust):
         channels.update({f'dust_{i}_x':p['x'],f'dust_{i}_y':p['y'],
-                         f'dust_{i}_angle':math.pi,f'dust_{i}_alpha':p['alpha']})
+                         f'dust_{i}_angle':math.pi,
+                         f'dust_{i}_alpha':p['alpha']*(.2+.8*(.5+.5*math.sin(p['phase']))**3)})
     keys={k:i for i,k in enumerate(channels)}
     f=start_file(channels,'NightSky',480,800,'NightSkyControls')
     # Rive draws the component stream back-to-front. Dust is in front of stars.
@@ -35,11 +37,18 @@ def build():
         for prop,key in ((13,'x'),(14,'y'),(15,'angle'),(18,'alpha')):
             f.bind(prop,keys[f'dust_{i}_{key}'])
         draw_path(f,ellipse(p['radius'],'#ffffff'),node)
-        glow=radial('dust-glow',p['radius']*3.5,'rgba(240,248,255,.45)','rgba(240,248,255,0)')
+        glow=radial('dust-glow',p['radius']*3.5,'rgba(240,248,255,.65)','rgba(240,248,255,0)')
         draw_path(f,ellipse(p['radius']*3.5,'url(#dust-glow)'),node,{'dust-glow':glow})
-        # Local positive x is travel direction; the faint tail trails behind.
-        draw_path(f,path(f'M{-p["radius"]} 0 L{-p["tail"]} 0',
-                         stroke='rgba(225,238,255,.18)',stroke_width=.45,stroke_linecap='round'),node)
+        # Filled curved wedge: wide beside the core, tapering to a single tip.
+        # Local positive x is travel direction; the short tail trails behind.
+        length=p['tail'];width=p['radius']*.8
+        tail=ET.Element('linearGradient',{'id':'dust-tail','gradientUnits':'userSpaceOnUse',
+                                         'x1':'0','y1':'0','x2':str(-length),'y2':'0'})
+        for offset,color in [('0','rgba(245,250,255,.65)'),('.55','rgba(225,238,255,.24)'),('1','rgba(225,238,255,0)')]:
+            ET.SubElement(tail,'stop',{'offset':offset,'stop-color':color})
+        d=(f'M0 {-width} C{-length*.35} {-width*.65} {-length*.8} {-width*.1} {-length} 0 '
+           f'C{-length*.8} {width*.1} {-length*.35} {width*.65} 0 {width} Z')
+        draw_path(f,path(d,'url(#dust-tail)'),node,{'dust-tail':tail})
     back=f.node('distant-stars')
     for i,p in enumerate(stars):
         node=f.node(f'star-{i}',back,p['x'],p['y']);f.bind(13,keys[f'star_{i}_x']);f.bind(18,keys[f'star_{i}_alpha'])

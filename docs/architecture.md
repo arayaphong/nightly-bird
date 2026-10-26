@@ -46,6 +46,9 @@ still marks its test suite as future work.
   layout and Lua motion. All stars drift left at a fixed 32 or 64 px/s and twinkle;
   a separate Studio toggle selects their shared speed (default 32). Sparse
   dust follows a smoothly changing wind with small gusts and edge wrapping.
+  Each dust fleck slowly flares and fades on a staggered six-second cycle.
+  Its short gradient-filled tail tapers to a point behind its actual velocity;
+  core, halo and tail share the same flare opacity without growing the core.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.

@@ -1,7 +1,7 @@
 -- Reusable two-layer sky. Angles are elevation from the selected horizontal.
 -- Positions use the Rive artboard's x-right/y-down coordinates.
 local layout=require('shared.scenery.night_sky.layout')
-local M={angles={-80,-40,0,40,80},SPEED=42,STAR_SPEEDS={32,64}}
+local M={angles={-80,-40,0,40,80},SPEED=42,STAR_SPEEDS={32,64},DUST_FLASH_PERIOD=6}
 local function copy(source)
     local out={};for i,p in ipairs(source) do local q={};for k,v in pairs(p) do q[k]=v end;out[i]=q end
     return out
@@ -22,6 +22,11 @@ function M.target(s)
     return s.side*math.cos(a)*M.SPEED,-math.sin(a)*M.SPEED
 end
 local function wrap(v,size) return (v+layout.margin)%(size+2*layout.margin)-layout.margin end
+local function dust_alpha(p,time)
+    local wave=.5+.5*math.sin(time*2*math.pi/M.DUST_FLASH_PERIOD+p.phase)
+    -- A broad, smooth flare every six seconds, staggered by particle phase.
+    return p.alpha*(.2+.8*wave^3)
+end
 local function advance(s,dt)
     s.time=s.time+dt
     local tx,ty=M.target(s);local blend=1-math.exp(-dt*7)
@@ -38,7 +43,7 @@ local function advance(s,dt)
         local dy=s.vy*p.speed*gust+s.vx/M.SPEED*curl
         p.x=wrap(p.x+dx*dt,layout.width);p.y=wrap(p.y+dy*dt,layout.height)
         if speed>.1 then p.angle=math.atan2(dy,dx) end
-        p.opacity=p.alpha*(.85+.15*math.sin(s.time*1.2+p.phase))
+        p.opacity=dust_alpha(p,s.time)
     end
 end
 function M.step(s,dt)
@@ -54,7 +59,7 @@ function M.values(s)
     for i,p in ipairs(s.dust) do
         local prefix='dust_'..(i-1)..'_'
         v[prefix..'x']=p.x;v[prefix..'y']=p.y
-        v[prefix..'angle']=p.angle or math.pi;v[prefix..'alpha']=p.opacity or p.alpha
+        v[prefix..'angle']=p.angle or math.pi;v[prefix..'alpha']=p.opacity or dust_alpha(p,s.time)
     end
     return v
 end

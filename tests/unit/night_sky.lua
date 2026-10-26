@@ -3,6 +3,19 @@ local m=require('shared.scenery.night_sky.motion')
 local layout=require('shared.scenery.night_sky.layout')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
 local s=m.new();assert(s.side==-1 and s.step==3)
+-- Flare trough/peak/repeat: slow, continuous, staggered and shared by the rig.
+local flash=m.new();local first=flash.dust[1];first.phase=-math.pi/2
+near(m.values(flash).dust_0_alpha,first.alpha*.2)
+m.step(flash,3);near(first.opacity,first.alpha)
+m.step(flash,3);near(first.opacity,first.alpha*.2)
+local last=first.opacity;local min_alpha,max_alpha=last,last
+for i=1,360 do
+    m.step(flash,1/60)
+    assert(math.abs(first.opacity-last)<.03,'Dust flare changed abruptly')
+    min_alpha=math.min(min_alpha,first.opacity);max_alpha=math.max(max_alpha,first.opacity);last=first.opacity
+end
+near(min_alpha,first.alpha*.2);near(max_alpha,first.alpha)
+assert(math.abs(flash.dust[2].opacity/flash.dust[2].alpha-first.opacity/first.alpha)>.01,'Dust flares synchronized')
 assert(s.star_speed==32)
 -- Every star travels the exact same distance, including wrapping/slow frames.
 -- Changing only the star speed must leave the dust motion and twinkle intact.
@@ -83,4 +96,4 @@ env.on_message(preview,'toggle_star_speed',{});assert(preview.motion.star_speed=
 env.on_message(preview,'wind',{side=-1,step=1});assert(preview.motion.side==1)
 env.on_message(preview,'active',{active=true});assert(status.side==1 and status.step==5)
 assert(status.star_speed==64)
-print('PASS night sky: fixed 32/64 star speed, continuity, independent dust/twinkle, 10 winds, wrapping and lifecycle')
+print('PASS night sky: slow staggered flares, fixed 32/64 stars, continuity, 10 winds, wrapping and lifecycle')
