@@ -1,6 +1,7 @@
 -- Measure elapsed wall time, independently of animation dt clamping.
+local performance=require('shared.diagnostics.performance')
 local function reset(self)
-    self.started=nil;self.frames=0
+    performance.reset()
     gui.set_text(self.label,'FPS: ...')
 end
 local function corner(node,pivot)
@@ -20,15 +21,10 @@ function init(self)
     reset(self)
 end
 function update(self)
-    local now=socket.gettime()
-    if not self.started or now<self.started then self.started=now;self.frames=0;return end
-    self.frames=self.frames+1
-    local elapsed=now-self.started
-    if elapsed>=.5 then
-        gui.set_text(self.label,string.format('FPS: %.1f',self.frames/elapsed))
-        self.started=now;self.frames=0
-    end
+    local sample=performance.frame(socket.gettime())
+    if sample then gui.set_text(self.label,string.format('FPS: %.1f',sample.fps)) end
 end
-function on_message(self,id)
+function on_message(self,id,message)
     if id==hash('reset_fps') then reset(self) end
+    if id==hash('route') then performance.route(message.name);gui.set_text(self.label,'FPS: ...') end
 end

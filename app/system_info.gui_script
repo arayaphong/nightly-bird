@@ -1,0 +1,92 @@
+local system=require('shared.diagnostics.system')
+local performance=require('shared.diagnostics.performance')
+local WHITE=vmath.vector4(.94,.97,1,1)
+local MUTED=vmath.vector4(.62,.72,.85,1)
+local ACCENT=vmath.vector4(.74,1,.35,1)
+local names={bird='นกแดง',fish='ปลา',hawk='เหยี่ยว',firefly='หิ่งห้อย',balloon='ลูกโป่ง',cloud='เมฆฝน',
+    night_sky='ท้องฟ้ากลางคืน',night_water='ท้องฟ้าและผิวน้ำ',fish_test='ฉากทดสอบปลา'}
+local function label(self,x,y,size,color,width,height)
+    local node=gui.new_text_node(vmath.vector3(x,y,0),'')
+    gui.set_parent(node,self.root,true);gui.set_inherit_alpha(node,false)
+    gui.set_font(node,'main');gui.set_scale(node,vmath.vector3(size/32,size/32,1))
+    gui.set_color(node,color or WHITE);gui.set_outline(node,vmath.vector4());gui.set_shadow(node,vmath.vector4())
+    gui.set_pivot(node,gui.PIVOT_NW)
+    gui.set_size(node,vmath.vector3((width or 530)*32/size,(height or 32)*32/size,0))
+    gui.set_line_break(node,true)
+    return node
+end
+local function set(node,value) gui.set_text(node,value) end
+local function refresh(self)
+    local info=system.collect();local web=info.web;local engine=info.engine;local os=info.system
+    set(self.build,'Nightly Bird '..sys.get_config_string('project.version','?')..' · Defold '..(engine.version or '?')..' · '..(os.system_name or '?'))
+    if web then
+        set(self.api,'API: '..(web.api or 'Unknown')..(web.available and ' · '..(web.context_lost and 'context lost' or 'context active') or ''))
+        set(self.status,system.renderer_status(web))
+        set(self.renderer,web.gpu_renderer or web.renderer or web.error or 'อ่านค่าไม่ได้')
+        set(self.vendor,'Vendor: '..(web.gpu_vendor or web.vendor or 'อ่านค่าไม่ได้'))
+        set(self.version,web.version or '')
+        set(self.details,web.gpu_details and 'ข้อมูล renderer จาก context ของเกม' or 'ชื่อ GPU อาจถูกซ่อนด้วยการตั้งค่าความเป็นส่วนตัว')
+        set(self.css,string.format('ขนาดที่แสดง: %s × %s CSS px',web.css_width or '?',web.css_height or '?'))
+        set(self.pixels,string.format('เรนเดอร์จริง: %s × %s px',web.width or '?',web.height or '?'))
+        set(self.dpr,string.format('Device pixel ratio: %.2f',web.dpr or 1))
+        local pixels=(web.width or 0)*(web.height or 0)
+        local area=(web.css_width or 0)*(web.css_height or 0)
+        set(self.workload,string.format('%.2f ล้านพิกเซล/เฟรม · %.1f× CSS',pixels/1e6,area>0 and pixels/area or 0))
+    else
+        set(self.api,'Native · '..(os.system_name or '?'))
+        set(self.status,'เวอร์ชันนี้อ่านชื่อ GPU ผ่าน WebGL บนเว็บ')
+        set(self.renderer,os.device_model or 'ไม่มีข้อมูล GPU ผ่าน Lua API')
+        set(self.vendor,'ระบบ: '..(os.system_version or '?'))
+        set(self.version,'Architecture: '..(os.architecture or '?'))
+        set(self.details,'ใช้หน้าเดียวกันได้บน native และเว็บ')
+        local w,h=window.get_size()
+        set(self.css,'หน้าต่าง: '..w..' × '..h)
+        set(self.pixels,'ความละเอียด framebuffer: อ่านค่าไม่ได้')
+        set(self.dpr,'Device pixel ratio: ไม่มีข้อมูล')
+        set(self.workload,'กล้องเกม: สูง 720 world units')
+    end
+    local current=performance.current
+    set(self.fps,current and string.format('หน้านี้: %.1f FPS · %.1f ms/เฟรม',current.fps,current.frame_ms) or 'หน้านี้: กำลังวัด...')
+    set(self.slowest,current and string.format('เฟรมช้าที่สุดในช่วงล่าสุด: %.1f ms',current.slowest_ms) or '')
+    local scene=performance.last_scene
+    set(self.scene,'ฉากที่ทดสอบล่าสุด: '..(scene and (names[scene.page] or scene.page) or 'ยังไม่มี'))
+    set(self.scene_fps,scene and string.format('%.1f FPS · %.1f ms/เฟรม',scene.fps,scene.frame_ms) or 'เปิดฉากทดสอบอย่างน้อย 1 วินาทีก่อน')
+end
+function init(self)
+    self.root=gui.new_box_node(vmath.vector3(640,360,0),vmath.vector3(1280,720,0))
+    gui.set_color(self.root,vmath.vector4())
+    local function fixed(x,y,value,size,color,width)
+        local node=label(self,x,y,size,color,width);set(node,value);return node
+    end
+    fixed(420,690,'SYSTEM INFO',32,ACCENT,600)
+    self.build=label(self,70,625,20,MUTED,1130)
+    fixed(70,575,'RENDERER',23,ACCENT)
+    self.api=label(self,70,534,22)
+    self.status=label(self,70,494,20)
+    fixed(70,451,'GPU / Renderer',16,MUTED)
+    self.renderer=label(self,70,422,22,WHITE,530,80)
+    self.vendor=label(self,70,325,20,WHITE,530,62)
+    self.version=label(self,70,252,18,MUTED,530,54)
+    self.details=label(self,70,185,17,MUTED,530,50)
+    fixed(670,575,'FRAME / DISPLAY',23,ACCENT)
+    self.fps=label(self,670,534,22)
+    self.slowest=label(self,670,494,18,MUTED)
+    self.scene=label(self,670,445,20)
+    self.scene_fps=label(self,670,410,22,ACCENT)
+    self.css=label(self,670,345,20)
+    self.pixels=label(self,670,305,20)
+    self.dpr=label(self,670,265,20)
+    self.workload=label(self,670,225,20,MUTED)
+    fixed(70,113,'FPS อย่างเดียวบอกไม่ได้ว่าคอขวดอยู่ที่ CPU หรือ GPU',20,WHITE,1140)
+    fixed(70,77,'WebGL อาจใช้ GPU หรือ software renderer · เบราว์เซอร์ไม่เปิดเผย GPU usage (%)',18,MUTED,1140)
+    gui.set_enabled(self.root,false)
+end
+function on_message(self,id,message)
+    if id==hash('route') then
+        self.active=message.name=='system_info';gui.set_enabled(self.root,self.active)
+        if self.active then refresh(self);self.next_refresh=socket.gettime()+.5 end
+    end
+end
+function update(self)
+    if self.active and socket.gettime()>=self.next_refresh then refresh(self);self.next_refresh=socket.gettime()+.5 end
+end

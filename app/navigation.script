@@ -2,6 +2,8 @@ local routes=require('app.routes')
 local function navigate(self,name)
     if not routes.valid(name) or self.page==name then return end
     self.page=name
+    msg.post('/performance#gui','route',{name=name})
+    msg.post('/system_info#gui','route',{name=name})
     msg.post('/ui#gui','route',{name=name})
     msg.post('/menus#gui','route',{name=name})
     msg.post('/sky_controls#gui','route',{name=name})

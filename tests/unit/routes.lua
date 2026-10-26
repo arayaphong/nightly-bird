@@ -13,6 +13,7 @@ assert(not p.neighbor('home',1) and not p.neighbor('home',-1))
 print('PASS gallery routes: six selections, home stays home, ordered swipes and edge bounds')
 for _,name in ipairs({'studio','scenarios','characters','scenery','rules_and_items'}) do assert(p.valid(name)) end
 assert(p.parent('home')==nil and p.parent('studio')=='home' and p.parent('scenarios')=='home')
+assert(p.valid('system_info') and p.parent('system_info')=='home' and not p.index('system_info'))
 assert(p.parent('characters')=='studio' and p.parent('scenery')=='studio' and p.parent('rules_and_items')=='studio')
 assert(p.valid('night_sky') and p.parent('night_sky')=='scenery' and not p.index('night_sky'))
 assert(p.valid('night_water') and p.parent('night_water')=='scenery' and not p.index('night_water'))

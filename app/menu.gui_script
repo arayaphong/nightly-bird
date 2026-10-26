@@ -44,7 +44,8 @@ function init(self)
         local label,button=section(self,'home','เลือกพื้นที่ทำงาน','พัฒนาส่วนประกอบ หรือทดสอบภาพรวม')
         button(370,'studio','Studio','พัฒนาและทดสอบส่วนประกอบทีละหน่วย',340)
         button(370,'scenarios','Scenarios','ทดสอบภาพรวมเป็นฉากอิสระ',940)
-        label(640,130,'1: Studio · 2: Scenarios',14,MUTED)
+        button(210,'system_info','System Info','FPS · WebGL renderer · ความละเอียดที่เรนเดอร์')
+        label(640,130,'1: Studio · 2: Scenarios · 3: System Info',14,MUTED)
     end
     do
         local label,button=section(self,'studio','Studio','เลือกหมวดทดสอบ')
@@ -126,7 +127,7 @@ function on_input(self,id,a)
     end
     if self.menu_page and a.pressed then
         if self.page=='home' then
-            if id==hash('magnet') then navigate('studio') elseif id==hash('gun') then navigate('scenarios') end
+            if id==hash('magnet') then navigate('studio') elseif id==hash('gun') then navigate('scenarios') elseif id==hash('helmet') then navigate('system_info') end
         elseif self.page=='studio' then
             for i,key in ipairs({'magnet','gun','helmet'}) do if id==hash(key) then navigate(categories[i].route) end end
         elseif self.page=='scenery' then
