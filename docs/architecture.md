@@ -43,8 +43,8 @@ still marks its test suite as future work.
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.
 - `shared/scenery/night_sky/`: reusable two-layer Rive sky, generated particle
-  layout and Lua motion. All stars drift left at a fixed 6 or 17 px/s and twinkle;
-  a separate Studio toggle selects their shared speed (default 6). Sparse
+  layout and Lua motion. All stars drift left at a fixed 32 or 64 px/s and twinkle;
+  a separate Studio toggle selects their shared speed (default 32). Sparse
   dust follows a smoothly changing wind with small gusts and edge wrapping.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.

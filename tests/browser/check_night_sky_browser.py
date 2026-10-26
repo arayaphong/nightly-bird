@@ -42,10 +42,10 @@ with sync_playwright() as p:
  assert selected(initial)==[],'Panel should start folded'
  def speed_label(im):return crop(im,155,690,395,658)
  slow=speed_label(initial)
- tap(275,674);fast=speed_label(snap('night-sky-speed-17.png'))
+ tap(275,674);fast=speed_label(snap('night-sky-speed-64.png'))
  assert ImageChops.difference(slow,fast).getbbox(),'Star speed toggle did not update'
  tap(275,674)
- assert ImageChops.difference(slow,speed_label(snap())).getbbox() is None,'Toggle did not restore 6 px/s'
+ assert ImageChops.difference(slow,speed_label(snap())).getbbox() is None,'Toggle did not restore 32 px/s'
  tap(275,674)
  initial=snap()
  art=crop(initial,10,620,470,280)

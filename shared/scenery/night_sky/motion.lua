@@ -1,13 +1,13 @@
 -- Reusable two-layer sky. Angles are elevation from the selected horizontal.
 -- Positions use the Rive artboard's x-right/y-down coordinates.
 local layout=require('shared.scenery.night_sky.layout')
-local M={angles={-80,-40,0,40,80},SPEED=42}
+local M={angles={-80,-40,0,40,80},SPEED=42,STAR_SPEEDS={32,64}}
 local function copy(source)
     local out={};for i,p in ipairs(source) do local q={};for k,v in pairs(p) do q[k]=v end;out[i]=q end
     return out
 end
 function M.new()
-    return {time=0,side=-1,step=3,star_speed=6,vx=-M.SPEED,vy=0,
+    return {time=0,side=-1,step=3,star_speed=M.STAR_SPEEDS[1],vx=-M.SPEED,vy=0,
             stars=copy(layout.stars),dust=copy(layout.dust)}
 end
 function M.select(s,side,step)
@@ -15,7 +15,7 @@ function M.select(s,side,step)
     s.side,s.step=side,step;return true
 end
 function M.toggle_star_speed(s)
-    s.star_speed=s.star_speed==6 and 17 or 6
+    s.star_speed=s.star_speed==M.STAR_SPEEDS[1] and M.STAR_SPEEDS[2] or M.STAR_SPEEDS[1]
 end
 function M.target(s)
     local a=math.rad(M.angles[s.step])
