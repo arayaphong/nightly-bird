@@ -1,7 +1,7 @@
 [project]
 title = Nightly Bird
 dependencies#0 = https://github.com/defold/extension-rive/archive/0283d4ecb604953057385ca5a4fae7130c776ae9.zip
-version = 0.8.9
+version = 0.8.10
 
 [bootstrap]
 main_collection = /app/main.collectionc
@@ -32,7 +32,7 @@ heap_size = 64
 
 [android]
 package = com.arayaphong.nightlybird.defoldhello
-version_code = 28
+version_code = 29
 input_method = HiddenInputField
 
 [physics]

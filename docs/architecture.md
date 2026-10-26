@@ -42,13 +42,16 @@ still marks its test suite as future work.
 - `shared/objects/firefly/`, `balloon/`, `rain_cloud/`: each has its own Rive
   model/scene/art and motion. The cloud also contains its generated rain/bolt rig.
 - `shared/items/equipment.lua`: independent equipment flags/field-ring animation.
-- `shared/scenery/night_sky/`: reusable two-layer Rive sky, generated particle
+- `shared/scenery/night_sky/`: reusable layered Rive sky, generated particle
   layout and Lua motion. All stars drift left at a fixed 32 or 64 px/s and twinkle;
   a separate Studio toggle selects their shared speed (default 32). Sparse
   dust follows a smoothly changing wind with small gusts and edge wrapping.
   Each dust fleck slowly flares and fades on a staggered six-second cycle.
   Its short gradient-filled tail tapers to a point behind its actual velocity;
   core, halo and tail share the same flare opacity without growing the core.
+  A static warm ivory crescent at the upper left sits between stars and dust.
+  Its source is `assets/svg/environment/crescent-moon.svg`; the hollow side is
+  transparent geometry, so distant stars remain visible through it.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.

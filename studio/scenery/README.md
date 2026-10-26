@@ -18,6 +18,10 @@ Dust flares and fades smoothly over six seconds, with a different phase per
 fleck. The short tails are filled vector wedges with curved edges, fading to
 pointed tips behind the travel direction. The halo brightens with the flare;
 particle count, core size and the 32/64 star speeds stay the same.
+A static crescent moon sits at (66,136) in the upper-left of the 480×800
+y-down artboard, clear of the back button and speed controls. Layer order is
+stars → moon → dust → Studio controls. Its warm ivory fill and soft halo are
+native vector paths from `assets/svg/environment/crescent-moon.svg`.
 
 Artwork, initial layout and motion live in `shared/scenery/night_sky/`.
 Regenerate the committed vector and layout with

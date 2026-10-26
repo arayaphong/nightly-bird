@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate two sparse, reusable night-sky layers as Rive vector paths."""
+"""Generate the reusable star, crescent moon and wind-dust vector layers."""
 import math
 import xml.etree.ElementTree as ET
-from defold_rive_bird import ROOT,start_file,finish_file,draw_path,path
-from defold_rive_gallery import radial,ellipse
+from defold_rive_bird import ROOT,start_file,finish_file,draw_path,draw_group,path
+from defold_rive_gallery import radial,ellipse,svg_asset
 
 def build():
     seed=73021
@@ -30,7 +30,7 @@ def build():
                          f'dust_{i}_alpha':p['alpha']*(.2+.8*(.5+.5*math.sin(p['phase']))**3)})
     keys={k:i for i,k in enumerate(channels)}
     f=start_file(channels,'NightSky',480,800,'NightSkyControls')
-    # Rive draws the component stream back-to-front. Dust is in front of stars.
+    # Front-to-back emission: dust, static moon, moving stars, black backdrop.
     front=f.node('wind-dust')
     for i,p in enumerate(dust):
         node=f.node(f'dust-{i}',front,p['x'],p['y'],math.pi)
@@ -49,6 +49,9 @@ def build():
         d=(f'M0 {-width} C{-length*.35} {-width*.65} {-length*.8} {-width*.1} {-length} 0 '
            f'C{-length*.8} {width*.1} {-length*.35} {width*.65} 0 {width} Z')
         draw_path(f,path(d,'url(#dust-tail)'),node,{'dust-tail':tail})
+    middle=f.node('crescent-moon',x=66,y=136)
+    moon,moon_defs=svg_asset('environment/crescent-moon')
+    draw_group(f,moon,middle,moon_defs)
     back=f.node('distant-stars')
     for i,p in enumerate(stars):
         node=f.node(f'star-{i}',back,p['x'],p['y']);f.bind(13,keys[f'star_{i}_x']);f.bind(18,keys[f'star_{i}_alpha'])
