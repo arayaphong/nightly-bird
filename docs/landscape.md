@@ -25,6 +25,11 @@ The fullscreen control attempts landscape orientation where the browser supports
 locking. All Studio layout, buttons and game visuals remain Defold GUI/Rive.
 The project display dimensions select landscape for future native builds.
 
+`app/performance.gui` adds a persistent FPS badge anchored to the canvas's top
+right. It averages actual engine frames over half a second using wall time,
+independently of animation dt caps. Focus changes reset its sampling window so
+time spent in a background tab is excluded. It does not capture input.
+
 The CLI build applies `scripts/defold_rive_resize.py` to the pinned public Rive
 OpenGL renderer. On WebGL resize it recreates the offscreen target instead of
 using Bob 1.14.0's failing depth/stencil reattachment path. Rive contexts,

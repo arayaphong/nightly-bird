@@ -1,0 +1,34 @@
+-- Measure elapsed wall time, independently of animation dt clamping.
+local function reset(self)
+    self.started=nil;self.frames=0
+    gui.set_text(self.label,'FPS: ...')
+end
+local function corner(node,pivot)
+    gui.set_pivot(node,pivot)
+    gui.set_xanchor(node,gui.ANCHOR_RIGHT)
+    gui.set_yanchor(node,gui.ANCHOR_TOP)
+end
+function init(self)
+    gui.set_render_order(15)
+    local panel=gui.new_box_node(vmath.vector3(1268,712,0),vmath.vector3(156,36,0))
+    corner(panel,gui.PIVOT_NE);gui.set_color(panel,vmath.vector4(.025,.045,.075,.88))
+    self.label=gui.new_text_node(vmath.vector3(1258,694,0),'')
+    corner(self.label,gui.PIVOT_E);gui.set_font(self.label,'main')
+    gui.set_scale(self.label,vmath.vector3(26/32,26/32,1))
+    gui.set_color(self.label,vmath.vector4(.74,1,.35,1))
+    gui.set_outline(self.label,vmath.vector4());gui.set_shadow(self.label,vmath.vector4())
+    reset(self)
+end
+function update(self)
+    local now=socket.gettime()
+    if not self.started or now<self.started then self.started=now;self.frames=0;return end
+    self.frames=self.frames+1
+    local elapsed=now-self.started
+    if elapsed>=.5 then
+        gui.set_text(self.label,string.format('FPS: %.1f',self.frames/elapsed))
+        self.started=now;self.frames=0
+    end
+end
+function on_message(self,id)
+    if id==hash('reset_fps') then reset(self) end
+end

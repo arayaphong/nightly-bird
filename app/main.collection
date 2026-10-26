@@ -13,3 +13,4 @@ embedded_instances { id: "ui" data: "components { id: \"gui\" component: \"/stud
 embedded_instances { id: "sky_controls" data: "components { id: \"gui\" component: \"/studio/scenery/night_sky/controls.gui\" }" }
 embedded_instances { id: "navigation" data: "components { id: \"script\" component: \"/app/navigation.script\" }" }
 embedded_instances { id: "menus" data: "components { id: \"gui\" component: \"/app/menu.gui\" }" }
+embedded_instances { id: "performance" data: "components { id: \"gui\" component: \"/app/performance.gui\" }" }
