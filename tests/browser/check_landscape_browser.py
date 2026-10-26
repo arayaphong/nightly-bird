@@ -1,7 +1,7 @@
 """Actual Defold/Rive landscape QA: every route, controls, camera and rotation."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-from PIL import Image,ImageChops
+from PIL import Image,ImageChops,ImageDraw
 import io,json,sys
 URL=sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:8140/Nightly%20Bird/'
 ART=Path(sys.argv[2]) if len(sys.argv)>2 else Path('/tmp/nightly-landscape-test')
@@ -26,7 +26,13 @@ with sync_playwright() as p:
    x,y=pt(x,y);points=[{'id':1,'x':x,'y':y}]
   session.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':points})
  def tap(x,y):touch('touchStart',x,y);frames(2);touch('touchEnd');frames()
- def snap(name):return Image.open(io.BytesIO(page.screenshot(scale='css',path=str(ART/(name+'.png'))))).convert('RGB')
+ def snap(name):
+  image=Image.open(io.BytesIO(page.screenshot(scale='css',path=str(ART/(name+'.png'))))).convert('RGB')
+  # Preserve the real screenshot, but exclude live FPS from image comparisons.
+  r=rect();s=min(r['width']/1280,r['height']/720)
+  box=(r['x']+r['width']-200*s,r['y'],r['x']+r['width'],r['y']+46*s)
+  ImageDraw.Draw(image).rectangle(tuple(round(v) for v in box),fill=(0,0,0))
+  return image
  def crop(im,x1,y1,x2,y2):
   a,z=pt(x1,y1),pt(x2,y2);return im.crop(tuple(round(v) for v in (*a,*z)))
  def back():tap(76,668)
