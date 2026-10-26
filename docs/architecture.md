@@ -54,6 +54,12 @@ still marks its test suite as future work.
   circular arcs and halo retain a uniform world scale on tall or wide screens.
   Its source is `assets/svg/environment/crescent-moon.svg`; the hollow side is
   transparent geometry, so distant stars remain visible through it.
+- `shared/scenery/water/`: travelling wave math and generated layout. The water
+  body and surface strokes share animated cubic vertices/tangents. Its opaque
+  fill hides every sky layer below the wave. The exporter embeds an optional
+  water group in the common sky Rive artboard, disabled for the original fixture.
+  `studio/scenery/night_water/preview.go` enables it through the shared presenter's
+  `with_water` property, retaining separate animation/wind/star-speed state.
   Ten selections combine left/right with five elevations (−80…+80°, up positive).
   `studio/scenery/night_sky/` supplies its fixture and collapsible GUI controls.
   Folding only changes the controls; it never resets or pauses the wind/scene.

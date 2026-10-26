@@ -1,10 +1,13 @@
 local motion=require('shared.scenery.night_sky.motion')
+local water=require('shared.scenery.water.motion')
+go.property('with_water',false)
 function init(self)
     self.motion=motion.new();self.last={};self.active=false
+    self.water=water.new();self.page=self.with_water and 'night_water' or 'night_sky'
     msg.post('#sky','disable')
 end
 local function publish(self)
-    msg.post('/sky_controls#gui','wind_status',{side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed})
+    msg.post('/sky_controls#gui','wind_status',{page=self.page,side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed})
 end
 function update(self,dt)
     if not self.active then return end
@@ -15,12 +18,15 @@ function update(self,dt)
         go.set_scale(vmath.vector3(w/480,h/800,1))
     end
     motion.step(self.motion,dt)
+    if self.with_water then water.step(self.water,dt) end
     if not self.vm then self.vm=rive.get_view_model_instance('#sky') end
     if self.vm then
         local values=motion.values(self.motion)
         -- The sky fills the viewport, but the moon keeps a uniform world scale.
         local sx,sy=w/480,h/800;local uniform=math.min(sx,sy)
         values.moon_scale_x=uniform/sx;values.moon_scale_y=uniform/sy
+        values.water_alpha=0
+        if self.with_water then for name,value in pairs(water.values(self.water)) do values[name]=value end end
         for name,value in pairs(values) do
             if self.last[name]~=value then
                 rive.cmd.setViewModelInstanceNumber(self.vm,name,value);self.last[name]=value

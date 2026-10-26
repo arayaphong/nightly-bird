@@ -25,6 +25,10 @@ native vector paths from `assets/svg/environment/crescent-moon.svg`.
 The viewport may stretch the star/dust field to fill the screen; local moon
 scale bindings compensate independently so the crescent and halo stay round.
 
+`night_water/` is the next selectable fixture: the same sky above animated
+opaque water, with no sky particles visible beneath its curved surface.
+See that fixture's README for wave geometry, controls and layer ordering.
+
 Artwork, initial layout and motion live in `shared/scenery/night_sky/`.
 Regenerate the committed vector and layout with
 `python3 scripts/defold_rive_night_sky.py` (fontTools required only to regenerate).

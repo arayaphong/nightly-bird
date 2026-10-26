@@ -1,5 +1,6 @@
 name: "nightly-bird"
 instances { id: "night_sky" prototype: "/studio/scenery/night_sky/preview.go" position {x: 240 y: 400} }
+instances { id: "night_water" prototype: "/studio/scenery/night_water/preview.go" position {x: 240 y: 400} }
 instances { id: "gallery" prototype: "/studio/characters/gallery/preview.go" position {x: 240 y: 400} }
 instances { id: "objects" prototype: "/studio/characters/objects/preview.go" position {x: 240 y: 400} }
 instances { id: "red_bird" prototype: "/studio/characters/red_bird/preview.go" position {x: 228 y: 507} scale3 {x: .6 y: .6 z: 1} }

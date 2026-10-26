@@ -81,7 +81,7 @@ local env=setmetatable({hash=function(v) return v end,
     rive={get_projection_matrix=function() return {m00=2/width,m11=2/height} end,
         get_view_model_instance=function() return 1 end,
         cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value end}},
-    go={set_position=function() end,set_scale=function(v) scale=v end},
+    go={property=function(_,v) return v end,set_position=function() end,set_scale=function(v) scale=v end},
     vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end}}, {__index=_G})
 setfenv(assert(loadfile('studio/scenery/night_sky/preview.script')),env)()
 local preview={};env.init(preview);assert(enabled=='disable')
@@ -90,6 +90,7 @@ env.on_message(preview,'active',{active=true});assert(enabled=='enable' and stat
 assert(status.star_speed==32)
 env.on_message(preview,'toggle_star_speed',{});assert(status.star_speed==64)
 env.update(preview,.1);assert(channels.star_0_x and channels.dust_0_angle)
+assert(channels.water_alpha==0,'Original sky must not show water')
 -- Circular SVG arcs must remain circular on tall/wide native viewports.
 for _,size in ipairs({{480,800},{480,1200},{960,800},{1920,1080}}) do
     width,height=size[1],size[2];env.update(preview,0)
@@ -104,4 +105,9 @@ env.on_message(preview,'toggle_star_speed',{});assert(preview.motion.star_speed=
 env.on_message(preview,'wind',{side=-1,step=1});assert(preview.motion.side==1)
 env.on_message(preview,'active',{active=true});assert(status.side==1 and status.step==5)
 assert(status.star_speed==64)
+local wet={with_water=true};env.init(wet);env.on_message(wet,'active',{active=true})
+env.update(wet,.5);assert(channels.water_alpha==1 and channels.water_y_0 and status.page=='night_water')
+near(wet.water.time,.5);assert(wet.motion.star_speed==32 and preview.motion.star_speed==64)
+env.on_message(wet,'active',{active=false});env.update(wet,2);near(wet.water.time,.5)
+env.on_message(wet,'active',{active=true});env.update(wet,.5);near(wet.water.time,1)
 print('PASS night sky: slow staggered flares, fixed 32/64 stars, continuity, 10 winds, wrapping and lifecycle')

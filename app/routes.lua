@@ -1,5 +1,5 @@
 local M={order={'bird','fish','hawk','firefly','balloon','cloud'}}
-local parents={studio='home',scenarios='home',characters='studio',scenery='studio',rules_and_items='studio',night_sky='scenery'}
+local parents={studio='home',scenarios='home',characters='studio',scenery='studio',rules_and_items='studio',night_sky='scenery',night_water='scenery'}
 for _,name in ipairs(M.order) do parents[name]='characters' end
 function M.index(name)
     for i,page in ipairs(M.order) do if name==page then return i end end

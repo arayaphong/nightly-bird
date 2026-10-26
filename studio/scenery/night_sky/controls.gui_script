@@ -55,13 +55,13 @@ local function refresh(self)
 end
 local function select(self,side,step)
     self.side,self.step=side,step;refresh(self)
-    msg.post('/night_sky#script','wind',{side=side,step=step})
+    msg.post(self.target,'wind',{side=side,step=step})
 end
 function init(self)
     msg.post('.','acquire_input_focus')
     self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=sky.STAR_SPEEDS[1];self.buttons={};clear(self)
     self.root=box(240,400,480,800,vmath.vector4())
-    child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
+    self.title=child(text(275,752,'ท้องฟ้ากลางคืน',22,WHITE),self.root)
     child(text(275,718,'STUDIO · SCENERY',12,MUTED),self.root)
     self.star_speed_button=child(box(275,674,260,44,BUTTON),self.root)
     self.star_speed_label=child(text(275,674,'',16,WHITE),self.root)
@@ -93,9 +93,13 @@ function init(self)
     refresh(self)
 end
 function on_message(self,id,message)
-    if id==hash('route') then self.active=message.name=='night_sky';clear(self);refresh(self)
+    if id==hash('route') then
+        self.page=message.name;self.active=self.page=='night_sky' or self.page=='night_water'
+        self.target=self.page=='night_water' and '/night_water#script' or '/night_sky#script'
+        gui.set_text(self.title,self.page=='night_water' and 'ท้องฟ้าและผิวน้ำ' or 'ท้องฟ้ากลางคืน')
+        clear(self);refresh(self)
     elseif id==hash('clear_input') then clear(self)
-    elseif id==hash('wind_status') then
+    elseif id==hash('wind_status') and message.page==self.page then
         self.side,self.step,self.star_speed=message.side,message.step,message.star_speed;refresh(self)
     end
 end
@@ -108,7 +112,7 @@ local function button_at(self,x,y)
 end
 local function activate(self,button)
     if button=='fold' then self.collapsed=not self.collapsed;refresh(self)
-    elseif button=='star_speed' then msg.post('/night_sky#script','toggle_star_speed')
+    elseif button=='star_speed' then msg.post(self.target,'toggle_star_speed')
     elseif type(button)=='number' then
         local b=self.buttons[button];select(self,b.side,b.step)
     end

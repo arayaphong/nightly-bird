@@ -15,6 +15,7 @@ for _,name in ipairs({'studio','scenarios','characters','scenery','rules_and_ite
 assert(p.parent('home')==nil and p.parent('studio')=='home' and p.parent('scenarios')=='home')
 assert(p.parent('characters')=='studio' and p.parent('scenery')=='studio' and p.parent('rules_and_items')=='studio')
 assert(p.valid('night_sky') and p.parent('night_sky')=='scenery' and not p.index('night_sky'))
+assert(p.valid('night_water') and p.parent('night_water')=='scenery' and not p.index('night_water'))
 for _,name in ipairs(p.order) do assert(p.parent(name)=='characters') end
 assert(not p.valid('game') and not p.valid('demo'))
 assert(#require('studio.catalog')==3 and #require('scenarios.catalog')==0)
@@ -37,7 +38,11 @@ env.on_message(app,'back',{});assert(app.page=='home' and not find('/red_bird#sc
 local n=#messages;env.on_message(app,'navigate',{name='invalid'});assert(#messages==n)
 env.on_message(app,'navigate',{name='night_sky'})
 assert(find('/night_sky#script','active').active and find('/sky_controls#gui','route').name=='night_sky')
+assert(not find('/night_water#script','active').active)
+env.on_message(app,'navigate',{name='night_water'})
+assert(find('/night_water#script','active').active and not find('/night_sky#script','active').active)
 env.on_message(app,'back',{});assert(app.page=='scenery' and not find('/night_sky#script','active').active)
+assert(not find('/night_water#script','active').active)
 messages={};listener(app,9)
 for _,url in ipairs({'/red_bird#script','/hawk#script','/objects#script'}) do assert(find(url,'cancel')) end
 assert(find('/ui#gui','clear_input') and find('/menus#gui','clear_input'))
