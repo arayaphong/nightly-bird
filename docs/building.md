@@ -10,6 +10,8 @@ Use Python 3.11+ and a **Java 25 JDK** (including `javac`):
 python3 scripts/defold.py build
 python3 scripts/defold.py serve
 python3 scripts/defold.py build --target android
+python3 scripts/defold.py build --target linux
+python3 scripts/package_linux.py
 ```
 
 The first build downloads/checksums Bob 1.14.0 (about 219 MiB) and downloads the
@@ -34,6 +36,8 @@ Outputs:
 - Web: `dist/defold/Nightly Bird/`. Serve the full directory over
   HTTP(S); opening `index.html` as `file://` cannot run WASM. The downloaded ZIP
   includes a Python preview launcher and a Windows launcher.
+- Linux: `dist/linux/Nightly Bird/`, native x86_64 Vulkan Release. Package with
+  `scripts/package_linux.py`; see [linux.md](linux.md) for Wayland and runtime requirements.
 - Android: `dist/android/NightlyBird/NightlyBird.apk`.
   Android uses **OpenGL ES only**, matching this Rive pin. The app manifest
   excludes the Vulkan adapter; the builder verifies that the APK does not bundle

@@ -4,7 +4,7 @@
 ภาพตัวละครและวัตถุยังเป็นเวกเตอร์จริงจาก SVG ไม่มี sprite sheet หรือ flipbook
 ฟอนต์ไทยใช้ Mitr พร้อมระบบจัดวางสระและวรรณยุกต์ของ HarfBuzz/SkriBidi
 
-ปุ่มหมุนจอด้านบนกลางสลับแนวตั้ง 480×800 กับแนวนอน 1280×720 ได้ทุกหน้า
+ไอคอนหมุนจอด้านบนกลางสลับแนวตั้ง 480×800 กับแนวนอน 1280×720 ได้ทุกหน้า
 รักษาสัดส่วนเวกเตอร์และค่าทดสอบเดิม พร้อมจำแนวที่เลือกไว้เมื่อเปิดเว็บใหม่
 ทดลองเว็บผ่าน [Studio Preview](https://nightly-bird-studio-arayaphong.arme555.chatgpt.site)
 (เข้าสู่ระบบด้วยบัญชีเจ้าของ) รายละเอียดอยู่ที่ [portrait.md](docs/portrait.md)
@@ -56,10 +56,14 @@ legacy/              HTML/JS เดิมพร้อม assets/tools/tests ส�
 python3 scripts/defold.py build
 python3 scripts/defold.py serve
 python3 scripts/defold.py build --target android
+python3 scripts/defold.py build --target linux
+python3 scripts/package_linux.py
 ```
 
 Web: `dist/defold/Nightly Bird/` ต้องเปิดผ่าน HTTP(S)
 APK สำหรับทดสอบ ARM64: `dist/android/NightlyBird/NightlyBird.apk`
+Linux x86_64 แบบ Release: `dist/linux-package/` รองรับ Wayland ใช้ Vulkan
+ดูวิธีเปิดและข้อกำหนดระบบที่ [linux.md](docs/linux.md)
 เก็บ `debug.keystore` และไฟล์รหัสผ่านไว้ในเครื่อง เพื่อให้ติดตั้งทับ APK เดิมได้
 
 ดู [วิธี build และทดสอบ](docs/building.md), [โครงสร้างและการเพิ่มงาน](docs/architecture.md)

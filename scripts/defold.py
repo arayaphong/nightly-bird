@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Nightly Bird in Defold for Web or Android, or serve its HTML5 bundle."""
+"""Build Nightly Bird for Web, Android or Linux, or serve its HTML5 bundle."""
 
 import argparse
 import functools
@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECT = ROOT
 OUTPUT = ROOT / "dist" / "defold"
 ANDROID_OUTPUT = ROOT / "dist" / "android"
+LINUX_OUTPUT = ROOT / "dist" / "linux"
 VERSION = "1.14.0"
 BOB_SHA256 = "d8cbe667757ca1c5f4dfd251bc98660c35e7a65ac84bf0207ccef7607de6d1a1"
 BOB_URL = f"https://github.com/defold/defold/releases/download/{VERSION}/bob.jar"
@@ -72,10 +73,12 @@ def build(target):
             if parsed.hostname:
                 options += [f"-D{protocol}.proxyHost={parsed.hostname}",
                             f"-D{protocol}.proxyPort={parsed.port or 80}"]
-    platform = "wasm-web" if target == "web" else "arm64-android"
-    architectures = "wasm-web" if target == "web" else "arm64-android"
-    output = OUTPUT if target == "web" else ANDROID_OUTPUT
-    extra = [] if target == "web" else ["--bundle-format", "apk", "--strip-executable"]
+    platform = {"web": "wasm-web", "android": "arm64-android", "linux": "x86_64-linux"}[target]
+    architectures = platform
+    output = {"web": OUTPUT, "android": ANDROID_OUTPUT, "linux": LINUX_OUTPUT}[target]
+    extra = ["--bundle-format", "apk", "--strip-executable"] if target == "android" else []
+    if target == "linux":
+        extra += ["--strip-executable"]
     if build_server := os.environ.get("DEFOLD_BUILD_SERVER"):
         extra += ["--build-server", build_server]
     # Avoid selecting an old bundle after the project title changes.
@@ -101,6 +104,13 @@ def build(target):
                 raise RuntimeError("Rive Android APK must be GLES-only; VkQuality was bundled.")
         print(f"Android test APK: {apk.relative_to(ROOT)}", flush=True)
         print("Uses a generated debug signing key; not a Play Store release.", flush=True)
+        return
+    if target == "linux":
+        executable = next(output.glob("*/*.x86_64"), None)
+        if not executable:
+            raise RuntimeError("Build finished without a Linux x86_64 executable.")
+        executable.chmod(executable.stat().st_mode | 0o111)
+        print(f"Linux release bundle: {executable.parent.relative_to(ROOT)}", flush=True)
         return
     index = next(OUTPUT.glob("*/index.html"), None)
     if not index:
@@ -134,7 +144,7 @@ def serve(port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("build", "serve"))
-    parser.add_argument("--target", choices=("web", "android"), default="web")
+    parser.add_argument("--target", choices=("web", "android", "linux"), default="web")
     parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
     try:

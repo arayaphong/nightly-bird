@@ -1,6 +1,7 @@
 # Studio orientation
 
 Version 0.8.24 adds a Defold GUI button at the physical top center of every page.
+Version 0.8.25 replaces its text with a phone/rotation icon built from GUI geometry.
 It switches between portrait (480×800) and landscape (1280×720) without navigating
 away. The web bridge persists the selection in localStorage and attempts fullscreen
 and Screen Orientation locking where the browser supports it. When locking is

@@ -5,19 +5,39 @@ local function broadcast()
     msg.post('/red_bird#script','flight',{held=false})
     for _,target in ipairs(targets) do msg.post(target,'display_orientation',{mode=viewport.mode}) end
 end
+-- Draw the rotation mark with GUI geometry, independent of font glyphs/Rive.
 local function build(self)
-    if self.panel then gui.delete_node(self.panel);gui.delete_node(self.label);gui.delete_node(self.hit) end
+    if self.panel then gui.delete_node(self.panel) end
     viewport.apply_gui();self.gestures=gestures.new();self.contacts={}
-    local wide=viewport.is_landscape();local width=wide and 220 or 150
-    local position=vmath.vector3(viewport.UI_WIDTH/2,viewport.UI_HEIGHT-16,0)
-    self.panel=gui.new_box_node(position,vmath.vector3(width,24,0))
-    self.hit=gui.new_box_node(position,vmath.vector3(width+12,44,0))
-    gui.set_color(self.panel,vmath.vector4(.08,.13,.21,.98));gui.set_color(self.hit,vmath.vector4())
-    self.label=gui.new_text_node(position,wide and 'หมุนเป็นแนวตั้ง' or 'หมุนเป็นแนวนอน')
-    gui.set_font(self.label,'main');local scale=(wide and 18 or 13)/32
-    gui.set_scale(self.label,vmath.vector3(scale,scale,1));gui.set_color(self.label,vmath.vector4(.74,1,.35,1))
-    gui.set_outline(self.label,vmath.vector4());gui.set_shadow(self.label,vmath.vector4())
-    for _,n in ipairs({self.panel,self.hit,self.label}) do gui.set_yanchor(n,gui.ANCHOR_TOP) end
+    local wide=viewport.is_landscape();local scale=wide and 1.15 or 1
+    self.panel=gui.new_box_node(vmath.vector3(viewport.UI_WIDTH/2,viewport.UI_HEIGHT-20,0),vmath.vector3(40*scale,34*scale,0))
+    gui.set_color(self.panel,vmath.vector4(.08,.13,.21,.98));gui.set_yanchor(self.panel,gui.ANCHOR_TOP)
+    self.hit=gui.new_box_node(vmath.vector3(),vmath.vector3(44,44,0))
+    gui.set_parent(self.hit,self.panel);gui.set_color(self.hit,vmath.vector4())
+    local accent=vmath.vector4(.74,1,.35,1);local white=vmath.vector4(.94,.97,1,1)
+    local function line(x1,y1,x2,y2,color)
+        local dx,dy=x2-x1,y2-y1
+        local node=gui.new_box_node(vmath.vector3((x1+x2)*scale/2,(y1+y2)*scale/2,0),
+            vmath.vector3(math.sqrt(dx*dx+dy*dy)*scale,1.6*scale,0))
+        gui.set_parent(node,self.panel);gui.set_color(node,color)
+        gui.set_rotation(node,vmath.vector3(0,0,math.deg(math.atan2(dy,dx))))
+    end
+    local phone={{-3,-7},{3,-7},{4,-6},{4,6},{3,7},{-3,7},{-4,6},{-4,-6}}
+    local function device(x,y) if wide then return -y,x end return x,y end
+    for i,a in ipairs(phone) do
+        local b=phone[i%#phone+1];local x1,y1=device(a[1],a[2]);local x2,y2=device(b[1],b[2]);line(x1,y1,x2,y2,white)
+    end
+    local x1,y1=device(-1.5,-4.8);local x2,y2=device(1.5,-4.8);line(x1,y1,x2,y2,white)
+    for _,start in ipairs({20,200}) do
+        for i=0,9 do
+            local a,b=math.rad(start+i*13),math.rad(start+(i+1)*13)
+            line(13*math.cos(a),13*math.sin(a),13*math.cos(b),13*math.sin(b),accent)
+        end
+        local a=math.rad(start+130);local x,y=13*math.cos(a),13*math.sin(a)
+        local tx,ty=-math.sin(a),math.cos(a)
+        line(x,y,x-4*tx-2.5*ty,y-4*ty+2.5*tx,accent)
+        line(x,y,x-4*tx+2.5*ty,y-4*ty-2.5*tx,accent)
+    end
 end
 local function toggle(self)
     local mode=viewport.is_landscape() and 'portrait' or 'landscape'
