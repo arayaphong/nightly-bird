@@ -107,15 +107,15 @@ def build(target):
         raise RuntimeError("Build finished without an HTML5 index.html.")
     shutil.copytree(PROJECT / "scripts/web_preview", index.parent, dirs_exist_ok=True)
     # Install before EngineLoader starts, so its registered resize callback
-    # uses the landscape canvas and the fixed-height world camera.
+    # uses the portrait canvas and the fixed-height world camera.
     document=index.read_text()
     marker='EngineLoader.load("canvas", "NightlyBird");'
     if marker not in document:
-        raise RuntimeError("HTML5 loader marker changed; cannot install landscape framing.")
+        raise RuntimeError("HTML5 loader marker changed; cannot install portrait framing.")
     position=document.rfind('<script',0,document.index(marker))
     if position<0:
         raise RuntimeError("HTML5 start script missing.")
-    document=document[:position]+'<script src="landscape.js"></script>\n'+document[position:]
+    document=document[:position]+'<script src="portrait.js"></script>\n'+document[position:]
     index.write_text(document)
     print(f"HTML5 bundle: {index.parent.relative_to(ROOT)}", flush=True)
     print("Preview: python3 scripts/defold.py serve", flush=True)

@@ -1,4 +1,6 @@
-# Landscape Studio
+# Historical landscape Studio (0.8.17–0.8.22)
+
+The current portrait layout is described in [portrait.md](portrait.md).
 
 All active menus, the six character fixtures and three scenery fixtures use a
 1280×720 design frame. Character previews and GUI fit that frame uniformly;

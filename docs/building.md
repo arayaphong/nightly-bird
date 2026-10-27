@@ -91,12 +91,12 @@ DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_hawk_parity.mjs
 ```
 
-The landscape browser suite (Playwright, Chromium and Pillow) checks all Studio
+The current portrait browser suite (Playwright, Chromium and Pillow) checks all Studio
 routes and actions, water/fish visibility, slider input, independent scene state,
-live rotation and ultrawide framing:
+live rotation and portrait framing:
 
 ```sh
-python3 tests/browser/check_landscape_browser.py http://127.0.0.1:8080/
+python3 tests/browser/check_portrait_browser.py http://127.0.0.1:8080/
 ```
 
 Historical pixel suites for portrait 0.8.16 are retained under
@@ -107,7 +107,7 @@ phases, dive duration, audio events and cancellation rules.
 Web is the default test delivery. The existing private preview is
 https://nightly-bird-studio-arayaphong.arme555.chatgpt.site and is updated from
 `defold/development` independently of the legacy GitHub Pages branch. Build APK
-only when requested. See [landscape.md](landscape.md) for the camera/layout model.
+only when requested. See [portrait.md](portrait.md) for the camera/layout model.
 
 
 See [architecture.md](architecture.md) for the current folder responsibilities.

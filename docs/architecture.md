@@ -94,13 +94,13 @@ inspection screens; it does not define their motion or lightning rules.
 
 Cloud motion accepts a cloud-local target with `strike(state, {x=..., y=...})`.
 Omit the target for full-artboard random aiming. `preview_target(x,y)` converts
-1280×720 x-right/y-down coordinates for the Studio controller's optional
+480×800 x-right/y-down coordinates for the Studio controller's optional
 `lightning` message fields `target_x`/`target_y`. Future game code converts bird
 world coordinates to cloud-local coordinates before calling the same model.
 Charging flashes dark/bright twice in 0.2 s while silent; the cloud returns to
 its original color and the one discharge event starts bolt and thunder together.
 
-See [landscape.md](landscape.md) for the 1280×720 Studio layout, world/camera
+See [portrait.md](portrait.md) for the 480×800 Studio UI layout, world/camera
 contract, browser rotation behavior and web test delivery.
 
 ## Add work in the right place

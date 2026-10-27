@@ -88,16 +88,16 @@ def balloon(f,parent):
     draw_path(f,path('M0 1.1 Q-.18 1.8 0 2.5',stroke='rgba(230,230,240,.7)',stroke_width=.014),parent)
 
 def gallery():
-    f=start_file({'ready':1},'Characters',1280,720,'GalleryControls')
+    f=start_file({'ready':1},'Characters',480,800,'GalleryControls')
     root=f.node('gallery');f.bind(18,0)
     entries=[('bird','characters/bird',(-20,-40,560,500)),
              ('fish','characters/fish',(0,0,1536,1024)),
              ('hawk','characters/hawk',(0,0,1400,1100))]
     for i,key in enumerate(('bird','fish','hawk','firefly','balloon','cloud')):
-        x,y=260+(i%3)*380,720-(405-(i//3)*205)
-        icon=f.node(key+'-icon',root,x,y-25)
+        x,y=90+(i%3)*150,800-(500-(i//3)*200)
+        icon=f.node(key+'-icon',root,x,y-36)
         if i<3:
-            _,source,bounds=entries[i];bx,by,w,h=bounds;scale=min(156/w,118/h)
+            _,source,bounds=entries[i];bx,by,w,h=bounds;scale=min(108/w,94/h)
             svg,defs=svg_asset(source)
             if key=='fish':
                 fitted=f.node('fit',icon,(bx+w/2)*scale,-(by+h/2)*scale,sx=-scale,sy=scale)
@@ -106,13 +106,13 @@ def gallery():
         elif key=='firefly':firefly(f,f.node('fit',icon,sx=5,sy=5))
         elif key=='balloon':balloon(f,f.node('fit',icon,0,-18,sx=30,sy=30))
         else:cloud(f,f.node('fit',icon,0,-20,sx=.58,sy=.58))
-        draw_path(f,path(f'M{x-160} {y-90} L{x+160} {y-90} L{x+160} {y+90} L{x-160} {y+90} Z',
+        draw_path(f,path(f'M{x-66} {y-85} L{x+66} {y-85} L{x+66} {y+85} L{x-66} {y+85} Z',
                          '#152136',stroke='#344965',stroke_width=1),root)
     finish_file(f,'gallery','Gallery')
 
 def nature():
     previews={
-        'firefly':('Firefly',9,330,{'show_firefly':0,'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6}),
+        'firefly':('Firefly',6,320,{'show_firefly':0,'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6}),
         'balloon':('Balloon',90,300,{'show_balloon':0,'balloon_y':300,'balloon_rotation':0}),
         'cloud':('RainCloud',1.7,300,{'show_cloud':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}),
     }
@@ -122,8 +122,8 @@ def nature():
                 for i in range(count):channels.update({f'{line}_x_{i}':0,f'{line}_y_{i}':23+i*15})
             for i,(x,phase) in enumerate(DROPS):
                 channels.update({f'rain_x_{i}':x,f'rain_y_{i}':36+phase*100,f'rain_alpha_{i}':.7})
-        keys=list(channels);f=start_file(channels,artboard,1280,720,artboard+'Controls',clip=name!='cloud')
-        node=f.node(name,x=640,y=y,sx=scale,sy=scale,opacity=0);f.bind(18,keys.index('show_'+name))
+        keys=list(channels);f=start_file(channels,artboard,480,800,artboard+'Controls',clip=name!='cloud')
+        node=f.node(name,x=240,y=y,sx=scale,sy=scale,opacity=0);f.bind(18,keys.index('show_'+name))
         if name=='firefly':firefly(f,node,keys)
         elif name=='balloon':
             f.bind(14,keys.index('balloon_y'));f.bind(15,keys.index('balloon_rotation'));balloon(f,node)
@@ -131,9 +131,9 @@ def nature():
         finish_file(f,name,'Preview')
     rows=['-- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.',
           f'return {{bolt_points={BOLT_POINTS},fork_points={FORK_POINTS},',
-          '-- Preview: full 1280x720 artboard, including above and beside the cloud.',
-          'preview={x=640,y=300,scale=1.7,width=1280,height=720},',
-          'target={min_x=-640/1.7,max_x=640/1.7,min_y=-300/1.7,max_y=420/1.7},drops={']
+          '-- Preview: full 480x800 artboard, including above and beside the cloud.',
+          'preview={x=240,y=300,scale=1.7,width=480,height=800},',
+          'target={min_x=-240/1.7,max_x=240/1.7,min_y=-300/1.7,max_y=500/1.7},drops={']
     rows.extend(f'    {{x={x:.17g},phase={phase:.17g}}},' for x,phase in DROPS)
     (ROOT/'shared/objects/rain_cloud/rig.lua').write_text('\n'.join(rows+['}}'])+'\n')
 

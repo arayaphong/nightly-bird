@@ -1,8 +1,8 @@
 -- Generated rain/bolt layout; cloud silhouette: rain-cloud.svg.
 return {bolt_points=8,fork_points=3,
--- Preview: full 1280x720 artboard, including above and beside the cloud.
-preview={x=640,y=300,scale=1.7,width=1280,height=720},
-target={min_x=-640/1.7,max_x=640/1.7,min_y=-300/1.7,max_y=420/1.7},drops={
+-- Preview: full 480x800 artboard, including above and beside the cloud.
+preview={x=240,y=300,scale=1.7,width=480,height=800},
+target={min_x=-240/1.7,max_x=240/1.7,min_y=-300/1.7,max_y=500/1.7},drops={
     {x=-62,phase=0},
     {x=-54.700000000000003,phase=0.17299999999999999},
     {x=-47.399999999999999,phase=0.34599999999999997},

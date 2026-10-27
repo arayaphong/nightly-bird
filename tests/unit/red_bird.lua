@@ -31,11 +31,11 @@ local env=setmetatable({
     hash=function(v) return v end,
     sound={play=function(id) assert(id=='#chew');plays=plays+1 end,
            stop=function(id) assert(id=='#chew');stops=stops+1 end},
-    rive={get_projection_matrix=function() return {m00=2/1280,m11=2/720} end,
+    rive={get_projection_matrix=function() return {m00=2/480,m11=2/800} end,
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
 setfenv(assert(loadfile('studio/characters/red_bird/preview.script')),env)()
-local demo={motion=m.new(),items=require('shared.items.equipment').new(),width=1280,height=720}
+local demo={motion=m.new(),items=require('shared.items.equipment').new(),width=480,height=800}
 env.on_message(demo,'chew',{})
 assert(plays==1 and stops==1)
 local peaks=0;local previous,previous_previous=0,0
