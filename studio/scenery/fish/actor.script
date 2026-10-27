@@ -1,8 +1,43 @@
 local swim=require('shared.scenery.fish.motion')
 local viewport=require('shared.display.viewport')
+local attack=require('shared.scenery.fish.attack')
+local bird=require('shared.characters.red_bird.motion')
+local equipment=require('shared.items.equipment')
+local write_only=require('shared.render.write_only_view_model')
+local dead=bird.values(bird.new())
+for k,v in pairs(equipment.values(equipment.new())) do dead[k]=v end
+dead.eye_normal=0;dead.eye_white=0;dead.eye_lid=0;dead.eye_dead=1
+local function show_target(self,value)
+    if self.target_visible==value then return end
+    self.target_visible=value;msg.post('/fish_target#bird',value and 'enable' or 'disable')
+end
 function init(self)
     self.motion=swim.new();self.active=false;self.last={};self.visible=false
     msg.post('#fish','disable')
+    msg.post('/fish_target#bird','disable')
+    self.target_visible=false;self.suspended=true
+    self.target_binding=write_only.new(rive,'/fish_target#bird',dead,'eye_dead')
+end
+function update(self)
+    local vm=write_only.prepare(self.target_binding)
+    if vm and not self.target_initialized then
+        for k,v in pairs(dead) do rive.cmd.setViewModelInstanceNumber(vm,k,v) end
+        self.target_initialized=true
+    end
+end
+local function cancel(self)
+    attack.cancel(self.motion);sound.stop('#strike')
+    show_target(self,false)
+end
+local function target(self,camera,m)
+    local p=self.motion.target
+    show_target(self,p~=nil)
+    if not p then return end
+    local scale=.12*camera.scale
+    go.set_scale(vmath.vector3(scale,scale,1),'/fish_target')
+    -- Align the SVG's (280,318) body anchor, rather than its artboard centre.
+    go.set_position(vmath.vector3((p.x-viewport.WIDTH/2)*camera.scale+m.width/2-20*scale,
+        (viewport.HEIGHT-p.y)*camera.scale+78*scale,-.2),'/fish_target')
 end
 local function visible(self,value)
     if value~=self.visible then self.visible=value;msg.post('#fish',value and 'enable' or 'disable') end
@@ -11,13 +46,28 @@ function on_message(self,id,m)
     if id==hash('active') then
         self.active=m.active
         -- Wait for the active water presenter before showing or resuming the fish.
-        if not self.active then visible(self,false) end
+        if not self.active then visible(self,false);cancel(self);self.frame=nil;self.suspended=true end
+    elseif id==hash('place_target') and self.active and self.visible and self.frame then
+        local frame=self.frame;local camera=viewport.camera(frame.width,frame.height)
+        if attack.place(self.motion,m.x,m.y,frame,camera.width) then
+            target(self,camera,frame)
+            print('FISH_TARGET '..m.x..' '..m.y)
+        end
     elseif id==hash('water_frame') and self.active then
-        if m.visible==false then visible(self,false);return end
+        m.wave_time=m.wave_time or 0;self.frame=m
+        if m.visible==false then
+            visible(self,false)
+            if not self.suspended then cancel(self);self.suspended=true end
+            return
+        end
+        self.suspended=false
         local camera=viewport.camera(m.width,m.height)
-        swim.step(self.motion,m.dt,{level=m.level,roughness=m.roughness},camera.width)
+        if swim.step(self.motion,m.dt,m,camera.width) then
+            sound.stop('#strike');sound.play('#strike');print('FISH_STRIKE')
+        end
         visible(self,self.motion.visible)
-        if not self.visible then return end
+        if not self.visible then cancel(self);return end
+        target(self,camera,m)
         local scale=self.motion.scale*camera.scale
         go.set_scale(vmath.vector3(scale,scale,1))
         -- Rive's render pass draws this depth after the opaque scenery.

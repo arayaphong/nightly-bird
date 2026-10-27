@@ -233,13 +233,14 @@ def build():
     channels.update({'equip_'+k:0 for k in (*ITEMS,'coat','hood','field')})
     for i in range(3):channels.update({f'field_scale_{i}':1,f'field_alpha_{i}':0})
     channels['crest_visible']=1
+    channels['eye_dead']=0
     f=start_file(channels,'NightlyBird',560,560)
     root=f.node('svg-origin',x=20,y=40)
     source=ET.parse(ROOT/'assets/svg/characters/bird.svg').getroot()
     ids={g.get('id'):g for g in source if g.get('id')}
     # The original feet are already paths in body. Draw the magnet underneath
     # that group so those same toes grip it; never add a second set of feet.
-    order=['field','wing-back','magnet','body','coat','sling','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','hood','eye-left','eye-left-white','eye-left-lid','eye-right','eye-right-white','eye-right-lid','eyebrows','mouth','beak-upper','beak-lower','gun','helmet']
+    order=['field','wing-back','magnet','body','coat','sling','wing-front-0','wing-front-1','wing-front-2','wing-front-3','crest','cheek','hood','eye-left','eye-left-white','eye-left-lid','eye-left-dead','eye-right','eye-right-white','eye-right-lid','eye-right-dead','eyebrows','mouth','beak-upper','beak-lower','gun','helmet']
     for key in reversed(order):
         if key in (*ITEMS,'coat','hood','field','sling'):
             equipment(f,key,root,list(channels));continue
@@ -253,7 +254,7 @@ def build():
         a,b,c,d,x,y=group_t
         angle=math.atan2(b,a);sx=math.hypot(a,b);sy=(a*d-b*c)/sx
         if key=='mouth':x,y=420,326
-        node=f.node(key,inner,x,y,angle,sx,sy,0 if key in ['mouth','eye-left-lid','eye-right-lid','eye-left-white','eye-right-white'] else 1)
+        node=f.node(key,inner,x,y,angle,sx,sy,0 if key in ['mouth','eye-left-lid','eye-right-lid','eye-left-white','eye-right-white','eye-left-dead','eye-right-dead'] else 1)
         if key.startswith('wing-front'):f.bind(16,2)
         elif key=='wing-back':f.bind(15,1)
         elif key in ('eye-left','eye-right'):
@@ -261,6 +262,7 @@ def build():
         elif key.endswith('-white'):
             f.bind(17,3);f.bind(18,11)
         elif key.endswith('-lid'):f.bind(18,4)
+        elif key.endswith('-dead'):f.bind(18,list(channels).index('eye_dead'))
         elif key=='beak-upper':f.bind(15,5)
         elif key=='beak-lower':f.bind(15,6)
         elif key=='cheek':f.bind(16,7);f.bind(17,7);f.bind(14,8)

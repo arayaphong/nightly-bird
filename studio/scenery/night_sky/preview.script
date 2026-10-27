@@ -36,7 +36,7 @@ function update(self,dt)
     if self.with_water and self.water_visible then water.step(self.water,dt) end
     if self.with_fish then
         msg.post('/swimming_fish#script','water_frame',{dt=dt,width=w,height=h,
-            level=self.water.level,roughness=self.water.roughness,visible=self.water_visible and self.fish_visible})
+            level=self.water.level,roughness=self.water.roughness,wave_time=self.water.wave_time,visible=self.water_visible and self.fish_visible})
     end
     if self.vm then
         local values=motion.values(self.motion)

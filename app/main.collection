@@ -3,6 +3,7 @@ instances { id: "night_sky" prototype: "/studio/scenery/night_sky/preview.go" po
 instances { id: "night_water" prototype: "/studio/scenery/night_water/preview.go" position {x: 240 y: 400} }
 instances { id: "fish_test" prototype: "/studio/scenery/fish/preview.go" position {x: 240 y: 400} }
 instances { id: "swimming_fish" prototype: "/studio/scenery/fish/actor.go" position {x: 240 y: 80 z: -0.1} }
+instances { id: "fish_target" prototype: "/studio/scenery/fish/target.go" position {z: -0.2} }
 instances { id: "gallery" prototype: "/studio/characters/gallery/preview.go" position {x: 240 y: 400} }
 instances { id: "objects" prototype: "/studio/characters/objects/preview.go" position {x: 240 y: 400} }
 instances { id: "red_bird" prototype: "/studio/characters/red_bird/preview.go" position {x: 230 y: 550} scale3 {x: .52 y: .52 z: 1} }

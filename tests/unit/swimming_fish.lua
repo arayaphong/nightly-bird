@@ -41,14 +41,17 @@ local x,y,time=b.x,b.y,b.pose.time;m.step(b,-1,w)
 assert(b.x==x and b.y==y and b.pose.time==time)
 -- Actor must gate stale frames, keep uniform scale and hide when leaving.
 local enabled,position,scale,channels=nil,nil,nil,{}
+local targets,sounds={},{}
 local env=setmetatable({hash=function(v) return v end,
- msg={post=function(_,id) enabled=id end},
- go={set_position=function(v) position=v end,set_scale=function(v) scale=v end},
+ msg={post=function(url,id) if url=='#fish' then enabled=id else targets[url]=id end end},
+ go={set_position=function(v,url) if not url then position=v end end,set_scale=function(v,url) if not url then scale=v end end},
+ sound={stop=function() end,play=function(id) sounds[#sounds+1]=id end},
  vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end},
- rive={get_view_model_instance=function() return 1 end,cmd={setViewModelInstanceNumber=function(_,k,v) channels[k]=v end}},
+ rive={get_view_model_instance=function() return 1 end,cmd={getViewModelInstanceNumber=function() return 0 end,
+ unsubscribeToViewModelProperty=function() end,setViewModelInstanceNumber=function(_,k,v) channels[k]=v end}},
 },{__index=_G})
 setfenv(assert(loadfile('studio/scenery/fish/actor.script')),env)()
-local actor={};env.init(actor);assert(enabled=='disable')
+local actor={};env.init(actor);env.update(actor);assert(enabled=='disable' and channels.eye_dead==1 and channels.eye_normal==0)
 local frame={dt=.1,width=2560,height=1080,level=.2,roughness=.6}
 env.on_message(actor,'water_frame',frame);assert(not position)
 env.on_message(actor,'active',{active=true});env.on_message(actor,'water_frame',frame)
@@ -58,4 +61,9 @@ env.on_message(actor,'active',{active=false});assert(enabled=='disable')
 env.on_message(actor,'water_frame',frame);assert(actor.motion.pose.time==t)
 env.on_message(actor,'active',{active=true});frame.level=0;env.on_message(actor,'water_frame',frame);assert(not actor.visible)
 frame.level=.2;env.on_message(actor,'water_frame',frame);assert(enabled=='enable')
+env.on_message(actor,'place_target',{x=640,y=500});assert(actor.motion.target and targets['/fish_target#bird']=='enable')
+for i=1,240 do frame.dt=1/120;env.on_message(actor,'water_frame',frame) end
+assert(#sounds==1 and sounds[1]=='#strike' and actor.motion.mode=='swim')
+frame.visible=false;env.on_message(actor,'water_frame',frame)
+assert(not actor.motion.target and targets['/fish_target#bird']=='disable')
 print('PASS swimming fish: four random directions, continuous segments, wave/viewport bounds, shallow water and lifecycle')

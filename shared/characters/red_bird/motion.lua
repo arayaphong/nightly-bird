@@ -34,7 +34,7 @@ function M.values(s)
         wing_front=math.rad(-wing*58),wing_back=math.rad(-wing*58*.9),
         wing_scale=1-math.max(0,wing)*.18,
         eye_open=math.max(.06,open),eye_normal=open>.4 and 1 or 0,
-        eye_white=open>.4 and 0 or 1,eye_lid=open<.4 and 1 or 0,
+        eye_white=open>.4 and 0 or 1,eye_lid=open<.4 and 1 or 0,eye_dead=0,
         upper_beak=up,lower_beak=down,cheek_scale=1+chew*.055,cheek_y=282+chew*3,
         mouth_open=chew>.05 and 1 or 0,
         mouth_x1=4+70*math.cos(up),mouth_y1=-8+70*math.sin(up),

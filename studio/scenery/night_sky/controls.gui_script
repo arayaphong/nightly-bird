@@ -165,6 +165,14 @@ local function activate(self,button)
         local b=self.buttons[button];select(self,b.side,b.step)
     end
 end
+local function place_target(self,a)
+    if not self.water_visible or not self.fish_visible then return end
+    local p=gui.screen_to_local(self.root,vmath.vector3(a.screen_x or a.x,a.screen_y or a.y,0))
+    local projection=rive.get_projection_matrix();local w,h=2/projection.m00,2/projection.m11
+    -- A root node's screen_to_local result is in the GUI scene coordinates.
+    local x,y=viewport.gui_to_world(p.x,p.y,w,h)
+    msg.post('/swimming_fish#script','place_target',{x=x,y=y})
+end
 local function pointer(self,id,a)
     if not a.x or not a.y then
         if a.released and self.slider_id==id then self.slider_id=nil;self.slider_kind=nil end
@@ -194,12 +202,18 @@ local function pointer(self,id,a)
     if self.sliders[kind] and next(self.contacts)==nil then
         self.slider_id=id;self.slider_kind=kind;slide();return
     end
-    if a.pressed then gestures.begin(self.gestures,id,a.x,a.y,button_at(self,a.x,a.y));self.contacts[id]=true end
+    if a.pressed then
+        local button=button_at(self,a.x,a.y)
+        if not button and self.page=='fish_test' then button='target' end
+        gestures.begin(self.gestures,id,a.x,a.y,button);self.contacts[id]=true
+    end
     if not self.contacts[id] then return end
     gestures.move(self.gestures,id,a.x,a.y)
     if a.released then
+        local single=self.gestures[id] and self.gestures[id].eligible
         local result=gestures.finish(self.gestures,id,a.x,a.y);self.contacts[id]=nil
-        if result.tap and result.tap==button_at(self,a.x,a.y) then activate(self,result.tap) end
+        if result.tap=='target' and single and not button_at(self,a.x,a.y) then place_target(self,a)
+        elseif result.tap and result.tap==button_at(self,a.x,a.y) then activate(self,result.tap) end
     end
 end
 function on_input(self,id,a)

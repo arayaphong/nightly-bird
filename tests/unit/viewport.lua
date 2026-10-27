@@ -26,6 +26,15 @@ assert(not view.select('landscape') and not view.select('invalid') and view.revi
 near(view.camera(1280,720).width,camera.width)
 assert(view.select('portrait') and not view.is_landscape() and view.revision==2)
 assert(view.UI_WIDTH==480 and view.UI_HEIGHT==800)
+-- GUI root coordinates include their centre; subtract it before world mapping.
+for _,size in ipairs({{480,800},{960,1600}}) do
+ local x,y=view.gui_to_world(240,400,unpack(size));near(x,640);near(y,360)
+ local _,above=view.gui_to_world(240,245,unpack(size));near(above,499.5)
+end
+local _,rounded=view.gui_to_world(240,245,405,676);assert(math.abs(rounded-499.5)<.3)
+view.select('landscape')
+local x,y=view.gui_to_world(860,220,2560,1440);near(x,860);near(y,500)
+view.select('portrait')
 -- Changing display resolution must leave motion in world units unchanged.
 local function fixed() return .73 end
 local a,b=swim.new(fixed),swim.new(fixed);local w=water.new()

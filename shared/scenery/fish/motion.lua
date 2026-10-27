@@ -2,10 +2,11 @@
 local water=require('shared.scenery.water.motion')
 local fish=require('shared.characters.fish.motion')
 local viewport=require('shared.display.viewport')
+local attack=require('shared.scenery.fish.attack')
 local M={ART_RADIUS=1100,BASE_SCALE=.05}
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
 function M.new(random)
-    return {pose=fish.new(),random=random or math.random,x=640,y=648,elapsed=0,duration=0}
+    return {pose=fish.new(),random=random or math.random,x=640,y=648,elapsed=0,duration=0,mode='swim'}
 end
 function M.bounds(w,width)
     width=width or viewport.WIDTH
@@ -32,9 +33,17 @@ function M.step(s,dt,w,width)
     dt=math.max(0,dt);local b=M.bounds(w,width);s.visible=b~=nil
     if not b then return end
     s.scale=b.scale
+    s.bounds=b
+    local launched=false
+    if s.mode~='swim' then
+        local remaining
+        launched,remaining=attack.step(s,dt,w)
+        if s.mode~='swim' then return launched end
+        dt=remaining
+    end
     local x,y=clamp(s.x,b.left,b.right),clamp(s.y,b.top,b.bottom)
-    local changed=not s.bounds or s.bounds.left~=b.left or s.bounds.top~=b.top or s.bounds.bottom~=b.bottom
-    s.x,s.y=x,y;s.bounds=b
+    local changed=not s.previous_bounds or s.previous_bounds.left~=b.left or s.previous_bounds.top~=b.top or s.previous_bounds.bottom~=b.bottom
+    s.x,s.y=x,y;s.previous_bounds=b
     if changed then s.duration=0 end
     -- Consume segment boundaries so a slow frame cannot skip a change of direction.
     local remaining=dt
@@ -46,6 +55,13 @@ function M.step(s,dt,w,width)
         s.x=s.from_x+(s.to_x-s.from_x)*t;s.y=s.from_y+(s.to_y-s.from_y)*t
         fish.step(s.pose,step)
     until remaining<=0
+    return launched
 end
-function M.values(s) return fish.values(s.pose) end
+function M.values(s)
+    local values=fish.values(s.pose)
+    if s.mode=='charge' or s.mode=='leap' then
+        values.tail=math.sin(s.pose.sw)*.32;values.fin=math.sin(s.pose.sw*.8+1.2)*.35
+    end
+    return values
+end
 return M

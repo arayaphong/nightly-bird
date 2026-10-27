@@ -17,5 +17,9 @@ function M.camera(width,height)
     return {scale=scale,width=world_width,left=(M.WIDTH-world_width)/2,right=(M.WIDTH+world_width)/2}
 end
 function M.fit(width,height) return math.min(width/M.UI_WIDTH,height/M.UI_HEIGHT) end
+function M.gui_to_world(x,y,width,height)
+    local scale=M.fit(width,height)/M.camera(width,height).scale
+    return M.WIDTH/2+(x-M.UI_WIDTH/2)*scale,M.HEIGHT/2-(y-M.UI_HEIGHT/2)*scale
+end
 function M.moon_x(width) return (M.WIDTH+width)/2-80 end
 return M
