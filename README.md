@@ -9,6 +9,9 @@
 ทดลองเว็บผ่าน [Studio Preview](https://nightly-bird-studio-arayaphong.arme555.chatgpt.site)
 (เข้าสู่ระบบด้วยบัญชีเจ้าของ) รายละเอียดอยู่ที่ [portrait.md](docs/portrait.md)
 
+เวอร์ชัน 0.8.26 ลดงาน CPU ที่ตรวจค่า Rive subscription ในฉากกลางคืน/น้ำ/ปลา
+โดยคงภาพและจำนวนวัตถุเดิม ดูสาเหตุและผลทดสอบที่ [performance.md](docs/performance.md)
+
 ## พื้นที่ทำงาน
 
 - **Studio** — ออกแบบและทดสอบส่วนประกอบทีละหน่วย: ตัวละคร/วัตถุ,

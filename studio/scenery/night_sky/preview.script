@@ -1,18 +1,28 @@
 local motion=require('shared.scenery.night_sky.motion')
 local water=require('shared.scenery.water.motion')
 local viewport=require('shared.display.viewport')
+local write_only=require('shared.render.write_only_view_model')
+-- Include hidden water/reflection properties: they share the sky artboard and
+-- are auto-subscribed even in the dry scene or when particle counts are zero.
+local channels=motion.values(motion.new())
+for name,value in pairs(water.values(water.new())) do channels[name]=value end
+for _,name in ipairs({'moon_scale_x','moon_scale_y','moon_x','sky_left','sky_right'}) do channels[name]=0 end
 go.property('with_water',false)
 go.property('with_fish',false)
 function init(self)
     self.motion=motion.new();self.last={};self.active=false
     self.water=water.new();self.water_visible=true;self.fish_visible=true
     self.page=self.with_fish and 'fish_test' or self.with_water and 'night_water' or 'night_sky'
+    self.binding=write_only.new(rive,'#sky',channels,'water_alpha')
     msg.post('#sky','disable')
 end
 local function publish(self)
     msg.post('/sky_controls#gui','wind_status',{page=self.page,side=self.motion.side,step=self.motion.step,star_speed=self.motion.star_speed,water_level=self.water.level,water_roughness=self.water.roughness,water_visible=self.water_visible,fish_visible=self.fish_visible,star_count=self.motion.star_count,dust_count=self.motion.dust_count})
 end
 function update(self,dt)
+    -- Prepare inactive fixtures too, so their subscriptions do not tax a later
+    -- active scene. This does not advance their motion or enable their artwork.
+    self.vm=write_only.prepare(self.binding)
     if not self.active then return end
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
     local camera=viewport.camera(w,h)
@@ -28,7 +38,6 @@ function update(self,dt)
         msg.post('/swimming_fish#script','water_frame',{dt=dt,width=w,height=h,
             level=self.water.level,roughness=self.water.roughness,visible=self.water_visible and self.fish_visible})
     end
-    if not self.vm then self.vm=rive.get_view_model_instance('#sky') end
     if self.vm then
         local values=motion.values(self.motion)
         values.moon_scale_x=1;values.moon_scale_y=1

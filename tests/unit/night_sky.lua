@@ -99,7 +99,9 @@ local env=setmetatable({hash=function(v) return v end,
     end},
     rive={get_projection_matrix=function() return {m00=2/width,m11=2/height} end,
         get_view_model_instance=function() return 1 end,
-        cmd={setViewModelInstanceNumber=function(_,key,value) channels[key]=value;writes=writes+1 end}},
+        cmd={getViewModelInstanceNumber=function() return 0 end,
+            unsubscribeToViewModelProperty=function() end,
+            setViewModelInstanceNumber=function(_,key,value) channels[key]=value;writes=writes+1 end}},
     go={property=function(_,v) return v end,set_position=function() end,set_scale=function(v) scale=v end},
     vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end}}, {__index=_G})
 setfenv(assert(loadfile('studio/scenery/night_sky/preview.script')),env)()

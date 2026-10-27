@@ -30,3 +30,7 @@ an input seat: the stock GLFW build crashes in `_glfwInitWayland` in a headless
 compositor without one. Runtime data/cache parent directories must also exist.
 These are test-harness requirements; the distributed bundle does not include
 Weston, Mesa, synthetic input, or any cloud-specific environment overrides.
+
+Version 0.8.26 removes unnecessary numeric Rive property polling in the shared
+sky/water/fish fixture. See [performance.md](performance.md) for the CPU profile,
+controlled comparison and limits of cloud performance measurements.
