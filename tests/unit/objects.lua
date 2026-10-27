@@ -85,6 +85,12 @@ for _,target in ipairs({{x=0,y=-150},{x=-135,y=-6},{x=135,y=-6},{x=0,y=270},
 end
 local corner=m.preview_target(0,0)
 assert(corner.x==-240/1.7 and corner.y==-300/1.7)
+local landscape={x=640,y=300,scale=1.7,width=1280,height=720}
+local origin=m.preview_target(640,300,landscape)
+assert(origin.x==0 and origin.y==0)
+local landscape_cloud=m.new(7);m.set_preview_size(landscape_cloud,1280,720,landscape)
+assert(landscape_cloud.target_bounds.min_x==-640/1.7)
+assert(landscape_cloud.target_bounds.max_y==420/1.7)
 -- Wide/narrow inspection windows still allow lightning across the full canvas.
 for _,size in ipairs({{1900,720},{1280,900}}) do
     local wide=m.new(12345);m.set_preview_size(wide,size[1],size[2])
@@ -108,7 +114,7 @@ local env=setmetatable({hash=function(v) return v end,
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
 setfenv(assert(loadfile('studio/characters/objects/preview.script')),env)()
-local demo={};env.init(demo);demo.width,demo.height=480,800
+local demo={layout_revision=0};env.init(demo);demo.width,demo.height=480,800
 env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='firefly'});env.on_message(demo,'lightning',{});assert(plays==0)
 env.on_message(demo,'page',{name='cloud'});env.on_message(demo,'lightning',{})

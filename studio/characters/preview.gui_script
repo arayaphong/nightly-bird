@@ -1,3 +1,5 @@
+local viewport=require('shared.display.viewport')
+local layouts=require('shared.display.layouts')
 local gestures=require('shared.input.gestures')
 local pages=require('app.routes')
 local WHITE=vmath.vector4(.97,.97,1,1)
@@ -19,7 +21,7 @@ local function box(x,y,w,h,color)
     local n=gui.new_box_node(vmath.vector3(x,y,0),vmath.vector3(w,h,0));gui.set_color(n,color);return n
 end
 local function group()
-    local root=box(240,400,480,800,vmath.vector4())
+    local root=box(viewport.UI_WIDTH/2,viewport.UI_HEIGHT/2,viewport.UI_WIDTH,viewport.UI_HEIGHT,vmath.vector4())
     local function add_text(...)
         local n=text(...);gui.set_parent(n,root,true);gui.set_inherit_alpha(n,false);return n
     end
@@ -54,107 +56,39 @@ local function move_page(self,direction)
     local next_page=pages.neighbor(self.page,direction)
     if next_page then set_page(self,next_page) end
 end
+local function build(self)
+    local saved={};local fields={'status','fish_status','hawk_status','dive_label','lightning_label','dive','lightning'}
+    for _,key in ipairs(fields) do
+        local n=self[key]
+        if n then saved[key]={text=(key~='dive' and key~='lightning') and gui.get_text(n),color=gui.get_color(n)} end
+    end
+    local badges={}
+    for key,n in pairs(self.badges or {}) do badges[key]={text=gui.get_text(n),color=gui.get_color(n)} end
+    if self.home_root then
+        gui.delete_node(self.home_root)
+        for _,name in ipairs(PAGES) do gui.delete_node(self[name..'_root']) end
+        for _,n in ipairs(self.page_dots) do gui.delete_node(n) end
+    end
+    viewport.apply_gui()
+    layouts[viewport.mode].characters(self,{group=group,update_page_dots=update_page_dots,
+        WHITE=WHITE,MUTED=MUTED,ACCENT=ACCENT,PAGES=PAGES,CHARACTER_LABELS=CHARACTER_LABELS,ITEMS=ITEMS,LABELS=LABELS})
+    for key,value in pairs(saved) do
+        if value.text then gui.set_text(self[key],value.text) end
+        gui.set_color(self[key],value.color)
+    end
+    for key,value in pairs(badges) do gui.set_text(self.badges[key],value.text);gui.set_color(self.badges[key],value.color) end
+    self.layout_mode=viewport.mode;apply_route(self,self.page or 'home')
+end
 function init(self)
-    msg.post('.','acquire_input_focus');self.page='home';clear_input(self)
-    do
-        local text,box
-        self.home_root,text,box=group();self.cards={}
-        text(240,752,'NIGHTLY BIRD',32)
-        text(240,710,'CHARACTER GALLERY',17,ACCENT)
-        text(240,680,'เลือกตัวละคร',25,WHITE)
-        text(240,641,'แตะไอคอนเพื่อดูแอนิเมชัน',16,MUTED)
-        for i,name in ipairs(PAGES) do
-            local x,y=90+((i-1)%3)*150,500-math.floor((i-1)/3)*200
-            self.cards[name]=box(x,y,132,170,vmath.vector4())
-            text(x,y-42,CHARACTER_LABELS[i],18)
-            text(x,y-65,'ดูแอนิเมชัน',12,MUTED)
-        end
-        text(240,135,'1–6: เลือกตัวละคร',14,MUTED)
-    end
-    do
-        local text,box
-        self.bird_root,text,box=group()
-        text(240,752,'NIGHTLY BIRD',32)
-        text(240,710,'RIVE · VECTOR 2D',17,ACCENT)
-        text(240,680,'แตะค้างเพื่อกระพือปีก · ปล่อยเพื่อพัก',16,MUTED)
-        self.items={};self.badges={}
-        for i,key in ipairs(ITEMS) do
-            local x=75+(i-1)*110
-            self.items[key]=box(x,340,94,106,vmath.vector4())
-            text(x,326,LABELS[i],14);self.badges[key]=text(x,304,'ปิด',12,MUTED)
-        end
-        self.blink=box(130,245,190,48,vmath.vector4(.15,.23,.38,1))
-        self.chew=box(350,245,190,48,vmath.vector4(.15,.23,.38,1))
-        text(130,245,'กระพริบตา',20);text(350,245,'เคี้ยว',20)
-        self.hold=box(240,155,410,66,ACCENT)
-        text(240,155,'แตะค้างเพื่อกระพือปีก',23,vmath.vector4(.04,.09,.12,1))
-        self.status=text(240,95,'ปีก: พัก',17,MUTED)
-        text(240,53,'Space: กระพือ · B: ตา · C: เคี้ยว',13,MUTED)
-        text(240,30,'1–4: ไอเท็ม · ปัดซ้ายเพื่อทดสอบปลา',12,MUTED)
-    end
-    do
-        local text,box
-        self.fish_root,text,box=group()
-        text(240,752,'NIGHTLY BIRD',32)
-        text(240,710,'FISH · VECTOR 2D',17,ACCENT)
-        text(240,680,'ทดสอบปลาว่ายน้ำ',21,WHITE)
-        text(240,641,'หาง · ครีบ · เหงือก ขยับอัตโนมัติ',15,MUTED)
-        self.fish_status=text(240,290,'หันขวา',18,MUTED)
-        self.turn=box(240,190,270,66,ACCENT)
-        text(240,190,'กลับตัว',25,vmath.vector4(.04,.09,.12,1))
-        text(240,94,'ปัดซ้าย: เหยี่ยว · ปัดขวา: นก',16,MUTED)
-        text(240,53,'Space: กลับตัว · ลูกศร: เปลี่ยนหน้า',13,MUTED)
-        gui.set_enabled(self.fish_root,false)
-    end
-    do
-        local text,box
-        self.hawk_root,text,box=group();self.hawk_busy=false
-        text(240,752,'NIGHTLY BIRD',32)
-        text(240,710,'HAWK · VECTOR 2D',17,ACCENT)
-        text(240,680,'ทดสอบเหยี่ยวบิน',21,WHITE)
-        text(240,641,'พุ่งตัว 3 วินาที แล้วกลับมาบิน',15,MUTED)
-        self.hawk_status=text(240,290,'กำลังบิน · หันขวา',18,MUTED)
-        self.hawk_turn=box(130,190,190,66,vmath.vector4(.15,.23,.38,1))
-        text(130,190,'กลับตัว',25)
-        self.dive=box(350,190,190,66,ACCENT)
-        self.dive_label=text(350,190,'พุ่งตัว',25,vmath.vector4(.04,.09,.12,1))
-        text(240,94,'ปัดขวาเพื่อกลับหน้าปลา',17,MUTED)
-        text(240,53,'Space: พุ่งตัว · T: กลับตัว',13,MUTED)
-        gui.set_enabled(self.hawk_root,false)
-    end
-    for _,entry in ipairs({{'firefly','หิ่งห้อย','FIREFLY · VECTOR 2D'},
-                            {'balloon','ลูกโป่ง','BALLOON · VECTOR 2D'},
-                            {'cloud','เมฆฝน','RAIN CLOUD · VECTOR 2D'}}) do
-        local add_text,add_box
-        self[entry[1]..'_root'],add_text,add_box=group()
-        add_text(240,752,'NIGHTLY BIRD',32)
-        add_text(240,710,entry[3],17,ACCENT)
-        add_text(240,680,entry[2],25,WHITE)
-        add_text(240,641,entry[1]=='cloud' and 'ฝนตก · กดปุ่มเพื่อทดสอบฟ้าแลบ' or 'แอนิเมชันอัตโนมัติ',16,MUTED)
-        if entry[1]=='cloud' then
-            self.cloud_busy=false
-            self.lightning=add_box(240,190,270,66,ACCENT)
-            self.lightning_label=add_text(240,190,'ฟ้าแลบ',25,vmath.vector4(.04,.09,.12,1))
-        end
-        add_text(240,94,'หน้ารวมเพื่อเลือกตัวละครอื่น',16,MUTED)
-        add_text(240,53,entry[1]=='cloud' and 'Space: ฟ้าแลบ · Esc: หน้ารวม' or 'ปัด: เปลี่ยนตัวละคร · Esc: หน้ารวม',13,MUTED)
-    end
-    for _,name in ipairs(PAGES) do gui.set_enabled(self[name..'_root'],false) end
-    self.page_dots={}
-    for i=1,#PAGES do
-        local dot=gui.new_pie_node(vmath.vector3(240+(i-(#PAGES+1)/2)*20,12,0),vmath.vector3(8,8,0))
-        gui.set_fill_angle(dot,360);gui.set_inner_radius(dot,0)
-        gui.set_perimeter_vertices(dot,32)
-        self.page_dots[i]=dot
-    end
-    gui.set_enabled(self.home_root,false)
-    update_page_dots(self)
+    msg.post('.','acquire_input_focus');self.page='home';self.hawk_busy=false;self.cloud_busy=false;clear_input(self);build(self)
     local platform=sys.get_sys_info().system_name
     self.touch_device=platform=='Android' or platform=='iPhone OS'
     if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
 end
 function on_message(self,id,message)
-    if id==hash('route') then apply_route(self,message.name)
+    if id==hash('apply_display_profile') then gui.set_layout(viewport.mode);return end
+    if id==hash('display_orientation') then build(self)
+    elseif id==hash('route') then apply_route(self,message.name)
     elseif id==hash('status') then gui.set_text(self.status,'ปีก: '..message.text)
     elseif id==hash('fish_status') then gui.set_text(self.fish_status,message.text)
     elseif id==hash('hawk_status') then

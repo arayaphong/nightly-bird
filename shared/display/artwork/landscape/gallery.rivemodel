@@ -1,0 +1,5 @@
+scene: "/shared/display/artwork/landscape/gallery.rivescene"
+artboard: "Characters"
+default_state_machine: "Gallery"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

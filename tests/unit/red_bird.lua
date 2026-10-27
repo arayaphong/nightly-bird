@@ -35,7 +35,7 @@ local env=setmetatable({
           get_view_model_instance=function() return nil end},
 }, {__index=_G})
 setfenv(assert(loadfile('studio/characters/red_bird/preview.script')),env)()
-local demo={motion=m.new(),items=require('shared.items.equipment').new(),width=480,height=800}
+local demo={layout_revision=0,motion=m.new(),items=require('shared.items.equipment').new(),width=480,height=800}
 env.on_message(demo,'chew',{})
 assert(plays==1 and stops==1)
 local peaks=0;local previous,previous_previous=0,0

@@ -1,0 +1,75 @@
+local viewport=require('shared.display.viewport')
+local gestures=require('shared.input.gestures')
+local targets={'/menus#gui','/ui#gui','/sky_controls#gui','/system_info#gui','/performance#gui'}
+local function broadcast()
+    msg.post('/red_bird#script','flight',{held=false})
+    for _,target in ipairs(targets) do msg.post(target,'display_orientation',{mode=viewport.mode}) end
+end
+local function build(self)
+    if self.panel then gui.delete_node(self.panel);gui.delete_node(self.label);gui.delete_node(self.hit) end
+    viewport.apply_gui();self.gestures=gestures.new();self.contacts={}
+    local wide=viewport.is_landscape();local width=wide and 220 or 150
+    local position=vmath.vector3(viewport.UI_WIDTH/2,viewport.UI_HEIGHT-16,0)
+    self.panel=gui.new_box_node(position,vmath.vector3(width,24,0))
+    self.hit=gui.new_box_node(position,vmath.vector3(width+12,44,0))
+    gui.set_color(self.panel,vmath.vector4(.08,.13,.21,.98));gui.set_color(self.hit,vmath.vector4())
+    self.label=gui.new_text_node(position,wide and 'หมุนเป็นแนวตั้ง' or 'หมุนเป็นแนวนอน')
+    gui.set_font(self.label,'main');local scale=(wide and 18 or 13)/32
+    gui.set_scale(self.label,vmath.vector3(scale,scale,1));gui.set_color(self.label,vmath.vector4(.74,1,.35,1))
+    gui.set_outline(self.label,vmath.vector4());gui.set_shadow(self.label,vmath.vector4())
+    for _,n in ipairs({self.panel,self.hit,self.label}) do gui.set_yanchor(n,gui.ANCHOR_TOP) end
+end
+local function toggle(self)
+    local mode=viewport.is_landscape() and 'portrait' or 'landscape'
+    viewport.select(mode)
+    if html5 and html5.run then
+        html5.run('window.NightlyDisplay && window.NightlyDisplay.setOrientation("'..mode..'")')
+    else
+        local platform=sys.get_sys_info().system_name
+        if platform=='Linux' or platform=='Windows' or platform=='Darwin' then window.set_size(viewport.UI_WIDTH,viewport.UI_HEIGHT) end
+    end
+    broadcast();build(self)
+end
+function init(self)
+    gui.set_render_order(15)
+    if html5 and html5.run then
+        local mode=html5.run('window.NightlyDisplay ? window.NightlyDisplay.getOrientation() : "portrait"')
+        if viewport.select(mode) then broadcast() end
+    end
+    self.input_frames=0;build(self)
+    local platform=sys.get_sys_info().system_name
+    self.touch_device=platform=='Android' or platform=='iPhone OS'
+    if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
+end
+function update(self)
+    -- Menus acquire focus on their first update; keep this global control above them.
+    self.input_frames=self.input_frames+1
+    if self.input_frames==2 then msg.post('.','acquire_input_focus') end
+end
+function on_message(self,id)
+    if id==hash('apply_display_profile') then gui.set_layout(viewport.mode);return end
+    if id==hash('clear_input') then self.gestures=gestures.new();self.contacts={} end
+end
+local function pointer(self,id,a)
+    if not a.x or not a.y then return false end
+    if a.pressed and gui.pick_node(self.hit,a.x,a.y) then
+        self.contacts[id]=true;gestures.begin(self.gestures,id,a.x,a.y,'rotate')
+    end
+    if not self.contacts[id] then return false end
+    gestures.move(self.gestures,id,a.x,a.y)
+    if a.released then
+        local result=gestures.finish(self.gestures,id,a.x,a.y);self.contacts[id]=nil
+        if result.tap=='rotate' and gui.pick_node(self.hit,a.x,a.y) then toggle(self) end
+    end
+    return true
+end
+function on_input(self,id,a)
+    if id==hash('touch') then
+        self.touch_device=true;local consumed=false
+        for _,finger in ipairs(a.touch or {}) do consumed=pointer(self,finger.id,finger) or consumed end
+        return consumed
+    elseif id==hash('pointer') or (id==nil and self.contacts.mouse) then
+        return not self.touch_device and pointer(self,'mouse',a) or false
+    end
+    return false
+end

@@ -100,7 +100,7 @@ world coordinates to cloud-local coordinates before calling the same model.
 Charging flashes dark/bright twice in 0.2 s while silent; the cloud returns to
 its original color and the one discharge event starts bolt and thunder together.
 
-See [portrait.md](portrait.md) for the 480×800 Studio UI layout, world/camera
+See [portrait.md](portrait.md) for portrait/landscape Studio layouts, shared state, world/camera
 contract, browser rotation behavior and web test delivery.
 
 ## Add work in the right place

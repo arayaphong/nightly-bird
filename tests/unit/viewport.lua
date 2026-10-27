@@ -18,6 +18,14 @@ for _,size in ipairs({{480,800},{472,973},{1280,720},{1920,1080},{2560,1080},{38
  for _,p in ipairs(stars.stars) do assert(p.x>=c.left-14 and p.x<c.right+14) end
 end
 near(view.fit(480,800),1);near(view.fit(960,1600),2)
+local camera=view.camera(1280,720)
+assert(view.select('landscape') and view.is_landscape())
+assert(view.UI_WIDTH==1280 and view.UI_HEIGHT==720 and view.revision==1)
+near(view.fit(1280,720),1)
+assert(not view.select('landscape') and not view.select('invalid') and view.revision==1)
+near(view.camera(1280,720).width,camera.width)
+assert(view.select('portrait') and not view.is_landscape() and view.revision==2)
+assert(view.UI_WIDTH==480 and view.UI_HEIGHT==800)
 -- Changing display resolution must leave motion in world units unchanged.
 local function fixed() return .73 end
 local a,b=swim.new(fixed),swim.new(fixed);local w=water.new()

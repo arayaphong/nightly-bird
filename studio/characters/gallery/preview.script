@@ -1,12 +1,16 @@
 local viewport=require('shared.display.viewport')
-function init(self) msg.post('#gallery','disable') end
+local function visibility(self)
+    msg.post('#gallery',self.active and not viewport.is_landscape() and 'enable' or 'disable')
+    msg.post('#landscape_gallery',self.active and viewport.is_landscape() and 'enable' or 'disable')
+end
+function init(self) self.active=false;visibility(self) end
 function update(self)
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
-    if w~=self.width or h~=self.height then
-        self.width,self.height=w,h;local scale=viewport.fit(w,h)
+    if w~=self.width or h~=self.height or self.layout_revision~=viewport.revision then
+        self.width,self.height=w,h;self.layout_revision=viewport.revision;visibility(self);local scale=viewport.fit(w,h)
         go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
     end
 end
 function on_message(self,id,message)
-    if id==hash('active') then msg.post('#gallery',message.active and 'enable' or 'disable') end
+    if id==hash('active') then self.active=message.active;visibility(self) end
 end

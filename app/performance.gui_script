@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 -- Measure elapsed wall time, independently of animation dt clamping.
 local performance=require('shared.diagnostics.performance')
 local function reset(self)
@@ -9,22 +10,28 @@ local function corner(node,pivot)
     gui.set_xanchor(node,gui.ANCHOR_RIGHT)
     gui.set_yanchor(node,gui.ANCHOR_TOP)
 end
-function init(self)
-    gui.set_render_order(15)
-    local panel=gui.new_box_node(vmath.vector3(472,792,0),vmath.vector3(110,28,0))
-    corner(panel,gui.PIVOT_NE);gui.set_color(panel,vmath.vector4(.025,.045,.075,.88))
-    self.label=gui.new_text_node(vmath.vector3(470,780,0),'')
+local function build(self)
+    if self.panel then gui.delete_node(self.panel);gui.delete_node(self.label) end
+    viewport.apply_gui()
+    local wide=viewport.is_landscape()
+    local x,y=viewport.UI_WIDTH,viewport.UI_HEIGHT
+    local panel=gui.new_box_node(vmath.vector3(x-8,y-8,0),vmath.vector3(wide and 156 or 110,wide and 36 or 28,0))
+    self.panel=panel;corner(panel,gui.PIVOT_NE);gui.set_color(panel,vmath.vector4(.025,.045,.075,.88))
+    self.label=gui.new_text_node(vmath.vector3(x-10,y-(wide and 26 or 20),0),'')
     corner(self.label,gui.PIVOT_E);gui.set_font(self.label,'main')
-    gui.set_scale(self.label,vmath.vector3(18/32,18/32,1))
+    local scale=(wide and 26 or 18)/32;gui.set_scale(self.label,vmath.vector3(scale,scale,1))
     gui.set_color(self.label,vmath.vector4(.74,1,.35,1))
     gui.set_outline(self.label,vmath.vector4());gui.set_shadow(self.label,vmath.vector4())
     reset(self)
 end
+function init(self) gui.set_render_order(14);build(self) end
 function update(self)
     local sample=performance.frame(socket.gettime())
     if sample then gui.set_text(self.label,string.format('FPS: %.1f',sample.fps)) end
 end
 function on_message(self,id,message)
+    if id==hash('apply_display_profile') then gui.set_layout(viewport.mode);return end
+    if id==hash('display_orientation') then build(self) end
     if id==hash('reset_fps') then reset(self) end
     if id==hash('route') then performance.route(message.name);gui.set_text(self.label,'FPS: ...') end
 end

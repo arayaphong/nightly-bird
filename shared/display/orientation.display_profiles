@@ -1,0 +1,3 @@
+auto_layout_selection: false
+profiles { name: "portrait" qualifiers { width: 480 height: 800 } }
+profiles { name: "landscape" qualifiers { width: 1280 height: 720 } }

@@ -1,0 +1,5 @@
+scene: "/shared/display/artwork/landscape/cloud.rivescene"
+artboard: "RainCloud"
+default_state_machine: "Preview"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

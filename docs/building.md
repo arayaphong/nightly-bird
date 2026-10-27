@@ -91,11 +91,12 @@ DEFOLD_LUAJIT=/path/to/luajit node scripts/check_fish_parity.mjs
 DEFOLD_LUAJIT=/path/to/luajit node scripts/check_hawk_parity.mjs
 ```
 
-The current portrait browser suite (Playwright, Chromium and Pillow) checks all Studio
+The browser suites (Playwright, Chromium and Pillow) check all Studio
 routes and actions, water/fish visibility, slider input, independent scene state,
-live rotation and portrait framing:
+in-game orientation switching, retained settings, persisted orientation and portrait framing:
 
 ```sh
+python3 tests/browser/check_orientation_browser.py http://127.0.0.1:8080/
 python3 tests/browser/check_portrait_browser.py http://127.0.0.1:8080/
 ```
 

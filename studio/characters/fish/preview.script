@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.characters.fish.motion')
 function init(self)
     self.motion=motion.new();self.last={};self.active=false
@@ -6,11 +7,13 @@ end
 function update(self,dt)
     local p=rive.get_projection_matrix()
     local w,h=2/p.m00,2/p.m11
-    if w~=self.width or h~=self.height then
+    if w~=self.width or h~=self.height or self.layout_revision~=viewport.revision then
         self.width,self.height=w,h
-        local scale=math.min(w/480,h/800)
-        go.set_scale(vmath.vector3(.24*scale,.24*scale,1))
-        go.set_position(vmath.vector3(w/2,h/2+80*scale,0))
+        self.layout_revision=viewport.revision
+        local scale=viewport.fit(w,h);local wide=viewport.is_landscape()
+        local size=wide and .30 or .24
+        go.set_scale(vmath.vector3(size*scale,size*scale,1))
+        go.set_position(vmath.vector3(w/2-(wide and 220 or 0)*scale,h/2+(wide and 0 or 80)*scale,0))
     end
     if not self.active then return end
     motion.step(self.motion,math.min(dt,.033))

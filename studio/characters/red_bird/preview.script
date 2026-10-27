@@ -1,3 +1,4 @@
+local viewport=require('shared.display.viewport')
 local motion=require('shared.characters.red_bird.motion')
 local equipment=require('shared.items.equipment')
 local function clear_input(self)
@@ -15,9 +16,14 @@ local function play_wing(self)
         play_wing(self)
     end)
 end
+local function sync_icons(self)
+    local active=self.page=='bird';local wide=viewport.is_landscape()
+    msg.post('/icons#icons',active and not wide and 'enable' or 'disable')
+    msg.post('/icons#landscape_icons',active and wide and 'enable' or 'disable')
+end
 function init(self)
     self.motion=motion.new();self.items=equipment.new();self.last={};self.last_icons={};self.playing=false;self.page='home'
-    msg.post('#bird','disable');msg.post('/icons#icons','disable')
+    msg.post('#bird','disable');sync_icons(self)
     self.vm=rive.get_view_model_instance('#bird')
     print('RIVE_BIRD_READY')
 end
@@ -26,13 +32,15 @@ function update(self,dt)
     -- Fit the 480x800 reference just like the GUI, including high-DPI screens.
     local projection=rive.get_projection_matrix()
     local width,height=2/projection.m00,2/projection.m11
-    if width~=self.width or height~=self.height then
+    if width~=self.width or height~=self.height or self.layout_revision~=viewport.revision then
         self.width,self.height=width,height
-        local scale=math.min(width/480,height/800)
-        go.set_scale(vmath.vector3(.52*scale,.52*scale,1))
-        go.set_position(vmath.vector3(width/2-10*scale,height/2+150*scale,0))
+        self.layout_revision=viewport.revision
+        local scale=viewport.fit(width,height);local wide=viewport.is_landscape()
+        local size=wide and .72 or .52
+        go.set_scale(vmath.vector3(size*scale,size*scale,1))
+        go.set_position(vmath.vector3(width/2-(wide and 280 or 10)*scale,height/2+(wide and 0 or 150)*scale,0))
         go.set_scale(vmath.vector3(scale,scale,1),'/icons')
-        go.set_position(vmath.vector3(width/2,height/2,0),'/icons')
+        go.set_position(vmath.vector3(width/2,height/2,0),'/icons');sync_icons(self)
     end
     motion.step(self.motion,math.min(dt,.033))
     equipment.step(self.items,dt)
@@ -47,7 +55,9 @@ function update(self,dt)
             self.last[name]=value
         end
     end
-    if not self.icons_vm then self.icons_vm=rive.get_view_model_instance('/icons#icons') end
+    local icon_url=viewport.is_landscape() and '/icons#landscape_icons' or '/icons#icons'
+    if self.icon_url~=icon_url then self.icon_url=icon_url;self.icons_vm=nil;self.last_icons={} end
+    if not self.icons_vm then self.icons_vm=rive.get_view_model_instance(icon_url) end
     if self.icons_vm then
         for _,key in ipairs(equipment.keys) do
             local name='equip_'..key
@@ -71,7 +81,7 @@ function on_message(self,id,message)
         clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false
         self.motion.wants_sound=false
         msg.post('#bird',message.active and 'enable' or 'disable')
-        msg.post('/icons#icons',message.active and 'enable' or 'disable')
+        sync_icons(self)
         return
     elseif id==hash('cancel') then
         clear_input(self);sound.stop('#wing');sound.stop('#chew');self.playing=false

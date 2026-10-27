@@ -3,21 +3,28 @@ local motion=require('shared.objects.rain_cloud.motion')
 local firefly=require('shared.objects.firefly.motion')
 local balloon=require('shared.objects.balloon.motion')
 local names={'firefly','balloon','cloud'}
+local function component(name) return name..(viewport.is_landscape() and '_landscape' or '') end
+local function visibility(self)
+    for _,name in ipairs(names) do
+        msg.post('#'..name,self.active and self.page==name and not viewport.is_landscape() and 'enable' or 'disable')
+        msg.post('#'..name..'_landscape',self.active and self.page==name and viewport.is_landscape() and 'enable' or 'disable')
+    end
+end
 local function publish(self)
     local busy=self.motion.remaining>0
     if busy~=self.busy then self.busy=busy;msg.post('/ui#gui','cloud_status',{busy=busy}) end
 end
 local function sync(self)
     if not self.active then return end
-    local name=self.page
-    local vm=self.vms[name] or rive.get_view_model_instance('#'..name)
+    local name=self.page;local model=component(name)
+    local vm=self.vms[model] or rive.get_view_model_instance('#'..model)
     if not vm then return end
-    self.vms[name]=vm;self.last[name]=self.last[name] or {}
+    self.vms[model]=vm;self.last[model]=self.last[model] or {}
     local values=name=='firefly' and firefly.values(self.motion.time)
         or name=='balloon' and balloon.values(self.motion.time) or motion.values(self.motion)
     for key,value in pairs(values) do
-        if self.last[name][key]~=value then
-            rive.cmd.setViewModelInstanceNumber(vm,key,value);self.last[name][key]=value
+        if self.last[model][key]~=value then
+            rive.cmd.setViewModelInstanceNumber(vm,key,value);self.last[model][key]=value
         end
     end
 end
@@ -26,14 +33,15 @@ local function cancel(self)
 end
 function init(self)
     self.motion=motion.new();self.vms={};self.last={};self.active=false;self.page='home'
-    for _,name in ipairs(names) do msg.post('#'..name,'disable') end
+    visibility(self)
 end
 function update(self,dt)
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
-    if w~=self.width or h~=self.height then
-        self.width,self.height=w,h;local scale=viewport.fit(w,h)
+    if w~=self.width or h~=self.height or self.layout_revision~=viewport.revision then
+        self.width,self.height=w,h;self.layout_revision=viewport.revision;visibility(self);local scale=viewport.fit(w,h)
         go.set_scale(vmath.vector3(scale,scale,1));go.set_position(vmath.vector3(w/2,h/2,0))
-        motion.set_preview_size(self.motion,w/scale,h/scale)
+        self.preview=viewport.is_landscape() and {x=640,y=300,scale=1.7,width=1280,height=720} or nil
+        motion.set_preview_size(self.motion,w/scale,h/scale,self.preview)
     end
     if self.active then
         if motion.step(self.motion,dt) then sound.stop('#thunder');sound.play('#thunder') end
@@ -45,12 +53,12 @@ function on_message(self,id,message)
         self.page=message.name
         self.active=self.page=='firefly' or self.page=='balloon' or self.page=='cloud'
         if self.page~='cloud' then cancel(self) end
-        for _,name in ipairs(names) do msg.post('#'..name,self.page==name and 'enable' or 'disable') end
+        visibility(self)
         sync(self)
     elseif id==hash('cancel') then cancel(self)
     elseif id==hash('lightning') and self.active and self.page=='cloud' then
         local target
-        if message.target_x~=nil and message.target_y~=nil then target=motion.preview_target(message.target_x,message.target_y) end
+        if message.target_x~=nil and message.target_y~=nil then target=motion.preview_target(message.target_x,message.target_y,self.preview) end
         if motion.strike(self.motion,target) then sound.stop('#thunder');publish(self);sync(self) end
     end
 end

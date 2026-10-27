@@ -1,7 +1,7 @@
 # System Info
 
 Open **System Info** from the in-game home menu (keyboard: **3**). The page is
-Defold GUI using the same font and portrait framing as the rest of the game.
+Defold GUI using the same font and selected portrait/landscape layout as the rest of the game.
 It does not add interface elements or diagnostics to the HTML wrapper.
 
 On HTML5, `shared/diagnostics/system.lua` reads the existing game canvas/context

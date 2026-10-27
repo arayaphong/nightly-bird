@@ -9,13 +9,14 @@ end
 function M.new(seed)
     return {time=0,remaining=0,elapsed=0,random=math.floor(math.abs(seed or os.time()))%2147483646+1,bolt={},fork={}}
 end
-function M.preview_target(x,y)
+function M.preview_target(x,y,reference)
     -- Preview artboard coordinates are x-right/y-down. The motion model itself
     -- accepts a target relative to the cloud, so a game can supply its bird pose.
-    return {x=(x-rig.preview.x)/rig.preview.scale,y=(y-rig.preview.y)/rig.preview.scale}
+    local p=reference or rig.preview
+    return {x=(x-p.x)/p.scale,y=(y-p.y)/p.scale}
 end
-function M.set_preview_size(s,width,height)
-    local p=rig.preview
+function M.set_preview_size(s,width,height,reference)
+    local p=reference or rig.preview
     local left,top=(p.width-width)/2,(p.height-height)/2
     s.target_bounds={min_x=(left-p.x)/p.scale,max_x=(left+width-p.x)/p.scale,
         min_y=(top-p.y)/p.scale,max_y=(top+height-p.y)/p.scale}

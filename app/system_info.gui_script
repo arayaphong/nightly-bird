@@ -1,3 +1,5 @@
+local viewport=require('shared.display.viewport')
+local layouts=require('shared.display.layouts')
 local system=require('shared.diagnostics.system')
 local performance=require('shared.diagnostics.performance')
 local WHITE=vmath.vector4(.94,.97,1,1)
@@ -11,13 +13,15 @@ local function label(self,x,y,size,color,width,height)
     gui.set_font(node,'main');gui.set_scale(node,vmath.vector3(size/32,size/32,1))
     gui.set_color(node,color or WHITE);gui.set_outline(node,vmath.vector4());gui.set_shadow(node,vmath.vector4())
     gui.set_pivot(node,gui.PIVOT_NW)
-    gui.set_size(node,vmath.vector3((width or 420)*32/size,(height or 32)*32/size,0))
+    gui.set_size(node,vmath.vector3((width or (viewport.is_landscape() and 530 or 420))*32/size,(height or 32)*32/size,0))
     gui.set_line_break(node,true)
     return node
 end
 local function set(node,value) gui.set_text(node,value) end
 local function flow_renderer(self)
-    local rows={{self.renderer,16},{self.vendor,14},{self.version,12},{self.details,12}}
+    local wide=viewport.is_landscape()
+    local width,top,left,available=wide and 530 or 420,wide and 422 or 568,wide and 70 or 30,wide and 277 or 210
+    local rows=wide and {{self.renderer,22},{self.vendor,20},{self.version,18},{self.details,17}} or {{self.renderer,16},{self.vendor,14},{self.version,12},{self.details,12}}
     local key=gui.get_text(self.renderer)..'\n'..gui.get_text(self.vendor)..'\n'..gui.get_text(self.version)..'\n'..gui.get_text(self.details)
     if key==self.renderer_layout_key then return end
     self.renderer_layout_key=key
@@ -30,17 +34,17 @@ local function flow_renderer(self)
         for _,row in ipairs(rows) do
             local size=row[2]*shrink
             gui.set_scale(row[1],vmath.vector3(size/32,size/32,1))
-            gui.set_size(row[1],vmath.vector3(420*32/size,1000,0))
-            local metrics=resource.get_text_metrics(font,gui.get_text(row[1]),{width=420*32/size,line_break=true})
+            gui.set_size(row[1],vmath.vector3(width*32/size,1000,0))
+            local metrics=resource.get_text_metrics(font,gui.get_text(row[1]),{width=width*32/size,line_break=true})
             row.height=metrics.height*size/32
             height=height+row.height
         end
-        if height+36<=210 then break end
+        if height+36<=available then break end
         shrink=shrink*.9
     end
-    local y=568
+    local y=top
     for _,row in ipairs(rows) do
-        gui.set_position(row[1],vmath.vector3(30-240,y-400,0))
+        gui.set_position(row[1],vmath.vector3(left-viewport.UI_WIDTH/2,y-viewport.UI_HEIGHT/2,0))
         y=y-row.height-12
     end
 end
@@ -81,37 +85,18 @@ local function refresh(self)
     set(self.scene,'ฉากที่ทดสอบล่าสุด: '..(scene and (names[scene.page] or scene.page) or 'ยังไม่มี'))
     set(self.scene_fps,scene and string.format('%.1f FPS · %.1f ms/เฟรม',scene.fps,scene.frame_ms) or 'เปิดฉากทดสอบอย่างน้อย 1 วินาทีก่อน')
 end
-function init(self)
-    self.root=gui.new_box_node(vmath.vector3(240,400,0),vmath.vector3(480,800,0))
-    gui.set_color(self.root,vmath.vector4())
-    local function fixed(x,y,value,size,color,width)
-        local node=label(self,x,y,size,color,width);set(node,value);return node
-    end
-    fixed(130,752,'SYSTEM INFO',26,ACCENT,300)
-    self.build=label(self,30,708,13,MUTED,420)
-    fixed(30,674,'RENDERER',18,ACCENT)
-    self.api=label(self,30,642,16)
-    self.status=label(self,30,618,14)
-    fixed(30,592,'GPU / Renderer',12,MUTED)
-    self.renderer=label(self,30,568,16,WHITE,420,90)
-    self.vendor=label(self,30,470,14,WHITE,420,50)
-    self.version=label(self,30,412,12,MUTED,420,40)
-    self.details=label(self,30,374,12,MUTED,420,40)
-    fixed(30,340,'FRAME / DISPLAY',18,ACCENT)
-    self.fps=label(self,30,312,16)
-    self.slowest=label(self,30,286,12,MUTED)
-    self.scene=label(self,30,258,14)
-    self.scene_fps=label(self,30,234,16,ACCENT)
-    self.css=label(self,30,197,14)
-    self.pixels=label(self,30,173,14)
-    self.dpr=label(self,30,149,14)
-    self.workload=label(self,30,125,13,MUTED)
-    fixed(30,90,'FPS อย่างเดียวบอกไม่ได้ว่าคอขวดอยู่ที่ CPU หรือ GPU',13,WHITE,420)
-    fixed(30,52,'WebGL อาจใช้ GPU หรือ software renderer · เบราว์เซอร์ไม่เปิดเผย GPU usage (%)',11,MUTED,420)
-    gui.set_enabled(self.root,false)
+local function build(self)
+    if self.root then gui.delete_node(self.root) end
+    viewport.apply_gui();self.renderer_layout_key=nil
+    layouts[viewport.mode].system_info(self,{label=label,set=set,WHITE=WHITE,MUTED=MUTED,ACCENT=ACCENT})
+    gui.set_enabled(self.root,self.active);self.layout_mode=viewport.mode
+    if self.active then refresh(self);self.next_refresh=socket.gettime()+.5 end
 end
+function init(self) self.active=false;build(self) end
 function on_message(self,id,message)
-    if id==hash('route') then
+    if id==hash('apply_display_profile') then gui.set_layout(viewport.mode);return end
+    if id==hash('display_orientation') then build(self)
+    elseif id==hash('route') then
         self.active=message.name=='system_info';gui.set_enabled(self.root,self.active)
         if self.active then refresh(self);self.next_refresh=socket.gettime()+.5 end
     end

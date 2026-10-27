@@ -1,6 +1,17 @@
 # Browser checks
 
-Current portrait Studio suite (0.8.23+):
+Current orientation toggle suite (0.8.24+):
+
+```sh
+python3 tests/browser/check_orientation_browser.py http://127.0.0.1:8150/ /tmp/orientation-test
+```
+
+It exercises the in-game button, both GUI profiles, touch input after switching,
+every character route, retained particle/water settings, persisted selection and
+phone resize. Fullscreen locking is unavailable in headless Chromium; the suite
+checks that the selected layout still works when fullscreen is rejected.
+
+Portrait regression suite (0.8.23+):
 
 ```sh
 python3 tests/browser/check_portrait_browser.py http://127.0.0.1:8150/ /tmp/portrait-test

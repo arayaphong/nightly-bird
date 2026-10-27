@@ -2,4 +2,6 @@ script: "/app/performance.gui_script"
 fonts { name: "main" font: "/assets/fonts/main.font" }
 material: "/builtins/materials/gui.material"
 adjust_reference: ADJUST_REFERENCE_PARENT
-max_nodes: 4
+max_nodes: 8
+layouts { name: "portrait" }
+layouts { name: "landscape" }

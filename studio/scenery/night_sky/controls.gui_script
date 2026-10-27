@@ -1,3 +1,5 @@
+local viewport=require('shared.display.viewport')
+local layouts=require('shared.display.layouts')
 local gestures=require('shared.input.gestures')
 local sky=require('shared.scenery.night_sky.motion')
 local water=require('shared.scenery.water.motion')
@@ -33,14 +35,14 @@ local function arrow(parent,x,y,angle,color)
 end
 local function slider(parent,x,y,maximum)
     local s={root=child(box(x,y+12,300,76,vmath.vector4()),parent)}
-    s.label=child(text(x,y+34,'',15,WHITE),s.root)
+    s.label=child(text(x,y+34,'',viewport.is_landscape() and 20 or 15,WHITE),s.root)
     s.hit=child(box(x,y,260,44,vmath.vector4()),s.root)
     child(box(x,y,230,4,vmath.vector4(.2,.3,.4,1)),s.root)
     s.fill=child(box(x,y,1,4,ACCENT),s.root)
     s.knob=child(gui.new_pie_node(vmath.vector3(x,y,0),vmath.vector3(22,22,0)),s.root)
     gui.set_color(s.knob,ACCENT)
-    child(text(x-143,y,maximum and '0' or '0%',12,MUTED),s.root)
-    child(text(x+144,y,maximum and tostring(maximum) or '100%',12,MUTED),s.root)
+    child(text(x-143,y,maximum and '0' or '0%',viewport.is_landscape() and 15 or 12,MUTED),s.root)
+    child(text(x+144,y,maximum and tostring(maximum) or '100%',viewport.is_landscape() and 15 or 12,MUTED),s.root)
     return s
 end
 local function update_slider(s,value,caption,enabled)
@@ -66,16 +68,19 @@ local function refresh(self)
     gui.set_text(self.fish_toggle_label,self.fish_visible and 'ปิดเฉพาะปลา' or 'เปิดเฉพาะปลา')
     gui.set_color(self.fish_toggle_label,self.water_visible and WHITE or MUTED)
     -- The header is a child of the full-screen root centered at (240,400).
-    gui.set_position(self.header,vmath.vector3(0,self.collapsed and -372 or -172,0))
+    gui.set_position(self.header,vmath.vector3(0,(self.collapsed and 28 or 228)-viewport.UI_HEIGHT/2,0))
     gui.set_text(self.current,(self.side==-1 and 'ซ้าย ' or 'ขวา ')..angle_label(self.step))
     gui.set_text(self.star_speed_label,'ความเร็วดาว: '..self.star_speed..' หน่วย/วิ')
     gui.set_color(self.star_speed_label,self.star_speed==sky.STAR_SPEEDS[2] and ACCENT or WHITE)
     update_slider(self.level_slider,self.water_level,'ระดับน้ำ: ',self.page=='night_water')
     update_slider(self.rough_slider,self.water_roughness,'ความสูง/ปั่นป่วนคลื่น: ',self.page=='night_water')
     local counts=self.page=='night_sky' or self.page=='night_water'
-    local count_y=self.page=='night_water' and 422 or 578
-    gui.set_position(self.star_slider.root,vmath.vector3(35,count_y+12-400,0))
-    gui.set_position(self.dust_slider.root,vmath.vector3(35,count_y-78+12-400,0))
+    local wide=viewport.is_landscape()
+    local star_x,dust_x=wide and 640 or 275,wide and 1050 or 275
+    local star_y=wide and (self.page=='night_water' and 490 or 590) or (self.page=='night_water' and 422 or 578)
+    local dust_y=wide and star_y or star_y-78
+    gui.set_position(self.star_slider.root,vmath.vector3(star_x-viewport.UI_WIDTH/2,star_y+12-viewport.UI_HEIGHT/2,0))
+    gui.set_position(self.dust_slider.root,vmath.vector3(dust_x-viewport.UI_WIDTH/2,dust_y+12-viewport.UI_HEIGHT/2,0))
     update_slider(self.star_slider,self.star_count/sky.MAX_STARS,'',counts)
     update_slider(self.dust_slider,self.dust_count/sky.MAX_DUST,'',counts)
     gui.set_text(self.star_slider.label,'ดาว: '..self.star_count..(self.star_count==0 and ' (ปิด)' or ' ดวง'))
@@ -95,55 +100,30 @@ local function select(self,side,step)
     self.side,self.step=side,step;refresh(self)
     msg.post(self.target,'wind',{side=side,step=step})
 end
+local function build(self)
+    if self.root then gui.delete_node(self.root) end
+    viewport.apply_gui();self.buttons={}
+    layouts[viewport.mode].scenery(self,{box=box,text=text,child=child,line=line,arrow=arrow,slider=slider,angle_label=angle_label,
+        WHITE=WHITE,MUTED=MUTED,ACCENT=ACCENT,DARK=DARK,PANEL=PANEL,BUTTON=BUTTON})
+    gui.set_text(self.title,self.page=='fish_test' and 'ฉากทดสอบปลา' or self.page=='night_water' and 'ท้องฟ้าและผิวน้ำ' or 'ท้องฟ้ากลางคืน')
+    clear(self);self.layout_mode=viewport.mode;refresh(self)
+end
 function init(self)
     msg.post('.','acquire_input_focus')
     self.active=false;self.collapsed=true;self.side=-1;self.step=3;self.star_speed=sky.STAR_SPEEDS[1];self.buttons={};clear(self)
     self.water_level=water.DEFAULT_LEVEL;self.water_roughness=water.DEFAULT_ROUGHNESS
     self.star_count=sky.MAX_STARS;self.dust_count=sky.MAX_DUST
     self.water_visible=true;self.fish_visible=true
-    self.root=box(240,400,480,800,vmath.vector4())
-    self.title=child(text(215,752,'ท้องฟ้ากลางคืน',20,WHITE),self.root)
-    child(text(215,718,'STUDIO · SCENERY',12,MUTED),self.root)
-    self.star_speed_button=child(box(275,674,260,44,BUTTON),self.root)
-    self.star_speed_label=child(text(275,674,'',16,WHITE),self.root)
-    self.star_speed_hint=child(text(275,639,'แตะเพื่อสลับ '..sky.STAR_SPEEDS[1]..' / '..sky.STAR_SPEEDS[2]..' หน่วย/วิ',12,MUTED),self.root)
-    self.water_toggle=child(box(240,615,350,48,BUTTON),self.root)
-    self.water_toggle_label=child(text(240,615,'',20,WHITE),self.root)
-    self.fish_toggle=child(box(240,545,350,48,BUTTON),self.root)
-    self.fish_toggle_label=child(text(240,545,'',20,WHITE),self.root)
-    self.visibility_nodes={self.water_toggle,self.water_toggle_label,self.fish_toggle,self.fish_toggle_label}
-    self.level_slider=slider(self.root,275,578);self.rough_slider=slider(self.root,275,500)
-    self.star_slider=slider(self.root,275,422,sky.MAX_STARS);self.dust_slider=slider(self.root,275,344,sky.MAX_DUST)
-    self.sliders={water_level=self.level_slider,water_roughness=self.rough_slider,star_count=self.star_slider,dust_count=self.dust_slider}
-    child(text(275,474,'25% = Legacy',11,MUTED),self.rough_slider.root)
-    self.body=child(box(240,100,480,200,PANEL),self.root)
-    for row,side in ipairs({-1,1}) do
-        local y=row==1 and 146 or 66
-        child(text(30,y,side==-1 and 'ซ้าย' or 'ขวา',13,MUTED),self.body)
-        for step,value in ipairs(sky.angles) do
-            local x=96+(step-1)*82
-            local b={side=side,step=step,node=child(box(x,y,70,64,BUTTON),self.body)}
-            b.label=child(text(x,y-18,angle_label(step),15),self.body)
-            local a=math.rad(value)
-            b.arrow=arrow(self.body,x,y+10,math.atan2(math.sin(a),side*math.cos(a)),WHITE)
-            self.buttons[#self.buttons+1]=b
-        end
-    end
-    child(text(240,12,'Space: พับแถบ · T: สลับฝั่ง · ← →: เลือกมุม',11,MUTED),self.body)
-    self.header=child(box(240,28,480,56,PANEL),self.root)
-    child(text(78,28,'ทิศทางลม',17,WHITE),self.header)
-    self.current=child(text(335,28,'',16,WHITE),self.header)
-    self.current_arrow=child(box(263,28,1,1,vmath.vector4()),self.header)
-    arrow(self.current_arrow,263,28,0,ACCENT)
-    self.chevron_up={line(self.header,447,28,-7,-3,0,4,MUTED),line(self.header,447,28,0,4,7,-3,MUTED)}
-    self.chevron_down={line(self.header,447,28,-7,3,0,-4,MUTED),line(self.header,447,28,0,-4,7,3,MUTED)}
+    build(self)
     local system=sys.get_sys_info().system_name
     self.touch_device=system=='Android' or system=='iPhone OS'
     if html5 and html5.run then self.touch_device=(tonumber(html5.run('navigator.maxTouchPoints || 0')) or 0)>0 end
     refresh(self)
 end
 function on_message(self,id,message)
-    if id==hash('route') then
+    if id==hash('apply_display_profile') then gui.set_layout(viewport.mode);return end
+    if id==hash('display_orientation') then build(self)
+    elseif id==hash('route') then
         self.page=message.name;self.active=self.page=='night_sky' or self.page=='night_water' or self.page=='fish_test'
         self.target='/'..(self.active and self.page or 'night_sky')..'#script'
         gui.set_text(self.title,self.page=='fish_test' and 'ฉากทดสอบปลา' or self.page=='night_water' and 'ท้องฟ้าและผิวน้ำ' or 'ท้องฟ้ากลางคืน')

@@ -2,4 +2,6 @@ script: "/app/system_info.gui_script"
 fonts { name: "main" font: "/assets/fonts/main.font" }
 material: "/builtins/materials/gui.material"
 adjust_reference: ADJUST_REFERENCE_PARENT
-max_nodes: 40
+max_nodes: 80
+layouts { name: "portrait" }
+layouts { name: "landscape" }
