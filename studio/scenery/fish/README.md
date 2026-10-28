@@ -36,7 +36,9 @@ fast steering up to the surface, then a locked ballistic leap with gravity
 at a moving target. Swept mouth contact changes the public mode to `excited`
 immediately, even while the fish is still airborne. The carried bird shrinks to
 40% of its original scale at default fish size and follows the exact rendered
-mouth position, heading and belly. The original jaws/teeth draw over it.
+mouth position, heading and belly. It uses the same complete bird Rive model as
+Studio, without a circular mask or separate cropped catch asset. The whole bird
+draws in front of the fish so its opaque body cannot hide wings, tail or feet.
 The held bird sits 140 SVG units toward the lower jaw from the legacy contact
 point (7 world units at normal fish size), rotated and mirrored with the fish
 so it remains centered in the mouth in either direction. Contact detection

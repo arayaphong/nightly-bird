@@ -102,7 +102,7 @@ local waiting_scale=transforms.scale.x
 for i=1,240 do frame.dt=1/120;env.on_message(actor,'water_frame',frame) end
 assert(#sounds==1 and sounds[1]=='#strike' and actor.motion.mode=='excited' and not actor.motion.phase)
 assert(actor.motion.caught==actor.motion.target and transforms.scale.x<waiting_scale*.5)
-assert(transforms.position.z==-.05,'Captured bird must be behind the original jaws')
+assert(transforms.position.z==-.2,'Complete captured bird must draw in front of the opaque fish')
 local mouth=require('shared.scenery.fish.mouth')
 local x,y,angle,belly=mouth.target(actor.motion);local k=transforms.scale.x
 local anchor_x=transforms.position.x+(20*math.cos(angle)-78*belly*math.sin(angle))*k

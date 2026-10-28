@@ -62,7 +62,7 @@ for _,dt in ipairs({1/120,1/20,.25}) do
    local drop=s.scale*mouth.CARRIED_DROP*b
    assert(math.abs(x-(mx-math.sin(a)*drop))<1e-9)
    assert(math.abs(y-(my+math.cos(a)*drop))<1e-9)
-   assert(scale<mouth.BIRD_SCALE*.5 and z==-.05)
+   assert(scale<mouth.BIRD_SCALE*.5 and z==-.2)
    assert(b==(math.cos(a)<0 and -1 or 1))
   end
   -- A new round replaces the caught bird with one full-size stationary prey.

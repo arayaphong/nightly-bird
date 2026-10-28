@@ -20,6 +20,8 @@ function M.target(s)
     -- lower in the mouth's local frame (7 world units at normal fish size).
     local drop=s.scale*M.CARRIED_DROP*belly
     x=x-math.sin(angle)*drop;y=y+math.cos(angle)*drop
-    return x,y,angle,belly,s.scale*M.CARRIED_RATIO,-.05
+    -- Draw the complete bird in front; the opaque fish body must not hide
+    -- its wings, tail or feet and make the catch look cropped.
+    return x,y,angle,belly,s.scale*M.CARRIED_RATIO,-.2
 end
 return M

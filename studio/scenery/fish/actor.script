@@ -42,8 +42,7 @@ local function target(self,camera,m)
     local rotation=vmath.quat_rotation_z(-angle)
     if belly<0 then rotation=rotation*vmath.quat_rotation_x(math.pi) end
     go.set_rotation(rotation,'/fish_target')
-    -- Rotate the SVG body-anchor offset along with the carried bird. Put the
-    -- catch behind the fish so the original jaws/teeth overlap it naturally.
+    -- Rotate the complete SVG bird's body-anchor offset with the fish.
     go.set_position(vmath.vector3((x-viewport.WIDTH/2)*camera.scale+m.width/2-(20*c-78*belly*s)*scale,
         (viewport.HEIGHT-y)*camera.scale+(20*s+78*belly*c)*scale,depth),'/fish_target')
 end
