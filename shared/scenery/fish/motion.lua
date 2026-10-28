@@ -37,14 +37,7 @@ local function choose(s,b)
     if math.abs(dx)>1 and (dx>0 and 1 or -1)~=s.pose.direction then fish.turn(s.pose) end
 end
 function M.place(s,x,y,w,width)
-    local committed=s.mode=='attack' and s.lock~=nil
-    local valid=attack.place(s,x,y,w,width)
-    local b=M.bounds(w,width)
-    if b then
-        s.bounds=b;s.scale=b.scale
-        if not committed and attack.outside(s,b) then attack.return_to_water(s,valid) end
-    end
-    return valid
+    return attack.place(s,x,y,w,width)
 end
 function M.step(s,dt,w,width)
     dt=math.max(0,dt);local b=M.bounds(w,width);s.visible=b~=nil
@@ -52,12 +45,19 @@ function M.step(s,dt,w,width)
     s.scale=b.scale
     s.bounds=b
     local launched=false
-    if not s.phase and attack.outside(s,b) then attack.return_to_water(s,false) end
-    if s.phase then
-        local remaining
-        launched,remaining=attack.step(s,dt,w)
+    while true do
+        -- Patrol detects existing prey on every update, including the instant
+        -- an unsuccessful attack returns underwater. No placement event needed.
+        if attack.acquire(s) then
+            if attack.outside(s,b) then attack.return_to_water(s,true) end
+        elseif not s.phase and attack.outside(s,b) then
+            attack.return_to_water(s,false)
+        end
+        if not s.phase then break end
+        local fired,remaining=attack.step(s,dt,w)
+        launched=launched or fired;dt=remaining
         if s.phase then return launched end
-        dt=remaining
+        if not (s.mode=='swim' and s.target and not s.caught) then break end
     end
     local changed=not s.previous_bounds or s.previous_bounds.left~=b.left or s.previous_bounds.top~=b.top or s.previous_bounds.bottom~=b.bottom
     s.previous_bounds=b

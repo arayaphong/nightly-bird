@@ -15,13 +15,16 @@ The fish has exactly three public `mode` values:
 - `attack`: committed surface approach, leap and return into the water.
 - `excited`: carrying a caught bird and swimming rapidly back and forth.
 
-A valid tap while patrolling or excited places one full-size dead bird and locks
-its current position for a new attack. During an attack, valid taps replace the
-bird and invalid taps remove it (including a carried bird), but neither operation
-changes the existing lock, velocities, launch, bite attempt or return phase.
-The committed attack always finishes before another can start; a replacement
-bird does not queue a second attack. Drags, multitouch and UI controls do not
-count as placement attempts. Hiding fish/water or leaving still cancels the fixture.
+Placement only creates, moves or removes the single full-size dead bird. It
+never opens an attack lock. On each update, patrol detects any existing prey and
+locks its current location itself, including prey introduced without a tap.
+During an attack, prey changes do not alter its lock, velocities, launch, bite
+attempt or return phase. After a miss lands, patrol immediately acquires any
+remaining prey at its current position and starts another attack automatically;
+there is no queued placement command or extra tap requirement. Removing a carried
+bird ends excitement, allowing patrol to detect its replacement next update.
+Drags, multitouch and UI controls do not count as placement attempts. Hiding
+fish/water or leaving still cancels the fixture.
 
 A valid point is above the animated water surface and within **128 world
 units** of it. The fixed 720-unit world camera keeps this range consistent
@@ -62,7 +65,7 @@ these modes. A fresh attack started while outside submerged bounds first returns
 to the water, then approaches its lock. A prey change during any phase preserves
 the current position and animation phase. Landing returns continuously instead
 of clamping an overshooting x-coordinate back to an edge. A missed attack leaves
-any remaining bird at its current position until another placement attempt.
+any remaining bird at its current position, and patrol immediately locks it for a new attack.
 
 After landing with a catch, excited swimming crosses alternating submerged
 bounds at an average segment speed of 300 world units/s, with smooth

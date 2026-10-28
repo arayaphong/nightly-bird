@@ -139,7 +139,9 @@ assert(actor.motion.mode=='swim' and not actor.motion.caught and not actor.motio
 assert(targets['/fish_target#bird']=='disable')
 -- The next valid placement restores full-size stationary art and fresh attack.
 env.on_message(actor,'place_target',{x=640,y=500})
-assert(actor.motion.mode=='attack' and not actor.motion.caught and actor.motion.target)
+assert(actor.motion.mode=='swim' and not actor.motion.lock and not actor.motion.caught and actor.motion.target)
+frame.dt=0;env.on_message(actor,'water_frame',frame);frame.dt=1/120
+assert(actor.motion.mode=='attack' and actor.motion.lock)
 assert(targets['/fish_target#bird']=='enable' and transforms.scale.x==waiting_scale)
 check_rotation(0,1);assert(transforms.position.z==-.2)
 -- Real actor placement must remove the prey without aborting its committed leap.

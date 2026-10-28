@@ -25,14 +25,17 @@ local function charge(s)
 end
 function M.place(s,x,y,w,width)
     local valid=M.accepts(x,y,w,width)
-    if s.mode=='attack' and s.lock then
-        -- Replacing/removing prey never changes an attack already committed.
-        s.target=valid and {x=x,y=y} or nil;s.caught=nil
-        return valid
-    end
+    -- Placement owns only prey existence/position, never the attack lock.
+    -- Removing a carried bird ends excitement; a committed attack stays intact.
+    if s.mode=='excited' then M.cancel(s) end
+    s.target=valid and {x=x,y=y} or nil;s.caught=nil
+    return valid
+end
+function M.acquire(s)
+    if s.mode~='swim' or not s.target or s.caught then return false end
+    local prey=s.target
     M.cancel(s)
-    if not valid then return false end
-    s.target={x=x,y=y};s.lock={x=x,y=y};s.mode='attack';charge(s)
+    s.target=prey;s.lock={x=prey.x,y=prey.y};s.mode='attack';charge(s)
     return true
 end
 function M.outside(s,b)

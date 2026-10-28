@@ -3,6 +3,12 @@ local swim=require('shared.scenery.fish.motion')
 local attack=require('shared.scenery.fish.attack')
 local water=require('shared.scenery.water.motion')
 local mouth=require('shared.scenery.fish.mouth')
+local function place(s,x,y,w,width)
+ local valid=swim.place(s,x,y,w,width)
+ swim.step(s,0,w,width)
+ return valid
+end
+
 local w=water.new();local x=640;local surface=water.surface_y(w,x)
 assert(attack.accepts(x,surface-128,w,1280))
 assert(not attack.accepts(x,surface-128.001,w,1280))
@@ -20,7 +26,7 @@ for _,width in ipairs({432,1280,2200}) do
   local s=prepared(width)
   local target_x=(1280-width)/2+width*.7
   local target_y=water.surface_y(w,target_x)-height
-  assert(swim.place(s,target_x,target_y,w,width))
+  assert(place(s,target_x,target_y,w,width))
   local target=s.target;local sounds=0;local launched=false
   for i=1,1200 do
    if swim.step(s,1/120,w,width) then sounds=sounds+1 end
@@ -46,7 +52,7 @@ assert(not mouth.touches(0,0,100,0,50,6,5))
 assert(mouth.touches(5,5,5,5,5,5,1))
 for _,dt in ipairs({1/120,1/20,.25}) do
  for _,target_x in ipairs({470,640,810}) do
-  local s=prepared();assert(swim.place(s,target_x,480,w,1280))
+  local s=prepared();assert(place(s,target_x,480,w,1280))
   local caught=false
   for i=1,600 do
    swim.step(s,dt,w)
@@ -66,22 +72,26 @@ for _,dt in ipairs({1/120,1/20,.25}) do
    assert(b==(math.cos(a)<0 and -1 or 1))
   end
   -- A new round replaces the caught bird with one full-size stationary prey.
-  assert(swim.place(s,650,490,w,1280));assert(not s.caught and s.mode=='attack')
+  assert(place(s,650,490,w,1280));assert(not s.caught and s.mode=='attack')
   local x,y,_,_,scale=mouth.target(s);assert(x==650 and y==490 and scale==mouth.BIRD_SCALE)
   attack.cancel(s);assert(not s.caught and not mouth.target(s))
  end
 end
-local miss=prepared();assert(swim.place(miss,640,500,w,1280))
+local miss=prepared();assert(place(miss,640,500,w,1280))
 while miss.phase~='leap' do swim.step(miss,1/120,w) end
 miss.target={x=1100,y=480}
-for i=1,400 do swim.step(miss,1/120,w) end
-assert(not miss.caught and miss.mode=='swim','A missed leap must leave the bird at its original position')
+local old_lock=miss.lock;local remaining=miss.target
+for i=1,1200 do swim.step(miss,1/120,w);if miss.lock~=old_lock then break end end
+assert(not miss.caught and miss.mode=='attack' and miss.target==remaining)
+assert(miss.lock.x==remaining.x and miss.lock.y==remaining.y,'Patrol failed to acquire the remaining bird')
+for i=1,1200 do swim.step(miss,1/120,w);if miss.mode=='excited' then break end end
+assert(miss.caught==remaining and miss.mode=='excited')
 -- A new placement during flight changes prey, never the locked trajectory.
-local replaced=prepared();assert(swim.place(replaced,640,480,w,1280))
+local replaced=prepared();assert(place(replaced,640,480,w,1280))
 while replaced.phase~='leap' do swim.step(replaced,1/120,w) end
 local old=replaced.target;local lock=replaced.lock;local px,py=replaced.x,replaced.y
 local launch_x,flight_time=replaced.launch_x,replaced.flight_time
-assert(swim.place(replaced,650,490,w,1280))
+assert(place(replaced,650,490,w,1280))
 assert(replaced.mode=='attack' and replaced.target~=old and not replaced.caught)
 assert(replaced.x==px and replaced.y==py and replaced.launch_x==launch_x and replaced.flight_time==flight_time)
 assert(replaced.lock==lock and lock.x==640 and lock.y==480)
@@ -89,7 +99,7 @@ for i=1,1200 do swim.step(replaced,1/120,w);if not replaced.phase then break end
 assert(replaced.caught==replaced.target and replaced.mode=='excited' and replaced.launch_count==1)
 -- The height-based world camera must not change attack speed with aspect ratio.
 local a,b=prepared(432),prepared(2200)
-assert(swim.place(a,700,500,w,432) and swim.place(b,700,500,w,2200))
+assert(place(a,700,500,w,432) and place(b,700,500,w,2200))
 for i=1,15 do swim.step(a,1/30,w,432);for j=1,4 do swim.step(b,1/120,w,2200) end end
 assert(math.abs(a.x-b.x)<1e-6 and math.abs(a.y-b.y)<1e-6)
 -- Real GUI input: one tap places a target; drags/multitouch/hidden fish do not.

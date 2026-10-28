@@ -63,28 +63,36 @@ with sync_playwright() as p:
   before=snapshot(name+'-before');assert before['fish'][0]<900,before
   tap(1140,220)
   tap(560,220) if replacement else tap(640,360)
-  tracks=[]
-  for i in range(22):
+  tracks=[];saw_locked_leap=False
+  for i in range(36):
    frames(3);v=snapshot(name+'-%02d'%i);tracks.append(v)
+   saw_locked_leap=saw_locked_leap or (v['fish'][1]<555 and v['fish'][0]>930)
+   if saw_locked_leap:
+    if replacement and v['fish'][0]<900:break
+    if not replacement and len(tracks)>=3 and all(v['top']>585 for v in tracks[-3:]):break
   (ART/(name+'-tracks.json')).write_text(json.dumps(tracks,indent=2))
   airborne=[v for v in tracks if v['fish'][1]<555]
   assert airborne,'Removing/replacing the bird canceled the committed leap'
   assert min(v['fish'][0] for v in airborne)>930,'Fish jumped from far away or chased replacement prey'
   assert all(v['bird'] is None for v in tracks) if not replacement else all(v['bird'] and abs(v['bird']['centre'][0]-560)<65 for v in tracks)
-  assert all(v['top']>585 for v in tracks[-3:]),'Fish failed to return underwater'
+  if replacement:assert tracks[-1]['fish'][0]<900,'Patrol did not acquire remaining prey automatically'
+  else:assert all(v['top']>585 for v in tracks[-3:]),'Fish failed to return underwater'
   return tracks
  removed=committed_case('removed',False)
  # Reload for an independent fixture whose fish starts near world x=640.
  page.reload();page.wait_for_function('window.Module && Module.calledRun',timeout=60000)
  frames(10);tap(340,370);tap(640,340);tap(640,220);frames(4)
  replaced=committed_case('replaced',True)
- # Once the old attack finishes, a fresh nearby placement can be caught.
- x=max(180,min(1100,replaced[-1]['fish'][0]));tap(x,220)
+ # Do not place or move anything. The remaining bird must be acquired by
+ # patrol itself and caught in a second attack after the original miss lands.
  catch=[]
- for i in range(16):frames(3);catch.append(snapshot('catch-%02d'%i))
- held=[v for v in catch[-5:] if v['bird'] and v['bird']['centre'][1]>590 and v['bird']['pixels']<180]
- assert held,'Fresh completed attack did not carry the bird underwater'
+ for i in range(28):
+  frames(3);catch.append(snapshot('auto-catch-%02d'%i))
+  v=catch[-1]
+  if v['bird'] and v['bird']['centre'][1]>590 and v['bird']['pixels']<180:break
+ held=[v for v in catch if v['bird'] and v['bird']['centre'][1]>590 and v['bird']['pixels']<180]
+ assert held,'Patrol required another placement event to attack existing prey'
  errors=[s for s in logs if any(v in s for v in ('ERROR:','PAGEERROR','GL_INVALID'))]
  assert not errors,errors
- result={'version':'0.8.34','orientation':'landscape','test_clock':'0.2x; frozen during screenshots (not an FPS benchmark)','removed_prey_attack_finishes':True,'replacement_does_not_retarget':True,'swims_before_launch':True,'fresh_attack_catches_and_returns':True,'removed':removed,'replaced':replaced,'catch':catch,'errors':errors}
+ result={'version':'0.8.35','orientation':'landscape','test_clock':'0.2x; frozen during screenshots (not an FPS benchmark)','removed_prey_attack_finishes':True,'active_attack_does_not_retarget':True,'patrol_acquires_existing_prey_without_tap':True,'swims_before_launch':True,'automatic_followup_catches':True,'removed':removed,'replaced':replaced,'catch':catch,'errors':errors}
  (ART/'test.json').write_text(json.dumps(result,indent=2));(ART/'browser.log').write_text('\n'.join(logs));print(json.dumps({k:v for k,v in result.items() if k not in ('removed','replaced','catch')}));b.close()
