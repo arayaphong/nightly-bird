@@ -52,7 +52,7 @@ for _,dt in ipairs({1/120,1/20,.25}) do
    swim.step(s,dt,w)
    if s.caught then caught=true;break end
   end
-  assert(caught and s.mode=='excited','Leap skipped mouth contact at dt='..dt)
+  assert(caught and s.mode=='attack','Catch must remain in attack until submerged at dt='..dt)
   local caught_target=s.target
   for i=1,400 do swim.step(s,dt,w) end
   assert(s.mode=='excited' and not s.phase and s.caught==caught_target)
@@ -76,17 +76,17 @@ while miss.phase~='leap' do swim.step(miss,1/120,w) end
 miss.target={x=1100,y=480}
 for i=1,400 do swim.step(miss,1/120,w) end
 assert(not miss.caught and miss.mode=='swim','A missed leap must leave the bird at its original position')
--- A new placement during flight discards the previous trajectory immediately.
+-- A new placement during flight changes prey, never the locked trajectory.
 local replaced=prepared();assert(swim.place(replaced,640,480,w,1280))
 while replaced.phase~='leap' do swim.step(replaced,1/120,w) end
-local old=replaced.target;local px,py=replaced.x,replaced.y
+local old=replaced.target;local lock=replaced.lock;local px,py=replaced.x,replaced.y
+local launch_x,flight_time=replaced.launch_x,replaced.flight_time
 assert(swim.place(replaced,650,490,w,1280))
-assert(replaced.mode=='attack' and replaced.target~=old and not replaced.caught and not replaced.pending)
-assert(replaced.x==px and replaced.y==py and not replaced.launch_x and not replaced.flight_time)
-assert(replaced.lock.x==650 and replaced.lock.y==490)
-for i=1,1200 do swim.step(replaced,1/120,w);if replaced.caught and not replaced.phase then break end end
-assert(replaced.caught==replaced.target and replaced.mode=='excited' and replaced.launch_count==1,
- 'New round must launch once without waiting for the previous flight')
+assert(replaced.mode=='attack' and replaced.target~=old and not replaced.caught)
+assert(replaced.x==px and replaced.y==py and replaced.launch_x==launch_x and replaced.flight_time==flight_time)
+assert(replaced.lock==lock and lock.x==640 and lock.y==480)
+for i=1,1200 do swim.step(replaced,1/120,w);if not replaced.phase then break end end
+assert(replaced.caught==replaced.target and replaced.mode=='excited' and replaced.launch_count==1)
 -- The height-based world camera must not change attack speed with aspect ratio.
 local a,b=prepared(432),prepared(2200)
 assert(swim.place(a,700,500,w,432) and swim.place(b,700,500,w,2200))
@@ -112,4 +112,4 @@ c=controller();touch(c,{point(1,220,245,true),point(2,260,245,true)})
 touch(c,{point(1,220,245,false,true),point(2,260,245,false,true)});assert(#placed==1)
 c=controller();touch(c,{point(1,220,245,true)});touch(c,{point(1,280,245,false,true)});assert(#placed==1)
 c=controller();c.fish_visible=false;touch(c,{point(1,240,245,true)});touch(c,{point(1,240,245,false,true)});assert(#placed==1)
-print('PASS fish attack: wave-relative band, locked intercept, immediate replacement, swept capture, mouth transform and smooth re-entry')
+print('PASS fish attack: wave-relative band, locked intercept, immutable lock, radial capture, mouth transform and smooth re-entry')

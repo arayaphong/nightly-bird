@@ -2,7 +2,8 @@
 local water=require('shared.scenery.water.motion')
 local viewport=require('shared.display.viewport')
 local mouth=require('shared.scenery.fish.mouth')
-local M={RANGE=128,GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120}
+local M={RANGE=128,LAUNCH_RANGE=96,HIT_RADIUS=24,APPROACH_SPEED=480,
+    GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function M.accepts(x,y,w,width)
     if type(x)~='number' or type(y)~='number' or x~=x or y~=y then return false end
@@ -15,7 +16,7 @@ function M.cancel(s)
     s.from_x=nil;s.from_y=nil;s.to_x=nil;s.to_y=nil
     s.charge_time=nil;s.flight_time=nil;s.flight_elapsed=nil
     s.launch_x=nil;s.launch_y=nil;s.launch_vy=nil;s.launch_count=nil
-    s.resume_attack=nil
+    s.resume_attack=nil;s.bite_done=nil
     -- Remove the previous controller's queue/recovery state as well.
     s.pending=nil;s.rest=nil;s.excited=nil
 end
@@ -23,10 +24,14 @@ local function charge(s)
     s.phase='charge';s.charge_time=0;s.resume_attack=nil
 end
 function M.place(s,x,y,w,width)
-    -- Every placement attempt is a new round, including an invalid tap.
-    -- Preserve the fish's position and animation phase, never its old goal.
+    local valid=M.accepts(x,y,w,width)
+    if s.mode=='attack' and s.lock then
+        -- Replacing/removing prey never changes an attack already committed.
+        s.target=valid and {x=x,y=y} or nil;s.caught=nil
+        return valid
+    end
     M.cancel(s)
-    if not M.accepts(x,y,w,width) then return false end
+    if not valid then return false end
     s.target={x=x,y=y};s.lock={x=x,y=y};s.mode='attack';charge(s)
     return true
 end
@@ -47,14 +52,15 @@ function M.step(s,dt,w)
         local size=s.scale*1336/2.1
         if s.phase=='charge' then
             s.charge_time=s.charge_time+h
-            local sprint=math.max(380,viewport.WIDTH*1.05)*1.5
+            local sprint=M.APPROACH_SPEED
             local dx=s.lock.x-s.x
-            local desired=clamp(dx*8,-sprint*1.6,sprint*1.6)
-            s.vx=s.vx+clamp(desired-s.vx,-sprint*2.6*1.6*2*h,sprint*2.6*1.6*2*h)
+            local desired=clamp(dx*6,-sprint,sprint)
+            s.vx=s.vx+clamp(desired-s.vx,-1600*h,1600*h)
             local surf=water.surface_y(w,s.x)+size*.5
-            s.vy=clamp((surf-s.y)*12,-viewport.HEIGHT*1.6,viewport.HEIGHT*1.6)
-            local reach=math.max(size*2.2,math.abs(s.vx)*.12)
-            if (s.y<surf+size*.5 and math.abs(dx)<reach) or s.charge_time>1.1 then
+            s.vy=clamp((surf-s.y)*12,-sprint,sprint)
+            -- Both range and surface approach are required; never force a
+            -- distant launch because a timer expired or velocity is high.
+            if math.abs(s.y-surf)<=math.max(4,size*.5) and math.abs(dx)<=M.LAUNCH_RANGE then
                 local dy=s.lock.y-s.y
                 s.flight_time=clamp(math.sqrt(math.abs(dy)*2/M.GRAVITY)*.85,.16,.4)
                 s.vx=dx/s.flight_time
@@ -81,7 +87,9 @@ function M.step(s,dt,w)
                 s.x=s.x+dx;s.y=s.y+dy;s.vx=0;s.vy=0
                 s.phase=nil;s.duration=0;s.elapsed=0
                 if s.resume_attack then charge(s)
-                elseif s.mode=='attack' then s.mode='swim';s.lock=nil end
+                else
+                    s.mode=s.caught and 'excited' or 'swim';s.lock=nil
+                end
             else
                 s.vx=dx/distance*speed;s.vy=dy/distance*speed
                 s.x=s.x+s.vx*h;s.y=s.y+s.vy*h
@@ -93,10 +101,16 @@ function M.step(s,dt,w)
         s.pose.direction=math.cos(s.pose.angle)<0 and -1 or 1
         s.pose.target=s.pose.direction==1 and 0 or math.pi
         s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(s.mode=='swim' and 7.5 or 20)
-        if s.mode=='attack' and (was_leaping or s.phase=='leap') and s.target then
+        if s.mode=='attack' and was_leaping and not s.bite_done and s.lock then
             local x,y=mouth.position(s)
-            if mouth.touches(mouth_x,mouth_y,x,y,s.target.x,s.target.y,14+size*.22) then
-                s.caught=s.target;s.mode='excited';s.lock=nil
+            -- Bite once at the locked location, even when no prey remains.
+            if mouth.touches(mouth_x,mouth_y,x,y,s.lock.x,s.lock.y,14+size*.22)
+                or s.flight_elapsed>=s.flight_time then
+                s.bite_done=true
+                local p=s.target
+                if p and (p.x-s.lock.x)^2+(p.y-s.lock.y)^2<=M.HIT_RADIUS^2 then
+                    s.caught=p
+                end
             end
         end
     end

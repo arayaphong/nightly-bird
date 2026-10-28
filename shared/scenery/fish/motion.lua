@@ -37,11 +37,12 @@ local function choose(s,b)
     if math.abs(dx)>1 and (dx>0 and 1 or -1)~=s.pose.direction then fish.turn(s.pose) end
 end
 function M.place(s,x,y,w,width)
+    local committed=s.mode=='attack' and s.lock~=nil
     local valid=attack.place(s,x,y,w,width)
     local b=M.bounds(w,width)
     if b then
         s.bounds=b;s.scale=b.scale
-        if attack.outside(s,b) then attack.return_to_water(s,valid) end
+        if not committed and attack.outside(s,b) then attack.return_to_water(s,valid) end
     end
     return valid
 end

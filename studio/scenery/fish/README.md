@@ -12,16 +12,16 @@ stop updating; the fish-only visibility preference is retained independently.
 The fish has exactly three public `mode` values:
 
 - `swim`: ordinary random swimming without a catch.
-- `attack`: fast approach to launch a leap at the newly placed bird.
+- `attack`: committed surface approach, leap and return into the water.
 - `excited`: carrying a caught bird and swimming rapidly back and forth.
 
-Every single background tap starts a new round. It first removes the previous
-bird (including one held in the mouth), clears the old lock, flight/segment
-timers, velocities, celebration direction and strike sound, and restores normal
-state. A valid tap then creates exactly one new bird and begins a new attack.
-An invalid tap leaves no bird and normal swimming. There is no queued placement
-or recovery cooldown left over from the previous round. Drags, multitouch and
-clicks on UI controls do not count as placement attempts.
+A valid tap while patrolling or excited places one full-size dead bird and locks
+its current position for a new attack. During an attack, valid taps replace the
+bird and invalid taps remove it (including a carried bird), but neither operation
+changes the existing lock, velocities, launch, bite attempt or return phase.
+The committed attack always finishes before another can start; a replacement
+bird does not queue a second attack. Drags, multitouch and UI controls do not
+count as placement attempts. Hiding fish/water or leaving still cancels the fixture.
 
 A valid point is above the animated water surface and within **128 world
 units** of it. The fixed 720-unit world camera keeps this range consistent
@@ -31,33 +31,38 @@ The dead bird reuses the original SVG/Rive geometry and crossed-out eyes.
 ## Motion and capture
 
 `shared/scenery/fish/attack.lua` keeps the legacy above-water strike mechanism:
-fast steering up to the surface, then a locked ballistic leap with gravity
-`720 * 4.2`. The trajectory passes through the chosen point and does not steer
-at a moving target. Swept mouth contact changes the public mode to `excited`
-immediately, even while the fish is still airborne. The carried bird shrinks to
-40% of its original scale at default fish size and follows the exact rendered
-mouth position, heading and belly. It uses the same complete bird Rive model as
-Studio, without a circular mask or separate cropped catch asset. The whole bird
-draws in front of the fish so its opaque body cannot hide wings, tail or feet.
+fast swimming to the surface and within **96 horizontal world units** of the
+locked point, then a locked ballistic leap with gravity `720 * 4.2`. Approach
+speed is capped at 480 world units/s. There is no timeout or velocity-based
+exception that launches from far away. The trajectory does not steer at a moved
+bird. At the single bite attempt near the locked point, the current bird must
+still be within a **24-world-unit radius** of that point to be caught. Removing
+or moving it outside the circle causes a miss; a bird appearing after the bite
+cannot be collected by the old attack.
+
+Public mode remains `attack` through approach, leap and submerged return, even
+when carrying a catch. Only after returning fully into the water bounds does it
+switch to `excited` if still holding a bird, or `swim` otherwise, then clear the
+lock. The carried bird shrinks to 40% of its original scale at default fish size
+and follows the exact rendered mouth position, heading and belly. It uses the
+same complete bird Rive model as Studio without a circular mask or cropped catch
+asset. The whole bird draws in front so the fish cannot hide wings, tail or feet.
 The held bird sits 140 SVG units toward the lower jaw from the legacy contact
 point (7 world units at normal fish size), rotated and mirrored with the fish
-so it remains centered in the mouth in either direction. Contact detection
-keeps the legacy strike point.
+so it remains centered in the mouth in either direction. This visual offset
+does not move the locked target or its bite radius.
 Left-facing prey uses a half turn about the X axis after its heading rotation,
 with positive uniform game-object scale. Defold rejects nonpositive scale;
 using negative Y scale here previously aborted the fish's visual update while
 its motion continued, causing apparent pauses followed by jumps.
-`fish-strike.wav` plays once at each launch and stops on a new placement/reset.
+`fish-strike.wav` plays once at each launch. A prey change during an attack does not stop it; leaving or hiding the fixture does.
 
 Internal `phase` values (`charge`, `leap`, `return`) describe movement within
-these modes, not extra public states. Resetting never teleports the fish or
-restarts its animation phase. If reset while airborne/outside the submerged
-bounds, it actively returns to the water for the newly selected mode; a valid
-new target starts a fresh charge after that return. It does not finish the old
-leap or wait through the old 0.55-second recovery. Landing likewise returns
-continuously instead of clamping an overshooting x-coordinate back to an edge.
-A missed strike returns to normal swimming with the stationary bird available
-for inspection until the next placement attempt.
+these modes. A fresh attack started while outside submerged bounds first returns
+to the water, then approaches its lock. A prey change during any phase preserves
+the current position and animation phase. Landing returns continuously instead
+of clamping an overshooting x-coordinate back to an edge. A missed attack leaves
+any remaining bird at its current position until another placement attempt.
 
 After landing with a catch, excited swimming crosses alternating submerged
 bounds at an average segment speed of 300 world units/s, with smooth

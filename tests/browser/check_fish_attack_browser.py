@@ -58,10 +58,11 @@ with sync_playwright() as p:
  r=rect();assert static2[1]>r['y']+r['height']*.77,'Bird did not return underwater with the fish'
  # Invalid placement removes a mouth-held bird immediately and stays cleared.
  tap(240,390);assert red(snap('portrait-catch-cleared-outside-band')) is None
- frames(12);assert red(snap('portrait-round-stays-cleared')) is None
- # A new round can be interrupted again; the old prey must not reappear later.
+ frames(90);assert red(snap('portrait-round-stays-cleared')) is None
+ # A new round can be interrupted again; the removed prey must not reappear later; the attack still finishes.
  tap(220,245,wait=1);tap(240,80)
  assert red(snap('portrait-attack-cleared-underwater')) is None
+ frames(90) # Let the committed attack finish before starting another round.
  tap(220,245);frames(40)
  # Hide fish clears the target; tapping while hidden cannot place another.
  tap(240,545);assert red(snap('portrait-fish-hidden')) is None
@@ -74,6 +75,7 @@ with sync_playwright() as p:
  assert land and land[2]>4,'Landscape catch missing'
  r=rect();assert land[1]>r['y']+r['height']*.77 and land[2]<400,'Landscape catch did not shrink/follow underwater'
  tap(640,360);assert red(snap('landscape-catch-cleared-outside-band')) is None
+ frames(90)
  tap(860,220);frames(40)
  # Existing water toggle hides both actors; new taps have no effect.
  tap(470,596);assert red(snap('landscape-water-hidden')) is None
@@ -82,5 +84,5 @@ with sync_playwright() as p:
  tap(640,220);assert red(snap('landscape-reentry')) is None
  errors=[s for s in logs if any(v in s for v in ['ERROR:','PAGEERROR','GL_INVALID'])]
  (ART/'browser.log').write_text('\n'.join(logs));assert not errors,errors
- result={'touch_portrait':'passed','ballistic_path':'unit-tested','touch_landscape':'passed','invalid_taps_and_drag':'passed','outside_tap_clears_round':'passed','new_attack_can_be_cancelled':'passed','carried_bird_shrinks_and_follows':'passed','one_sound_per_launch':'unit-tested','hide_water_fish_and_reentry':'passed','portrait_catch_centroid':static2,'landscape_catch_centroid':land,'errors':errors}
+ result={'touch_portrait':'passed','ballistic_path':'unit-tested','touch_landscape':'passed','invalid_taps_and_drag':'passed','outside_tap_clears_round':'passed','prey_can_be_removed_during_attack':'passed','carried_bird_shrinks_and_follows':'passed','one_sound_per_launch':'unit-tested','hide_water_fish_and_reentry':'passed','portrait_catch_centroid':static2,'landscape_catch_centroid':land,'errors':errors}
  (ART/'test.json').write_text(json.dumps(result,indent=2));print(json.dumps(result));b.close()
