@@ -37,6 +37,10 @@ at a moving target. Swept mouth contact changes the public mode to `excited`
 immediately, even while the fish is still airborne. The carried bird shrinks to
 40% of its original scale at default fish size and follows the exact rendered
 mouth position, heading and belly. The original jaws/teeth draw over it.
+The held bird sits 140 SVG units toward the lower jaw from the legacy contact
+point (7 world units at normal fish size), rotated and mirrored with the fish
+so it remains centered in the mouth in either direction. Contact detection
+keeps the legacy strike point.
 Left-facing prey uses a half turn about the X axis after its heading rotation,
 with positive uniform game-object scale. Defold rejects nonpositive scale;
 using negative Y scale here previously aborted the fish's visual update while

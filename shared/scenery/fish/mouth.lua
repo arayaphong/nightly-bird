@@ -1,5 +1,5 @@
 -- Same mouth offset as legacy Shark.capture; angle includes the Rive swim bob.
-local M={BIRD_SCALE=.12,CARRIED_RATIO=.96}
+local M={BIRD_SCALE=.12,CARRIED_RATIO=.96,CARRIED_DROP=140}
 function M.position(s)
     local angle=s.pose.angle+math.sin(s.pose.sw)*.035
     local reach=s.scale*1336/2.1*.95
@@ -15,6 +15,11 @@ function M.target(s)
     if s.caught~=s.target then return s.target.x,s.target.y,0,1,M.BIRD_SCALE,-.2 end
     local x,y,angle=M.position(s)
     -- Follow the exact heading/belly used by the fish, including during turns.
-    return x,y,angle,math.cos(angle)<0 and -1 or 1,s.scale*M.CARRIED_RATIO,-.05
+    local belly=math.cos(angle)<0 and -1 or 1
+    -- The legacy contact point lies at the upper jaw. Seat the held bird
+    -- lower in the mouth's local frame (7 world units at normal fish size).
+    local drop=s.scale*M.CARRIED_DROP*belly
+    x=x-math.sin(angle)*drop;y=y+math.cos(angle)*drop
+    return x,y,angle,belly,s.scale*M.CARRIED_RATIO,-.05
 end
 return M

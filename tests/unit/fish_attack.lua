@@ -59,7 +59,9 @@ for _,dt in ipairs({1/120,1/20,.25}) do
   for _,angle in ipairs({0,math.pi/2,math.pi,math.pi*1.5}) do
    s.pose.angle=angle;s.pose.sw=.7
    local x,y,a,b,scale,z=mouth.target(s);local mx,my=mouth.position(s)
-   assert(math.abs(x-mx)<1e-9 and math.abs(y-my)<1e-9)
+   local drop=s.scale*mouth.CARRIED_DROP*b
+   assert(math.abs(x-(mx-math.sin(a)*drop))<1e-9)
+   assert(math.abs(y-(my+math.cos(a)*drop))<1e-9)
    assert(scale<mouth.BIRD_SCALE*.5 and z==-.05)
    assert(b==(math.cos(a)<0 and -1 or 1))
   end
