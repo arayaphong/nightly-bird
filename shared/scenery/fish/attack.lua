@@ -15,13 +15,14 @@ local function charge(s)
 end
 function M.place(s,x,y,w,width)
     if not M.accepts(x,y,w,width) then return false end
-    s.target={x=x,y=y};s.caught=nil
+    s.target={x=x,y=y};s.caught=nil;s.excited_side=nil
     if s.mode=='leap' or s.mode=='recover' then s.pending=true else charge(s) end
     return true
 end
 function M.cancel(s)
     s.mode='swim';s.target=nil;s.caught=nil;s.lock=nil;s.pending=false;s.duration=0;s.elapsed=0
     s.vx=0;s.vy=0
+    s.excited_side=nil
 end
 function M.step(s,dt,w)
     local launched=false

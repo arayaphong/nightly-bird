@@ -3,8 +3,8 @@ local heading=require('shared.motion.heading')
 local M={}
 function M.new() local s=heading.new();s.time=0;s.sw=0;return s end
 function M.turn(s) heading.reverse(s) end
-function M.step(s,dt)
-    s.time=s.time+dt;s.sw=s.sw+7.5*dt
+function M.step(s,dt,beat_rate)
+    s.time=s.time+dt;s.sw=s.sw+(beat_rate or 7.5)*dt
     heading.step(s,dt)
 end
 function M.values(s)

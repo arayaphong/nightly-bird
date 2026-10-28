@@ -3,7 +3,7 @@ local water=require('shared.scenery.water.motion')
 local fish=require('shared.characters.fish.motion')
 local viewport=require('shared.display.viewport')
 local attack=require('shared.scenery.fish.attack')
-local M={ART_RADIUS=1100,BASE_SCALE=.05}
+local M={ART_RADIUS=1100,BASE_SCALE=.05,CARRIED_SPEED=300,CARRIED_BEAT=20}
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
 function M.new(random)
     return {pose=fish.new(),random=random or math.random,x=640,y=648,elapsed=0,duration=0,mode='swim'}
@@ -19,14 +19,22 @@ function M.bounds(w,width)
 end
 local function choose(s,b)
     s.from_x,s.from_y=s.x,s.y
-    s.to_x=b.left+s.random()*(b.right-b.left)
+    if s.excited then
+        -- Celebrate the catch by crossing the available water repeatedly.
+        -- Choose the far side first, then alternate without random short hops.
+        s.excited_side=s.excited_side and -s.excited_side or (s.x>=(b.left+b.right)/2 and -1 or 1)
+        s.to_x=s.excited_side==1 and b.right or b.left
+    else s.to_x=b.left+s.random()*(b.right-b.left) end
     s.to_y=b.top+s.random()*(b.bottom-b.top)
     -- Alternate vertical direction while allowing random distances and both headings.
     local middle=(b.top+b.bottom)/2
     if s.y>=middle then s.to_y=b.top+s.random()*(middle-b.top)
     else s.to_y=middle+s.random()*(b.bottom-middle) end
     local dx,dy=s.to_x-s.x,s.to_y-s.y
-    s.elapsed=0;s.duration=math.max(1.2,math.sqrt(dx*dx+dy*dy)/(30+s.random()*25))
+    local distance=math.sqrt(dx*dx+dy*dy)
+    s.elapsed=0
+    s.duration=s.excited and math.max(.28,distance/M.CARRIED_SPEED)
+        or math.max(1.2,distance/(30+s.random()*25))
     if math.abs(dx)>1 and (dx>0 and 1 or -1)~=s.pose.direction then fish.turn(s.pose) end
 end
 function M.step(s,dt,w,width)
@@ -42,6 +50,8 @@ function M.step(s,dt,w,width)
         dt=remaining
     end
     local x,y=clamp(s.x,b.left,b.right),clamp(s.y,b.top,b.bottom)
+    local excited=s.caught~=nil and s.caught==s.target
+    if excited~=s.excited then s.excited=excited;s.duration=0;s.excited_side=nil end
     local changed=not s.previous_bounds or s.previous_bounds.left~=b.left or s.previous_bounds.top~=b.top or s.previous_bounds.bottom~=b.bottom
     s.x,s.y=x,y;s.previous_bounds=b
     if changed then s.duration=0 end
@@ -53,13 +63,13 @@ function M.step(s,dt,w,width)
         s.elapsed=s.elapsed+step;remaining=remaining-step
         local t=s.elapsed/s.duration;t=t*t*(3-2*t)
         s.x=s.from_x+(s.to_x-s.from_x)*t;s.y=s.from_y+(s.to_y-s.from_y)*t
-        fish.step(s.pose,step)
+        fish.step(s.pose,step,s.excited and M.CARRIED_BEAT or nil)
     until remaining<=0
     return launched
 end
 function M.values(s)
     local values=fish.values(s.pose)
-    if s.mode=='charge' or s.mode=='leap' then
+    if s.mode=='charge' or s.mode=='leap' or s.caught then
         values.tail=math.sin(s.pose.sw)*.32;values.fin=math.sin(s.pose.sw*.8+1.2)*.35
     end
     return values

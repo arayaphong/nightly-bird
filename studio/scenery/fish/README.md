@@ -32,6 +32,16 @@ original scale at the default fish size, follows the exact animated mouth,
 rotates/flips with the fish, and sits behind its original jaws/teeth. Swept mouth
 contact prevents fast leaps from skipping the hit on slower frames. A miss
 leaves the bird where it was placed. A new placement replaces the current bird.
+After landing/recovery with a catch, the fish repeatedly crosses to alternating
+edges of its submerged bounds at an average segment speed of 300 world units/s
+(with smooth acceleration/deceleration), rather than ordinary random 30–55-unit/s
+targets. Its fin-beat phase increases from 7.5 to 20 radians/s with stronger tail
+and fin swings. This excited swim lasts while carrying the bird; canceling or
+replacing the catch clears it. The carried bird still tracks every turn.
+
+The fish's outer Rive artboard does not clip to its original 1536×1024 rectangle:
+steeply rotated mouths/fins can extend past it. Original SVG body/tail clipping
+and the game's viewport/water bounds are retained; the artwork is not resized.
 Hiding fish/water or leaving the fixture clears the target/catch and cancels
 the attack and sound. Re-entering resumes ordinary swimming.
 

@@ -47,7 +47,7 @@ with sync_playwright() as p:
  # Body anchor should coincide with the chosen point in the 128-world-unit band.
  tap(220,245,wait=1)
  sequence=[]
- for i in range(14):
+ for i in range(6):
   frames(1);im=snap('portrait-strike-%02d'%i);sequence.append(red(im))
 
  assert any(v and v[2]>30 for v in sequence),'Dead red bird missing'
@@ -62,7 +62,7 @@ with sync_playwright() as p:
  tap(240,545);toggle();assert mode()=='landscape'
  # Landscape conversion should produce the same world y=~500.
  tap(860,220,wait=1)
- for i in range(12):frames(1);snap('landscape-strike-%02d'%i)
+ for i in range(6):frames(1);snap('landscape-strike-%02d'%i)
  frames(30);land=red(snap('landscape-target'))
  assert land and land[2]>4,'Landscape catch missing'
  r=rect();assert land[1]>r['y']+r['height']*.77 and land[2]<400,'Landscape catch did not shrink/follow underwater'

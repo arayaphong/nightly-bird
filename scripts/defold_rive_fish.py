@@ -8,7 +8,10 @@ from defold_rive_bird import ROOT, start_file, finish_file, draw_group, transfor
 
 def build():
     channels={'angle':0,'belly':1,'tail':0,'fin':0,'gill_x':1,'gill_y':1}
-    f=start_file(channels,'NightlyFish',1536,1024,'FishControls')
+    # Rotating the SVG about (830,500) puts the mouth outside the original
+    # rectangular artboard at steep headings. Keep SVG part clips, but never
+    # crop the whole fish to that unrotated rectangle.
+    f=start_file(channels,'NightlyFish',1536,1024,'FishControls',clip=False)
     # fish-painter.js mirrors the left-facing artwork around FISH_AX/FISH_AY.
     facing=f.node('facing',x=768,y=512,sx=-1)
     f.bind(15,0);f.bind(17,1)
