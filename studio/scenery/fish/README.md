@@ -25,9 +25,14 @@ accelerate during charge/leap and `fish-strike.wav` plays once at launch. Speeds
 use the fixed 1280×720 design world rather than the current screen width.
 
 Placing another bird during a leap retains the current trajectory and queues a
-strike at the replacement point after recovery. The bird stays still after a
-strike: this fixture tests aiming/motion, without capture, damage or corpse
-physics. Hiding fish/water or leaving the fixture clears the target and cancels
+strike at the replacement point after recovery. When the jumping fish's mouth
+contacts the bird, it catches and carries it through the rest of the leap,
+landing, recovery and ordinary swimming. The carried bird shrinks to 40% of its
+original scale at the default fish size, follows the exact animated mouth,
+rotates/flips with the fish, and sits behind its original jaws/teeth. Swept mouth
+contact prevents fast leaps from skipping the hit on slower frames. A miss
+leaves the bird where it was placed. A new placement replaces the current bird.
+Hiding fish/water or leaving the fixture clears the target/catch and cancels
 the attack and sound. Re-entering resumes ordinary swimming.
 
 `preview.go` owns the water presenter; `actor.go` owns the swimmer; `target.go`

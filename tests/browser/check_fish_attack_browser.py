@@ -1,4 +1,4 @@
-"""Exercise the Release fixture through rendered pixels and real touch input."""
+"""Exercise catches, carried-bird sizing/motion and fixture input in Release."""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from PIL import Image
@@ -51,8 +51,11 @@ with sync_playwright() as p:
   frames(1);im=snap('portrait-strike-%02d'%i);sequence.append(red(im))
 
  assert any(v and v[2]>30 for v in sequence),'Dead red bird missing'
- frames(40);static1=red(snap('portrait-target-stays'));frames(10);static2=red(snap('portrait-target-still'))
- assert static1 and static2 and abs(static1[0]-static2[0])<1 and abs(static1[1]-static2[1])<1,'Corpse moved'
+ frames(40);static1=red(snap('portrait-carry-swimming'));frames(16);static2=red(snap('portrait-carry-moving'))
+ assert static1 and static2,'Carried bird disappeared'
+ assert max(static1[2],static2[2])<400,'Caught bird was not reduced'
+ assert abs(static1[0]-static2[0])+abs(static1[1]-static2[1])>1,'Caught bird stayed at the placed point'
+ r=rect();assert static2[1]>r['y']+r['height']*.77,'Bird did not return underwater with the fish'
  # Hide fish clears the target; tapping while hidden cannot place another.
  tap(240,545);assert red(snap('portrait-fish-hidden')) is None
  tap(240,245);assert red(snap('portrait-hidden-tap')) is None
@@ -61,8 +64,8 @@ with sync_playwright() as p:
  tap(860,220,wait=1)
  for i in range(12):frames(1);snap('landscape-strike-%02d'%i)
  frames(30);land=red(snap('landscape-target'))
- assert land and land[2]>30,'Landscape target missing'
- expected=pt(860,220);assert abs(land[0]-expected[0])<15 and abs(land[1]-expected[1])<15,(land,expected)
+ assert land and land[2]>4,'Landscape catch missing'
+ r=rect();assert land[1]>r['y']+r['height']*.77 and land[2]<400,'Landscape catch did not shrink/follow underwater'
  # Existing water toggle hides both actors; new taps have no effect.
  tap(470,596);assert red(snap('landscape-water-hidden')) is None
  tap(470,596);tap(76,668);snap('scenery-menu')
@@ -70,5 +73,5 @@ with sync_playwright() as p:
  tap(640,220);assert red(snap('landscape-reentry')) is None
  errors=[s for s in logs if any(v in s for v in ['ERROR:','PAGEERROR','GL_INVALID'])]
  (ART/'browser.log').write_text('\n'.join(logs));assert not errors,errors
- result={'touch_portrait':'passed','ballistic_path':'unit-tested','touch_landscape':'passed','invalid_taps_and_drag':'passed','stationary_corpse':'passed','one_sound_per_launch':'unit-tested','hide_water_fish_and_reentry':'passed','portrait_target_centroid':static2,'landscape_target_centroid':land,'errors':errors}
+ result={'touch_portrait':'passed','ballistic_path':'unit-tested','touch_landscape':'passed','invalid_taps_and_drag':'passed','carried_bird_shrinks_and_follows':'passed','one_sound_per_launch':'unit-tested','hide_water_fish_and_reentry':'passed','portrait_catch_centroid':static2,'landscape_catch_centroid':land,'errors':errors}
  (ART/'test.json').write_text(json.dumps(result,indent=2));print(json.dumps(result));b.close()

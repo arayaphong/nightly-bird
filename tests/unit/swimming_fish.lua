@@ -41,12 +41,14 @@ local x,y,time=b.x,b.y,b.pose.time;m.step(b,-1,w)
 assert(b.x==x and b.y==y and b.pose.time==time)
 -- Actor must gate stale frames, keep uniform scale and hide when leaving.
 local enabled,position,scale,channels=nil,nil,nil,{}
-local targets,sounds={},{}
+local targets,sounds,transforms={},{},{}
 local env=setmetatable({hash=function(v) return v end,
  msg={post=function(url,id) if url=='#fish' then enabled=id else targets[url]=id end end},
- go={set_position=function(v,url) if not url then position=v end end,set_scale=function(v,url) if not url then scale=v end end},
+ go={set_position=function(v,url) if not url then position=v else transforms.position=v end end,
+ set_scale=function(v,url) if not url then scale=v else transforms.scale=v end end,
+ set_rotation=function(v,url) assert(url=='/fish_target');transforms.rotation=v end},
  sound={stop=function() end,play=function(id) sounds[#sounds+1]=id end},
- vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end},
+ vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end,quat_rotation_z=function(a) return a end},
  rive={get_view_model_instance=function() return 1 end,cmd={getViewModelInstanceNumber=function() return 0 end,
  unsubscribeToViewModelProperty=function() end,setViewModelInstanceNumber=function(_,k,v) channels[k]=v end}},
 },{__index=_G})
@@ -62,8 +64,18 @@ env.on_message(actor,'water_frame',frame);assert(actor.motion.pose.time==t)
 env.on_message(actor,'active',{active=true});frame.level=0;env.on_message(actor,'water_frame',frame);assert(not actor.visible)
 frame.level=.2;env.on_message(actor,'water_frame',frame);assert(enabled=='enable')
 env.on_message(actor,'place_target',{x=640,y=500});assert(actor.motion.target and targets['/fish_target#bird']=='enable')
+local waiting_scale=transforms.scale.x
 for i=1,240 do frame.dt=1/120;env.on_message(actor,'water_frame',frame) end
 assert(#sounds==1 and sounds[1]=='#strike' and actor.motion.mode=='swim')
+assert(actor.motion.caught==actor.motion.target and transforms.scale.x<waiting_scale*.5)
+assert(transforms.position.z==-.05,'Captured bird must be behind the original jaws')
+local mouth=require('shared.scenery.fish.mouth')
+local x,y,angle,belly=mouth.target(actor.motion);local k=transforms.scale.x
+local anchor_x=transforms.position.x+(20*math.cos(angle)-78*belly*math.sin(angle))*k
+local anchor_y=transforms.position.y-(20*math.sin(angle)+78*belly*math.cos(angle))*k
+assert(math.abs(anchor_x-((x-640)*1.5+1280))<1e-7)
+assert(math.abs(anchor_y-(720-y)*1.5)<1e-7)
+assert(transforms.rotation==-angle)
 frame.visible=false;env.on_message(actor,'water_frame',frame)
-assert(not actor.motion.target and targets['/fish_target#bird']=='disable')
+assert(not actor.motion.target and not actor.motion.caught and targets['/fish_target#bird']=='disable')
 print('PASS swimming fish: four random directions, continuous segments, wave/viewport bounds, shallow water and lifecycle')

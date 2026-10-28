@@ -1,6 +1,7 @@
 -- Legacy shark.js charge -> locked ballistic leap -> recovery, in world y-down.
 local water=require('shared.scenery.water.motion')
 local viewport=require('shared.display.viewport')
+local mouth=require('shared.scenery.fish.mouth')
 local M={RANGE=128,GRAVITY=viewport.HEIGHT*4.2}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function M.accepts(x,y,w,width)
@@ -14,12 +15,12 @@ local function charge(s)
 end
 function M.place(s,x,y,w,width)
     if not M.accepts(x,y,w,width) then return false end
-    s.target={x=x,y=y}
+    s.target={x=x,y=y};s.caught=nil
     if s.mode=='leap' or s.mode=='recover' then s.pending=true else charge(s) end
     return true
 end
 function M.cancel(s)
-    s.mode='swim';s.target=nil;s.lock=nil;s.pending=false;s.duration=0;s.elapsed=0
+    s.mode='swim';s.target=nil;s.caught=nil;s.lock=nil;s.pending=false;s.duration=0;s.elapsed=0
     s.vx=0;s.vy=0
 end
 function M.step(s,dt,w)
@@ -27,6 +28,7 @@ function M.step(s,dt,w)
     -- Bounded integration preserves charge steering and landing on slow frames.
     while dt>1e-9 and s.mode~='swim' do
         local h=math.min(dt,1/120);dt=dt-h
+        local mouth_x,mouth_y=mouth.position(s);local was_leaping=s.mode=='leap'
         -- Legacy k = size * 2.1 / FISH_SPAN, with the original 1336-unit SVG.
         local size=s.scale*1336/2.1
         if s.mode=='charge' then
@@ -75,6 +77,14 @@ function M.step(s,dt,w)
         s.pose.direction=math.cos(s.pose.angle)<0 and -1 or 1
         s.pose.target=s.pose.direction==1 and 0 or math.pi
         s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(s.mode=='recover' and 4 or 20)
+        if (was_leaping or s.mode=='leap') and s.target and s.caught~=s.target then
+            local x,y=mouth.position(s)
+            -- Swept contact prevents a fast leap/slow frame skipping the bird.
+            local radius=14+size*.22
+            if mouth.touches(mouth_x,mouth_y,x,y,s.target.x,s.target.y,radius) then
+                s.caught=s.target;s.pending=false
+            end
+        end
     end
     return launched,dt
 end
