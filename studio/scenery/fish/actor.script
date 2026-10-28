@@ -53,8 +53,10 @@ function on_message(self,id,m)
         if not self.active then visible(self,false);cancel(self);self.frame=nil;self.suspended=true end
     elseif id==hash('place_target') and self.active and self.visible and self.frame then
         local frame=self.frame;local camera=viewport.camera(frame.width,frame.height)
-        if attack.place(self.motion,m.x,m.y,frame,camera.width) then
-            target(self,camera,frame)
+        sound.stop('#strike')
+        local valid=swim.place(self.motion,m.x,m.y,frame,camera.width)
+        target(self,camera,frame)
+        if valid then
             print('FISH_TARGET '..m.x..' '..m.y)
         end
     elseif id==hash('water_frame') and self.active then

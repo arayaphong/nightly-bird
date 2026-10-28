@@ -5,6 +5,10 @@ local function rng(seed)
     return function() seed=(seed*16807)%2147483647;return (seed-1)/2147483646 end
 end
 local w=water.new();local s=m.new(rng(173))
+-- Initial/body-bound re-entry is continuous; steady swimming begins once inside.
+m.step(s,0,w)
+for i=1,1200 do if not s.phase then break end;m.step(s,1/120,w) end
+assert(not s.phase)
 local up,down,left,right=false,false,false,false
 for i=1,36000 do
     local x,y=s.x,s.y;m.step(s,1/60,w)
@@ -22,8 +26,16 @@ for _,roughness in ipairs({0,.25,.6,1}) do
  for _,level in ipairs({0,.01,.04,.2,.8,1}) do
   w.roughness=roughness;w.level=level
   for _,aspect in ipairs({1280,1920,2560,960}) do
+   local before_x,before_y=s.x,s.y
    m.step(s,0,w,aspect)
+   assert(s.x==before_x and s.y==before_y,'Changing bounds must not teleport the swimmer')
    if s.visible then
+    for i=1,2400 do
+     if not s.phase then break end
+     local x,y=s.x,s.y;m.step(s,1/120,w,aspect)
+     assert(math.sqrt((s.x-x)^2+(s.y-y)^2)<=1.000001,'Normal re-entry exceeded 120 units/s')
+    end
+    assert(not s.phase,'Swimmer did not return to changed submerged bounds')
     local b=s.bounds
     assert(s.scale>0 and s.scale<=m.BASE_SCALE)
     assert(s.x>=b.left and s.x<=b.right and s.y>=b.top and s.y<=b.bottom)
@@ -66,7 +78,7 @@ frame.level=.2;env.on_message(actor,'water_frame',frame);assert(enabled=='enable
 env.on_message(actor,'place_target',{x=640,y=500});assert(actor.motion.target and targets['/fish_target#bird']=='enable')
 local waiting_scale=transforms.scale.x
 for i=1,240 do frame.dt=1/120;env.on_message(actor,'water_frame',frame) end
-assert(#sounds==1 and sounds[1]=='#strike' and actor.motion.mode=='swim')
+assert(#sounds==1 and sounds[1]=='#strike' and actor.motion.mode=='excited' and not actor.motion.phase)
 assert(actor.motion.caught==actor.motion.target and transforms.scale.x<waiting_scale*.5)
 assert(transforms.position.z==-.05,'Captured bird must be behind the original jaws')
 local mouth=require('shared.scenery.fish.mouth')
@@ -76,6 +88,15 @@ local anchor_y=transforms.position.y-(20*math.sin(angle)+78*belly*math.cos(angle
 assert(math.abs(anchor_x-((x-640)*1.5+1280))<1e-7)
 assert(math.abs(anchor_y-(720-y)*1.5)<1e-7)
 assert(transforms.rotation==-angle)
+-- Invalid placement immediately removes a bird from the mouth and resets.
+env.on_message(actor,'place_target',{x=640,y=700})
+assert(actor.motion.mode=='swim' and not actor.motion.caught and not actor.motion.target)
+assert(targets['/fish_target#bird']=='disable')
+-- The next valid placement restores full-size stationary art and fresh attack.
+env.on_message(actor,'place_target',{x=640,y=500})
+assert(actor.motion.mode=='attack' and not actor.motion.caught and actor.motion.target)
+assert(targets['/fish_target#bird']=='enable' and transforms.scale.x==waiting_scale)
+assert(transforms.rotation==0 and transforms.position.z==-.2)
 frame.visible=false;env.on_message(actor,'water_frame',frame)
 assert(not actor.motion.target and not actor.motion.caught and targets['/fish_target#bird']=='disable')
 print('PASS swimming fish: four random directions, continuous segments, wave/viewport bounds, shallow water and lifecycle')

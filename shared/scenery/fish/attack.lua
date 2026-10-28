@@ -1,40 +1,52 @@
--- Legacy shark.js charge -> locked ballistic leap -> recovery, in world y-down.
+-- Three public modes: swim / attack / excited. Flight phases are internal.
 local water=require('shared.scenery.water.motion')
 local viewport=require('shared.display.viewport')
 local mouth=require('shared.scenery.fish.mouth')
-local M={RANGE=128,GRAVITY=viewport.HEIGHT*4.2}
+local M={RANGE=128,GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function M.accepts(x,y,w,width)
     if type(x)~='number' or type(y)~='number' or x~=x or y~=y then return false end
     local left=(viewport.WIDTH-width)/2;local surface=water.surface_y(w,x)
     return x>=left and x<=left+width and y>=0 and y<surface and y>=surface-M.RANGE
 end
+function M.cancel(s)
+    s.mode='swim';s.phase=nil;s.target=nil;s.caught=nil;s.lock=nil
+    s.vx=0;s.vy=0;s.duration=0;s.elapsed=0;s.excited_side=nil
+    s.from_x=nil;s.from_y=nil;s.to_x=nil;s.to_y=nil
+    s.charge_time=nil;s.flight_time=nil;s.flight_elapsed=nil
+    s.launch_x=nil;s.launch_y=nil;s.launch_vy=nil;s.launch_count=nil
+    s.resume_attack=nil
+    -- Remove the previous controller's queue/recovery state as well.
+    s.pending=nil;s.rest=nil;s.excited=nil
+end
 local function charge(s)
-    s.lock={x=s.target.x,y=s.target.y};s.mode='charge';s.charge_time=0
-    s.vx=s.vx or 0;s.vy=s.vy or 0;s.pending=false
+    s.phase='charge';s.charge_time=0;s.resume_attack=nil
 end
 function M.place(s,x,y,w,width)
+    -- Every placement attempt is a new round, including an invalid tap.
+    -- Preserve the fish's position and animation phase, never its old goal.
+    M.cancel(s)
     if not M.accepts(x,y,w,width) then return false end
-    s.target={x=x,y=y};s.caught=nil;s.excited_side=nil
-    if s.mode=='leap' or s.mode=='recover' then s.pending=true else charge(s) end
+    s.target={x=x,y=y};s.lock={x=x,y=y};s.mode='attack';charge(s)
     return true
 end
-function M.cancel(s)
-    s.mode='swim';s.target=nil;s.caught=nil;s.lock=nil;s.pending=false;s.duration=0;s.elapsed=0
-    s.vx=0;s.vy=0
-    s.excited_side=nil
+function M.outside(s,b)
+    return s.x<b.left or s.x>b.right or s.y<b.top or s.y>b.bottom
+end
+function M.return_to_water(s,resume_attack)
+    s.phase='return';s.resume_attack=resume_attack or nil
+    s.duration=0;s.elapsed=0
 end
 function M.step(s,dt,w)
     local launched=false
-    -- Bounded integration preserves charge steering and landing on slow frames.
-    while dt>1e-9 and s.mode~='swim' do
+    -- Consume time in bounded steps so a slow frame cannot skip contact or
+    -- re-entry. No recovery timer and no queued placement survive a reset.
+    while dt>1e-9 and s.phase do
         local h=math.min(dt,1/120);dt=dt-h
-        local mouth_x,mouth_y=mouth.position(s);local was_leaping=s.mode=='leap'
-        -- Legacy k = size * 2.1 / FISH_SPAN, with the original 1336-unit SVG.
+        local mouth_x,mouth_y=mouth.position(s);local was_leaping=s.phase=='leap'
         local size=s.scale*1336/2.1
-        if s.mode=='charge' then
+        if s.phase=='charge' then
             s.charge_time=s.charge_time+h
-            -- Fixed design-world speeds, independent of responsive window width.
             local sprint=math.max(380,viewport.WIDTH*1.05)*1.5
             local dx=s.lock.x-s.x
             local desired=clamp(dx*8,-sprint*1.6,sprint*1.6)
@@ -48,42 +60,43 @@ function M.step(s,dt,w)
                 s.vx=dx/s.flight_time
                 s.vy=(dy-.5*M.GRAVITY*s.flight_time^2)/s.flight_time
                 s.launch_x,s.launch_y,s.launch_vy=s.x,s.y,s.vy
-                s.flight_elapsed=0;s.mode='leap';s.launch_count=(s.launch_count or 0)+1
+                s.flight_elapsed=0;s.phase='leap';s.launch_count=(s.launch_count or 0)+1
                 launched=true
             else s.x=s.x+s.vx*h;s.y=s.y+s.vy*h end
-        elseif s.mode=='leap' then
+        elseif s.phase=='leap' then
             s.flight_elapsed=s.flight_elapsed+h
             local t=s.flight_elapsed
             s.x=s.launch_x+s.vx*t
             s.y=s.launch_y+s.launch_vy*t+.5*M.GRAVITY*t*t
             s.vy=s.launch_vy+M.GRAVITY*t
             if t>s.flight_time and s.vy>0 and s.y>water.surface_y(w,s.x)+size*.3 then
-                s.vx=s.vx*.4;s.vy=s.vy*.25;s.mode='recover';s.rest=.55
+                M.return_to_water(s,false)
             end
-        elseif s.mode=='recover' then
-            s.rest=s.rest-h
+        elseif s.phase=='return' then
             local b=s.bounds
-            local desired=clamp(s.y,b.top,b.bottom)
-            s.y=s.y+(desired-s.y)*math.min(1,h*8)
-            s.x=clamp(s.x+s.vx*h,b.left,b.right);s.vx=s.vx*(1-h*4)
-            if s.rest<=0 then
-                if s.pending then charge(s)
-                else s.mode='swim';s.lock=nil;s.duration=0;s.elapsed=0 end
+            local dx,dy=clamp(s.x,b.left,b.right)-s.x,clamp(s.y,b.top,b.bottom)-s.y
+            local distance=math.sqrt(dx*dx+dy*dy)
+            local speed=s.mode=='swim' and M.NORMAL_RETURN_SPEED or M.RETURN_SPEED
+            if distance<=speed*h then
+                s.x=s.x+dx;s.y=s.y+dy;s.vx=0;s.vy=0
+                s.phase=nil;s.duration=0;s.elapsed=0
+                if s.resume_attack then charge(s)
+                elseif s.mode=='attack' then s.mode='swim';s.lock=nil end
+            else
+                s.vx=dx/distance*speed;s.vy=dy/distance*speed
+                s.x=s.x+s.vx*h;s.y=s.y+s.vy*h
             end
         end
-        -- Same shortest-angle steering and belly flip as the legacy painter.
-        local want=math.atan2(s.vy*(s.mode=='leap' and 1 or .6),math.abs(s.vx)>1 and s.vx or s.pose.direction)
+        local want=math.atan2(s.vy*(s.phase=='leap' and 1 or .6),math.abs(s.vx)>1 and s.vx or s.pose.direction)
         local delta=math.atan2(math.sin(want-s.pose.angle),math.cos(want-s.pose.angle))
-        s.pose.angle=s.pose.angle+delta*math.min(1,h*(s.mode=='leap' and 14 or 8))
+        s.pose.angle=s.pose.angle+delta*math.min(1,h*(s.phase=='leap' and 14 or 8))
         s.pose.direction=math.cos(s.pose.angle)<0 and -1 or 1
         s.pose.target=s.pose.direction==1 and 0 or math.pi
-        s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(s.mode=='recover' and 4 or 20)
-        if (was_leaping or s.mode=='leap') and s.target and s.caught~=s.target then
+        s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(s.mode=='swim' and 7.5 or 20)
+        if s.mode=='attack' and (was_leaping or s.phase=='leap') and s.target then
             local x,y=mouth.position(s)
-            -- Swept contact prevents a fast leap/slow frame skipping the bird.
-            local radius=14+size*.22
-            if mouth.touches(mouth_x,mouth_y,x,y,s.target.x,s.target.y,radius) then
-                s.caught=s.target;s.pending=false
+            if mouth.touches(mouth_x,mouth_y,x,y,s.target.x,s.target.y,14+size*.22) then
+                s.caught=s.target;s.mode='excited';s.lock=nil
             end
         end
     end

@@ -6,11 +6,17 @@ local function rng(seed)
  return function() seed=seed*16807%2147483647;return (seed-1)/2147483646 end
 end
 local function carrying(seed)
- local s=swim.new(rng(seed));s.target={x=640,y=500};s.caught=s.target;return s
+ local s=swim.new(rng(seed));s.target={x=640,y=500};s.caught=s.target;s.mode='excited';return s
 end
 local w=water.new()
 for _,width in ipairs({432,1280,2200}) do
  local calm,excited=swim.new(rng(37)),carrying(37)
+ swim.step(calm,0,w,width);swim.step(excited,0,w,width)
+ for i=1,1200 do
+  if not calm.phase and not excited.phase then break end
+  swim.step(calm,1/120,w,width);swim.step(excited,1/120,w,width)
+ end
+ local start_beat=excited.pose.sw
  local calm_distance,fast_distance,reversals,previous_dir=0,0,0,0
  for i=1,1440 do
   local ax,ay,bx,by=calm.x,calm.y,excited.x,excited.y
@@ -25,13 +31,13 @@ for _,width in ipairs({432,1280,2200}) do
   local b=excited.bounds
   assert(excited.x>=b.left-1e-7 and excited.x<=b.right+1e-7 and excited.y>=b.top-1e-7 and excited.y<=b.bottom+1e-7)
  end
- assert(excited.excited and reversals>=2,'Catch did not swim back and forth')
+ assert(excited.mode=='excited' and reversals>=2,'Catch did not swim back and forth')
  assert(fast_distance>calm_distance*4,'Catch did not noticeably increase speed')
- assert(math.abs(excited.pose.sw-12*swim.CARRIED_BEAT)<1e-7)
+ assert(math.abs(excited.pose.sw-start_beat-12*swim.CARRIED_BEAT)<1e-7)
  -- Hiding/canceling restores ordinary random swimming and beat frequency.
  attack.cancel(excited);local phase=excited.pose.sw
  swim.step(excited,.5,w,width)
- assert(not excited.excited and math.abs(excited.pose.sw-phase-3.75)<1e-7)
+ assert(excited.mode=='swim' and math.abs(excited.pose.sw-phase-3.75)<1e-7)
 end
 -- Segment boundaries and reversals consume elapsed time equally on slow frames.
 local a,b=carrying(12),carrying(12)

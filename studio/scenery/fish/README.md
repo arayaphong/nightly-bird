@@ -2,61 +2,67 @@
 
 Studio → ฉากและฟิสิกส์ → ฉากทดสอบปลา opens the third scenery fixture.
 It reuses the night sky/water vectors and the character Studio's fish Rive asset.
-Its own water defaults to 20% level and 60% height/roughness. The fixture has only
-two action toggles: hide/show the water together with the fish, and hide/show
-only the fish while keeping the water. Wind, star-speed and water sliders remain
-available in the other scenery fixtures. Hidden water and fish stop updating;
-the fish-only preference is retained when water is hidden and restored. The
-fish-only button is unavailable while the water is hidden. Navigation retains
-these settings independently of the other fixtures.
+Its own water defaults to 20% level and 60% height/roughness. The two buttons
+hide/show water together with the fish, or hide/show only the fish. Wind,
+star-speed and water sliders remain in the other fixtures. Hidden fish/water
+stop updating; the fish-only visibility preference is retained independently.
 
-Tap/click above the animated water surface, within **128 world units**, to place
-a stationary dead red bird. The fixed 720-unit world camera keeps this range the
-same through portrait/landscape changes; it is not 128 physical device pixels.
-The bird reuses the original SVG/Rive geometry, including its crossed-out eyes.
-Taps below the surface or beyond the band, drags and multitouch do not place it.
-Controls retain their existing two buttons, with no extra attack action button.
+## Three states and one prey
 
-`shared/scenery/fish/attack.lua` ports the above-water strike from
-`legacy/src/objects/shark.js`: accelerate toward the locked point and surface,
-solve a ballistic leap with gravity `720 * 4.2` that passes through the point,
-then land, recover for 0.55 seconds and resume autonomous swimming. Tail/fin beats
-accelerate during charge/leap and `fish-strike.wav` plays once at launch. Speeds
-use the fixed 1280×720 design world rather than the current screen width.
+The fish has exactly three public `mode` values:
 
-Placing another bird during a leap retains the current trajectory and queues a
-strike at the replacement point after recovery. When the jumping fish's mouth
-contacts the bird, it catches and carries it through the rest of the leap,
-landing, recovery and ordinary swimming. The carried bird shrinks to 40% of its
-original scale at the default fish size, follows the exact animated mouth,
-rotates/flips with the fish, and sits behind its original jaws/teeth. Swept mouth
-contact prevents fast leaps from skipping the hit on slower frames. A miss
-leaves the bird where it was placed. A new placement replaces the current bird.
-After landing/recovery with a catch, the fish repeatedly crosses to alternating
-edges of its submerged bounds at an average segment speed of 300 world units/s
-(with smooth acceleration/deceleration), rather than ordinary random 30–55-unit/s
-targets. Its fin-beat phase increases from 7.5 to 20 radians/s with stronger tail
-and fin swings. This excited swim lasts while carrying the bird; canceling or
-replacing the catch clears it. The carried bird still tracks every turn.
+- `swim`: ordinary random swimming without a catch.
+- `attack`: fast approach to launch a leap at the newly placed bird.
+- `excited`: carrying a caught bird and swimming rapidly back and forth.
 
-The fish's outer Rive artboard does not clip to its original 1536×1024 rectangle:
-steeply rotated mouths/fins can extend past it. Original SVG body/tail clipping
-and the game's viewport/water bounds are retained; the artwork is not resized.
-Hiding fish/water or leaving the fixture clears the target/catch and cancels
-the attack and sound. Re-entering resumes ordinary swimming.
+Every single background tap starts a new round. It first removes the previous
+bird (including one held in the mouth), clears the old lock, flight/segment
+timers, velocities, celebration direction and strike sound, and restores normal
+state. A valid tap then creates exactly one new bird and begins a new attack.
+An invalid tap leaves no bird and normal swimming. There is no queued placement
+or recovery cooldown left over from the previous round. Drags, multitouch and
+clicks on UI controls do not count as placement attempts.
 
-`preview.go` owns the water presenter; `actor.go` owns the swimmer; `target.go`
-owns the dead bird. The presenter
-sends one frame snapshot to the active fish, so the water settings, viewport and
-animation advance together. Navigation hides/pauses both, retaining their state.
+A valid point is above the animated water surface and within **128 world
+units** of it. The fixed 720-unit world camera keeps this range consistent
+through portrait/landscape changes; it is not 128 physical device pixels.
+The dead bird reuses the original SVG/Rive geometry and crossed-out eyes.
 
-`shared/scenery/fish/motion.lua` chooses random horizontal targets and alternates
-random upper/lower depth targets. Smooth interpolation and the existing heading
-animation preserve continuous swimming, turns, tail, fins and gills. This is a
-kinematic fixture, not a gameplay or physics simulation.
+## Motion and capture
 
-During ordinary swimming, bounds include the animated artwork's rotational envelope and the
-maximum displacement of the current wave profile. The fish uses world units/second and a 720-unit-high camera, preserving its
-proportions on any viewport, shrinks uniformly in very shallow water and hides
-when no submerged space remains. Changing water settings recomputes the bounds
-before rendering, so no part of the fish emerges into the sky or leaves the view.
+`shared/scenery/fish/attack.lua` keeps the legacy above-water strike mechanism:
+fast steering up to the surface, then a locked ballistic leap with gravity
+`720 * 4.2`. The trajectory passes through the chosen point and does not steer
+at a moving target. Swept mouth contact changes the public mode to `excited`
+immediately, even while the fish is still airborne. The carried bird shrinks to
+40% of its original scale at default fish size and follows the exact rendered
+mouth position, heading and belly. The original jaws/teeth draw over it.
+`fish-strike.wav` plays once at each launch and stops on a new placement/reset.
+
+Internal `phase` values (`charge`, `leap`, `return`) describe movement within
+these modes, not extra public states. Resetting never teleports the fish or
+restarts its animation phase. If reset while airborne/outside the submerged
+bounds, it actively returns to the water for the newly selected mode; a valid
+new target starts a fresh charge after that return. It does not finish the old
+leap or wait through the old 0.55-second recovery. Landing likewise returns
+continuously instead of clamping an overshooting x-coordinate back to an edge.
+A missed strike returns to normal swimming with the stationary bird available
+for inspection until the next placement attempt.
+
+After landing with a catch, excited swimming crosses alternating submerged
+bounds at an average segment speed of 300 world units/s, with smooth
+acceleration/deceleration. Ordinary swimming chooses random 30–55-unit/s targets
+and alternating random upper/lower depths. Fin phase increases from 7.5 to 20
+radians/s with stronger swings while attacking/carrying. Speeds use the fixed
+1280×720 design world rather than responsive window width.
+
+The fish's outer Rive artboard does not clip to its original 1536×1024 rectangle,
+so steeply rotated mouths/fins remain intact. Original SVG body/tail clips remain.
+Bounds include the complete animated artwork's rotational envelope and maximum
+wave displacement. Shallow water shrinks the fish uniformly or hides it if no
+submerged room remains. A viewport/water bounds change uses a continuous return.
+
+`preview.go` owns the water presenter, `actor.go` the fish and `target.go` the
+single bird. Water snapshots keep viewport, waves and fish synchronized. Hiding
+fish/water or leaving the fixture cancels the round and removes the bird.
+This is a kinematic Studio fixture, not a complete gameplay physics simulation.

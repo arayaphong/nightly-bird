@@ -14,7 +14,8 @@ local sky=require('shared.scenery.night_sky.motion')
     self.fish_toggle=child(box(810,596,280,48,BUTTON),self.root)
     self.fish_toggle_label=child(text(810,596,'',20,WHITE),self.root)
     self.target_hint=child(text(640,540,'แตะเหนือผิวน้ำในระยะ 128 หน่วย เพื่อวางนกตาย',18,MUTED),self.root)
-    self.visibility_nodes={self.water_toggle,self.water_toggle_label,self.fish_toggle,self.fish_toggle_label,self.target_hint}
+    self.reset_hint=child(text(640,512,'แตะนอกเขตเพื่อล้างเหยื่อและกลับไปว่ายปกติ',16,MUTED),self.root)
+    self.visibility_nodes={self.water_toggle,self.water_toggle_label,self.fish_toggle,self.fish_toggle_label,self.target_hint,self.reset_hint}
     self.level_slider=slider(self.root,640,590);self.rough_slider=slider(self.root,1050,590)
     self.star_slider=slider(self.root,640,490,sky.MAX_STARS);self.dust_slider=slider(self.root,1050,490,sky.MAX_DUST)
     self.sliders={water_level=self.level_slider,water_roughness=self.rough_slider,star_count=self.star_slider,dust_count=self.dust_slider}
