@@ -36,8 +36,12 @@ local function target(self,camera,m)
     if not p then return end
     local x,y,angle,belly,size,depth=mouth.target(self.motion)
     local scale=size*camera.scale;local c,s=math.cos(angle),math.sin(angle)
-    go.set_scale(vmath.vector3(scale,scale*belly,1),'/fish_target')
-    go.set_rotation(vmath.quat_rotation_z(-angle),'/fish_target')
+    -- Defold requires positive GO scale. A half turn about X reflects the
+    -- bird's Y axis in the 2D plane without aborting left-facing frames.
+    go.set_scale(vmath.vector3(scale,scale,1),'/fish_target')
+    local rotation=vmath.quat_rotation_z(-angle)
+    if belly<0 then rotation=rotation*vmath.quat_rotation_x(math.pi) end
+    go.set_rotation(rotation,'/fish_target')
     -- Rotate the SVG body-anchor offset along with the carried bird. Put the
     -- catch behind the fish so the original jaws/teeth overlap it naturally.
     go.set_position(vmath.vector3((x-viewport.WIDTH/2)*camera.scale+m.width/2-(20*c-78*belly*s)*scale,

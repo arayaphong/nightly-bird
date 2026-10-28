@@ -37,6 +37,10 @@ at a moving target. Swept mouth contact changes the public mode to `excited`
 immediately, even while the fish is still airborne. The carried bird shrinks to
 40% of its original scale at default fish size and follows the exact rendered
 mouth position, heading and belly. The original jaws/teeth draw over it.
+Left-facing prey uses a half turn about the X axis after its heading rotation,
+with positive uniform game-object scale. Defold rejects nonpositive scale;
+using negative Y scale here previously aborted the fish's visual update while
+its motion continued, causing apparent pauses followed by jumps.
 `fish-strike.wav` plays once at each launch and stops on a new placement/reset.
 
 Internal `phase` values (`charge`, `leap`, `return`) describe movement within

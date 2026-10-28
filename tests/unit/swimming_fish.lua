@@ -54,13 +54,35 @@ assert(b.x==x and b.y==y and b.pose.time==time)
 -- Actor must gate stale frames, keep uniform scale and hide when leaving.
 local enabled,position,scale,channels=nil,nil,nil,{}
 local targets,sounds,transforms={},{},{}
+local quaternion={}
+quaternion.__mul=function(a,b)
+ return setmetatable({x=a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
+  y=a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,
+  z=a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w,
+  w=a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z},quaternion)
+end
+local function rotation(axis,angle)
+ local q=setmetatable({x=0,y=0,z=0,w=math.cos(angle/2)},quaternion)
+ q[axis]=math.sin(angle/2);return q
+end
+local function rotate(q,x,y)
+ local p=setmetatable({x=x,y=y,z=0,w=0},quaternion)
+ local inverse=setmetatable({x=-q.x,y=-q.y,z=-q.z,w=q.w},quaternion)
+ return q*p*inverse
+end
+local fish_updates=0
 local env=setmetatable({hash=function(v) return v end,
  msg={post=function(url,id) if url=='#fish' then enabled=id else targets[url]=id end end},
- go={set_position=function(v,url) if not url then position=v else transforms.position=v end end,
- set_scale=function(v,url) if not url then scale=v else transforms.scale=v end end,
+ go={set_position=function(v,url) if not url then position=v;fish_updates=fish_updates+1 else transforms.position=v end end,
+ set_scale=function(v,url)
+  assert(v.x>0 and v.y>0 and v.z>0,'Defold rejects zero or negative GO scale')
+  if not url then scale=v else transforms.scale=v end
+ end,
  set_rotation=function(v,url) assert(url=='/fish_target');transforms.rotation=v end},
  sound={stop=function() end,play=function(id) sounds[#sounds+1]=id end},
- vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end,quat_rotation_z=function(a) return a end},
+ vmath={vector3=function(x,y,z) return {x=x,y=y,z=z} end,
+  quat_rotation_z=function(a) return rotation('z',a) end,
+  quat_rotation_x=function(a) return rotation('x',a) end},
  rive={get_view_model_instance=function() return 1 end,cmd={getViewModelInstanceNumber=function() return 0 end,
  unsubscribeToViewModelProperty=function() end,setViewModelInstanceNumber=function(_,k,v) channels[k]=v end}},
 },{__index=_G})
@@ -87,7 +109,30 @@ local anchor_x=transforms.position.x+(20*math.cos(angle)-78*belly*math.sin(angle
 local anchor_y=transforms.position.y-(20*math.sin(angle)+78*belly*math.cos(angle))*k
 assert(math.abs(anchor_x-((x-640)*1.5+1280))<1e-7)
 assert(math.abs(anchor_y-(720-y)*1.5)<1e-7)
-assert(transforms.rotation==-angle)
+-- Check the actual reflected basis and anchor, not only the chosen angle.
+local function check_rotation(angle,belly)
+ for _,p in ipairs({{1,0},{0,1},{20,-78}}) do
+  local v=rotate(transforms.rotation,p[1],p[2])
+  assert(math.abs(v.x-(p[1]*math.cos(angle)+p[2]*belly*math.sin(angle)))<1e-7)
+  assert(math.abs(v.y-(-p[1]*math.sin(angle)+p[2]*belly*math.cos(angle)))<1e-7)
+  assert(math.abs(v.z)<1e-7)
+ end
+end
+check_rotation(angle,belly)
+-- Every frame must finish updating the fish while its prey faces either way.
+local headings={}
+for i=1,2400 do
+ local updates=fish_updates
+ local before_x,before_y=actor.motion.x,actor.motion.y
+ env.on_message(actor,'water_frame',frame)
+ assert(fish_updates==updates+1,'Held prey aborted the fish transform update')
+ local _,_,a,b=mouth.target(actor.motion);headings[b]=true;check_rotation(a,b)
+ assert(transforms.scale.x==transforms.scale.y)
+ assert(math.abs(position.x-((actor.motion.x-640)*1.5+1280))<1e-7)
+ assert(math.abs(position.y-(720-actor.motion.y)*1.5)<1e-7)
+ assert(math.sqrt((actor.motion.x-before_x)^2+(actor.motion.y-before_y)^2)<=6.000001)
+end
+assert(headings[-1] and headings[1],'Held prey must cover both swimming directions')
 -- Invalid placement immediately removes a bird from the mouth and resets.
 env.on_message(actor,'place_target',{x=640,y=700})
 assert(actor.motion.mode=='swim' and not actor.motion.caught and not actor.motion.target)
@@ -96,7 +141,7 @@ assert(targets['/fish_target#bird']=='disable')
 env.on_message(actor,'place_target',{x=640,y=500})
 assert(actor.motion.mode=='attack' and not actor.motion.caught and actor.motion.target)
 assert(targets['/fish_target#bird']=='enable' and transforms.scale.x==waiting_scale)
-assert(transforms.rotation==0 and transforms.position.z==-.2)
+check_rotation(0,1);assert(transforms.position.z==-.2)
 frame.visible=false;env.on_message(actor,'water_frame',frame)
 assert(not actor.motion.target and not actor.motion.caught and targets['/fish_target#bird']=='disable')
 print('PASS swimming fish: four random directions, continuous segments, wave/viewport bounds, shallow water and lifecycle')
