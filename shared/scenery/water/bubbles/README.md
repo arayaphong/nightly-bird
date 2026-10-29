@@ -1,9 +1,11 @@
 # Water-owned fish bubbles
 
-The water presenter owns the pool, 0.5-second emission clock, world motion and
+The water presenter owns the pool, mode-based emission clock, world motion and
 Rive view model. The fish only reports its SVG tail and dorsal-fin attachment
 points, including heading, belly flip and animated tail pivot. Every active
-half-second emits 5 tail bubbles and 3 dorsal bubbles together. Origins above
+cycle emits 5 tail bubbles and 3 dorsal bubbles together: every 2 seconds in
+patrol (`swim`), and every 0.5 seconds in other modes. A cadence change restarts
+the emission clock while existing bubbles keep rising. Origins above
 the surface are skipped and airborne fish do not emit.
 
 Released bubbles stay in world space, rise at 64–88 world units/s and disappear

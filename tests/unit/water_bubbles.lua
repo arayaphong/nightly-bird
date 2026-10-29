@@ -5,22 +5,23 @@ local anchors=require('shared.characters.fish.anchors')
 local function near(a,b) assert(math.abs(a-b)<1e-7,tostring(a)..' != '..tostring(b)) end
 local function rng(seed) return function() seed=seed*16807%2147483647;return (seed-1)/2147483646 end end
 local w=water.new();water.set_roughness(w,0)
-local emitter={tail_x=600,tail_y=650,fin_x=630,fin_y=625}
-local s=bubbles.new(rng(7));bubbles.step(s,.49,w,emitter);assert(s.total==0)
+local emitter={tail_x=600,tail_y=650,fin_x=630,fin_y=625,mode='swim'}
+local s=bubbles.new(rng(7));bubbles.step(s,1.99,w,emitter);assert(s.total==0)
 bubbles.step(s,.01,w,emitter);assert(s.total==8)
 local count={tail=0,fin=0}
 for i,p in ipairs(s.items) do if p.alive then count[p.source]=count[p.source]+1;assert(p.y>water.surface_y(w,p.x)) end end
 assert(count.tail==5 and count.fin==3)
-bubbles.step(s,.5,w,emitter);assert(s.total==16)
+bubbles.step(s,2,w,emitter);assert(s.total==16)
 -- A released bubble is world-owned: changing/swapping emitters cannot move it.
-local p=s.items[1];local x,y=p.origin_x,p.origin_y;local before=p.y
-local moved={tail_x=900,tail_y=650,fin_x=860,fin_y=625}
+local p=s.items[9];local x,y=p.origin_x,p.origin_y;local before=p.y
+local moved={tail_x=900,tail_y=650,fin_x=860,fin_y=625,mode='attack'}
 bubbles.step(s,.2,w,moved);near(p.origin_x,x);near(p.origin_y,y);assert(p.y<before)
 -- Stopping emission retains old bubbles until they reach the animated surface.
 local total=s.total;bubbles.step(s,.1,w,nil);assert(s.total==total)
 for i=1,240 do bubbles.step(s,1/60,w,nil) end
 for _,p in ipairs(s.items) do assert(not p.alive) end
 -- Scheduling and rise distance agree on coarse/fine frame intervals.
+emitter.mode='attack'
 local a,b=bubbles.new(rng(19)),bubbles.new(rng(19))
 bubbles.step(a,3,w,emitter);for i=1,360 do bubbles.step(b,1/120,w,emitter) end
 assert(a.total==48 and b.total==48)
@@ -52,4 +53,4 @@ near(left.fin_x,1280-right.fin_x);near(left.fin_y,right.fin_y)
 pose.angle=math.pi/2;pose.belly=1;local turn=anchors.emitters(fish,pose)
 near(turn.tail_x,640-(right.tail_y-650));near(turn.tail_y,650+(right.tail_x-640))
 fish.phase='leap';assert(not anchors.emitters(fish,pose).enabled)
-print('PASS water bubbles: 5 tail + 3 dorsal every 0.5s, fixed pool, world-space rise, surface expiry, paused sources and SVG anchors')
+print('PASS water bubbles: 5 tail + 3 dorsal every 2s in patrol / 0.5s otherwise, fixed pool, world-space rise, surface expiry, paused sources and SVG anchors')

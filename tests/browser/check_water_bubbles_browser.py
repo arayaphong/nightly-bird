@@ -47,15 +47,18 @@ with sync_playwright() as p:
  session=c.new_cdp_session(page)
  enter();assert mode()=='landscape'
  samples=[]
- for i in range(6):wait_ms(220);samples.append(snap('landscape-%02d'%i))
+ for i in range(6):
+  wait_ms(500);samples.append(snap('landscape-%02d'%i))
+  if samples[-1]['bubble_pixels']>5:break
+ assert len(samples)>=3 and all(v['bubble_pixels']==0 for v in samples[:2]),'Patrol bubbles appeared before the 2s cycle'
  assert max(v['bubble_pixels'] for v in samples)>5,'Vector bubbles are not visible above water fill'
  tap(810,596);hidden=snap('fish-hidden-existing-bubbles')
  assert hidden['bubble_pixels']>0,'Hiding fish incorrectly hid the water-owned bubbles'
  wait_ms(2200);drained=snap('fish-hidden-no-new-bubbles');assert drained['bubble_pixels']==0,'Hidden fish continued emitting'
- tap(810,596);wait_ms(800);restored=snap('fish-restored');assert restored['bubble_pixels']>5,'Emission did not resume'
+ tap(810,596);wait_ms(2200);restored=snap('fish-restored');assert restored['bubble_pixels']>5,'Emission did not resume'
  tap(470,596);dry=snap('water-hidden');assert dry['bubble_pixels']==0,'Hidden water left orphan bubbles'
- enter(True);assert mode()=='portrait';wait_ms(900);portrait=snap('portrait')
+ enter(True);assert mode()=='portrait';wait_ms(2200);portrait=snap('portrait')
  assert portrait['bubble_pixels']>5,'Portrait bubbles missing'
  errors=[v for v in logs if any(s in v for s in ('ERROR:','PAGEERROR','GL_INVALID'))];assert not errors,errors
- result={'version':'0.8.36','landscape':samples,'fish_hidden_existing_bubbles':hidden,'stopped_and_drained':drained,'resumed':restored,'water_hidden':dry,'portrait':portrait,'test_clock':'0.2x, paused for screenshots; not an FPS benchmark','errors':errors}
+ result={'version':'0.8.37','landscape':samples,'fish_hidden_existing_bubbles':hidden,'stopped_and_drained':drained,'resumed':restored,'water_hidden':dry,'portrait':portrait,'test_clock':'0.2x, paused for screenshots; not an FPS benchmark','errors':errors}
  (ART/'test.json').write_text(json.dumps(result,indent=2));(ART/'browser.log').write_text('\n'.join(logs));print(json.dumps(result));b.close()

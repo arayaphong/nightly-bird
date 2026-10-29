@@ -88,6 +88,6 @@ This is a kinematic Studio fixture, not a complete gameplay physics simulation.
 ## Water-owned bubbles
 
 `shared/scenery/water/bubbles/` manages and draws a pooled vector effect. The
-fish reports tail/dorsal world anchors; water emits 5/3 bubbles every 0.5 seconds.
+fish reports tail/dorsal world anchors; water emits 5/3 bubbles every 2 seconds in patrol and 0.5 seconds in other modes.
 Old bubbles float independently toward the animated surface, including after
 hiding just the fish. Hiding water or leaving clears them. Fish artwork is unchanged.

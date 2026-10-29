@@ -10,6 +10,6 @@ function M.emitters(s,pose)
     local tc,ts=math.cos(pose.tail),math.sin(pose.tail)
     local tx,ty=world(1236+257*tc+249*ts,566+257*ts-249*tc)
     local fx,fy=world(886,86) -- fixed dorsal-fin tip, distinct from pectoral fin
-    return {tail_x=tx,tail_y=ty,fin_x=fx,fin_y=fy,enabled=s.phase~='leap'}
+    return {tail_x=tx,tail_y=ty,fin_x=fx,fin_y=fy,enabled=s.phase~='leap',mode=s.mode}
 end
 return M

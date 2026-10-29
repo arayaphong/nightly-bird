@@ -1,6 +1,6 @@
 -- The water owns this fixed pool. Units are world x-right/y-down, never fish-local.
 local water=require('shared.scenery.water.motion')
-local M={CAPACITY=192,INTERVAL=.5,TAIL_COUNT=5,FIN_COUNT=3}
+local M={CAPACITY=192,INTERVAL=.5,PATROL_INTERVAL=2,TAIL_COUNT=5,FIN_COUNT=3}
 function M.new(random)
     local s={items={},elapsed=0,next=1,random=random or math.random,total=0}
     for i=1,M.CAPACITY do s.items[i]={alive=false} end
@@ -8,7 +8,7 @@ function M.new(random)
 end
 function M.clear(s)
     for _,p in ipairs(s.items) do p.alive=false end
-    s.elapsed=0;s.previous=nil
+    s.elapsed=0;s.previous=nil;s.interval=nil
 end
 local function radius(i) return 1.3+((i-1)%5)*.3 end
 local function advance(s,dt,w)
@@ -37,13 +37,17 @@ end
 function M.step(s,dt,w,emitter)
     dt=math.max(0,dt)
     if not emitter or emitter.enabled==false then
-        s.elapsed=0;s.previous=nil;advance(s,dt,w);return
+        s.elapsed=0;s.previous=nil;s.interval=nil;advance(s,dt,w);return
     end
+    local interval=emitter.mode=='swim' and M.PATROL_INTERVAL or M.INTERVAL
+    -- Start a fresh emission cycle on a cadence change; existing bubbles keep
+    -- rising. This also prevents a negative wait when switching from 2s to .5s.
+    if s.interval~=interval then s.elapsed=0;s.interval=interval end
     local previous=s.previous or emitter;local left,passed=dt,0
     while left>1e-9 do
-        local h=math.min(left,M.INTERVAL-s.elapsed)
+        local h=math.min(left,interval-s.elapsed)
         advance(s,h,w);left=left-h;passed=passed+h;s.elapsed=s.elapsed+h
-        if s.elapsed>=M.INTERVAL-1e-9 then
+        if s.elapsed>=interval-1e-9 then
             s.elapsed=0;local t=dt>0 and passed/dt or 1
             local function point(key) return previous[key]+(emitter[key]-previous[key])*t end
             burst(s,point('tail_x'),point('tail_y'),M.TAIL_COUNT,w,'tail')
