@@ -5,3 +5,4 @@ components {
   properties { id: "with_water" value: "true" type: PROPERTY_TYPE_BOOLEAN }
   properties { id: "with_fish" value: "true" type: PROPERTY_TYPE_BOOLEAN }
 }
+components { id: "bubbles" component: "/shared/scenery/water/bubbles/visual.rivemodel" position { z: -0.05 } }

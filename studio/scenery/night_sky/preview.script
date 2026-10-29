@@ -1,5 +1,6 @@
 local motion=require('shared.scenery.night_sky.motion')
 local water=require('shared.scenery.water.motion')
+local bubbles=require('shared.scenery.water.bubbles.motion')
 local viewport=require('shared.display.viewport')
 local write_only=require('shared.render.write_only_view_model')
 -- Include hidden water/reflection properties: they share the sky artboard and
@@ -14,6 +15,11 @@ function init(self)
     self.water=water.new();self.water_visible=true;self.fish_visible=true
     self.page=self.with_fish and 'fish_test' or self.with_water and 'night_water' or 'night_sky'
     self.binding=write_only.new(rive,'#sky',channels,'water_alpha')
+    if self.with_fish then
+        self.bubbles=bubbles.new();self.bubble_last={}
+        self.bubble_binding=write_only.new(rive,'#bubbles',bubbles.values(self.bubbles),'bubble_0_alpha')
+        msg.post('#bubbles','disable')
+    end
     msg.post('#sky','disable')
 end
 local function publish(self)
@@ -23,6 +29,7 @@ function update(self,dt)
     -- Prepare inactive fixtures too, so their subscriptions do not tax a later
     -- active scene. This does not advance their motion or enable their artwork.
     self.vm=write_only.prepare(self.binding)
+    if self.bubble_binding then self.bubble_vm=write_only.prepare(self.bubble_binding) end
     if not self.active then return end
     local p=rive.get_projection_matrix();local w,h=2/p.m00,2/p.m11
     local camera=viewport.camera(w,h)
@@ -35,6 +42,16 @@ function update(self,dt)
     motion.step(self.motion,dt)
     if self.with_water and self.water_visible then water.step(self.water,dt) end
     if self.with_fish then
+        if self.water_visible then
+            bubbles.step(self.bubbles,dt,self.water,self.fish_visible and self.fish_emitters or nil)
+        end
+        if self.bubble_vm then
+            for name,value in pairs(bubbles.values(self.bubbles)) do
+                if self.bubble_last[name]~=value then
+                    rive.cmd.setViewModelInstanceNumber(self.bubble_vm,name,value);self.bubble_last[name]=value
+                end
+            end
+        end
         msg.post('/swimming_fish#script','water_frame',{dt=dt,width=w,height=h,
             level=self.water.level,roughness=self.water.roughness,wave_time=self.water.wave_time,visible=self.water_visible and self.fish_visible})
     end
@@ -55,11 +72,19 @@ end
 function on_message(self,id,message)
     if id==hash('active') then
         self.active=message.active;msg.post('#sky',self.active and 'enable' or 'disable')
+        if self.with_fish then
+            if not self.active then bubbles.clear(self.bubbles);self.fish_emitters=nil end
+            msg.post('#bubbles',self.active and self.water_visible and 'enable' or 'disable')
+        end
         if self.active then publish(self) end
     elseif id==hash('toggle_water') and self.active and self.with_fish then
-        self.water_visible=not self.water_visible;publish(self)
+        self.water_visible=not self.water_visible
+        bubbles.clear(self.bubbles);self.fish_emitters=nil
+        msg.post('#bubbles',self.water_visible and 'enable' or 'disable');publish(self)
     elseif id==hash('toggle_fish') and self.active and self.with_fish and self.water_visible then
-        self.fish_visible=not self.fish_visible;publish(self)
+        self.fish_visible=not self.fish_visible;self.fish_emitters=nil;publish(self)
+    elseif id==hash('fish_emitters') and self.active and self.with_fish then
+        self.fish_emitters=self.water_visible and self.fish_visible and message.enabled~=false and message or nil
     elseif id==hash('star_count') and self.active then
         if motion.set_count(self.motion,'star',message.count) then publish(self) end
     elseif id==hash('dust_count') and self.active then

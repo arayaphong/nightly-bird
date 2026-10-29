@@ -1,0 +1,5 @@
+scene: "/shared/scenery/water/bubbles/visual.rivescene"
+artboard: "WaterBubbles"
+default_state_machine: "Bubbles"
+coordinate_system: COORDINATE_SYSTEM_GAME
+auto_bind: true

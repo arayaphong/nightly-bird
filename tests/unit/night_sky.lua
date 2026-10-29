@@ -159,4 +159,14 @@ local previous_writes=writes;env.update(empty,.1)
 assert(writes==previous_writes,'Disabled particles must not send changing Rive properties')
 env.on_message(empty,'star_count',{count=1});env.update(empty,.1)
 assert(channels.star_0_alpha>0 and channels.star_1_alpha==0 and channels.dust_0_alpha==0)
+-- Water owns emission and existing particles outlive the hidden fish.
+env.on_message(fish_scene,'active',{active=true})
+env.on_message(fish_scene,'fish_emitters',{tail_x=640,tail_y=650,fin_x=660,fin_y=620,enabled=true})
+env.update(fish_scene,.5);assert(fish_scene.bubbles.total==8)
+local first=fish_scene.bubbles.items[1];local bubble_y=first.y
+env.on_message(fish_scene,'toggle_fish',{});env.update(fish_scene,.1)
+assert(fish_scene.bubbles.total==8 and first.alive and first.y<bubble_y)
+env.on_message(fish_scene,'toggle_water',{})
+for _,p in ipairs(fish_scene.bubbles.items) do assert(not p.alive) end
+env.on_message(fish_scene,'active',{active=false});assert(not fish_scene.fish_emitters)
 print('PASS night sky: slow staggered flares, fixed 32/64 stars, continuity, 10 winds, wrapping and lifecycle')

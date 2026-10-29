@@ -1,4 +1,5 @@
 local swim=require('shared.scenery.fish.motion')
+local anchors=require('shared.characters.fish.anchors')
 local viewport=require('shared.display.viewport')
 local attack=require('shared.scenery.fish.attack')
 local mouth=require('shared.scenery.fish.mouth')
@@ -77,6 +78,7 @@ function on_message(self,id,m)
         visible(self,self.motion.visible)
         if not self.visible then cancel(self);return end
         target(self,camera,m)
+        msg.post('/fish_test#script','fish_emitters',anchors.emitters(self.motion,swim.values(self.motion)))
         local scale=self.motion.scale*camera.scale
         go.set_scale(vmath.vector3(scale,scale,1))
         -- Rive's render pass draws this depth after the opaque scenery.

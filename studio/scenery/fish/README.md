@@ -84,3 +84,10 @@ submerged room remains. A viewport/water bounds change uses a continuous return.
 single bird. Water snapshots keep viewport, waves and fish synchronized. Hiding
 fish/water or leaving the fixture cancels the round and removes the bird.
 This is a kinematic Studio fixture, not a complete gameplay physics simulation.
+
+## Water-owned bubbles
+
+`shared/scenery/water/bubbles/` manages and draws a pooled vector effect. The
+fish reports tail/dorsal world anchors; water emits 5/3 bubbles every 0.5 seconds.
+Old bubbles float independently toward the animated surface, including after
+hiding just the fish. Hiding water or leaving clears them. Fish artwork is unchanged.
