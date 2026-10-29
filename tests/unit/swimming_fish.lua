@@ -144,16 +144,31 @@ frame.dt=0;env.on_message(actor,'water_frame',frame);frame.dt=1/120
 assert(actor.motion.mode=='attack' and actor.motion.lock)
 assert(targets['/fish_target#bird']=='enable' and transforms.scale.x==waiting_scale)
 check_rotation(0,1);assert(transforms.position.z==-.2)
--- Real actor placement must remove the prey without aborting its committed leap.
+-- Removing prey before launch cancels the approach without a strike sound.
 local lock=actor.motion.lock;local phase=actor.motion.phase;local before=#sounds
 env.on_message(actor,'place_target',{x=640,y=700})
 assert(actor.motion.mode=='attack' and actor.motion.lock==lock and actor.motion.phase==phase)
 assert(not actor.motion.target and targets['/fish_target#bird']=='disable')
 for i=1,1200 do
  env.on_message(actor,'water_frame',frame)
- if actor.motion.mode~='attack' then break end
+ if actor.motion.mode=='swim' and not actor.motion.phase then break end
 end
-assert(actor.motion.mode=='swim' and not actor.motion.phase and #sounds==before+1)
+assert(actor.motion.mode=='swim' and not actor.motion.phase and not actor.motion.lock and #sounds==before)
+-- Once the rendered actor has launched, removing prey must not abort its leap.
+env.on_message(actor,'place_target',{x=640,y=500})
+for i=1,1200 do
+ env.on_message(actor,'water_frame',frame)
+ if actor.motion.phase=='leap' then break end
+end
+assert(actor.motion.phase=='leap')
+local lock=actor.motion.lock;local before=#sounds
+env.on_message(actor,'place_target',{x=640,y=700})
+assert(actor.motion.mode=='attack' and actor.motion.lock==lock and actor.motion.phase=='leap')
+for i=1,1200 do
+ env.on_message(actor,'water_frame',frame)
+ if actor.motion.mode=='swim' and not actor.motion.phase then break end
+end
+assert(actor.motion.mode=='swim' and not actor.motion.phase and #sounds==before)
 env.on_message(actor,'place_target',{x=640,y=500})
 frame.visible=false;env.on_message(actor,'water_frame',frame)
 assert(not actor.motion.target and not actor.motion.caught and targets['/fish_target#bird']=='disable')

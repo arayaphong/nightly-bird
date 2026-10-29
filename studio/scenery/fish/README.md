@@ -12,14 +12,17 @@ stop updating; the fish-only visibility preference is retained independently.
 The fish has exactly three public `mode` values:
 
 - `swim`: ordinary random swimming without a catch.
-- `attack`: committed surface approach, leap and return into the water.
+- `attack`: surface approach, then committed leap and return into the water.
 - `excited`: carrying a caught bird and swimming rapidly back and forth.
 
 Placement only creates, moves or removes the single full-size dead bird. It
 never opens an attack lock. On each update, patrol detects any existing prey and
 locks its current location itself, including prey introduced without a tap.
-During an attack, prey changes do not alter its lock, velocities, launch, bite
-attempt or return phase. After a miss lands, patrol immediately acquires any
+Before launching, the fish cancels its approach if prey disappears or moves
+outside a **72-world-unit decision radius** around the locked point. A remaining
+prey can be acquired at its new position by patrol on the next update. Once
+launched, prey changes do not alter the lock, launch, bite attempt or landing.
+After a miss lands, patrol immediately acquires any
 remaining prey at its current position and starts another attack automatically;
 there is no queued placement command or extra tap requirement. Removing a carried
 bird ends excitement, allowing patrol to detect its replacement next update.
@@ -35,7 +38,10 @@ The dead bird reuses the original SVG/Rive geometry and crossed-out eyes.
 
 `shared/scenery/fish/attack.lua` keeps the legacy above-water strike mechanism:
 fast swimming to the surface and within **96 horizontal world units** of the
-locked point, then a locked ballistic leap with gravity `720 * 4.2`. Approach
+locked point, then a locked ballistic leap with gravity `720 * 4.2`. The decision
+circle is centered on that lock (not the fish) and is exactly three times the
+24-unit bite radius; prey between 24 and 72 units keeps the approach but is not
+close enough to be caught. Approach
 speed is capped at 480 world units/s. There is no timeout or velocity-based
 exception that launches from far away. The trajectory does not steer at a moved
 bird. At the single bite attempt near the locked point, the current bird must
@@ -43,7 +49,8 @@ still be within a **24-world-unit radius** of that point to be caught. Removing
 or moving it outside the circle causes a miss; a bird appearing after the bite
 cannot be collected by the old attack.
 
-Public mode remains `attack` through approach, leap and submerged return, even
+While prey remains within the decision circle, public mode remains `attack`
+through approach, leap and submerged return, even
 when carrying a catch. Only after returning fully into the water bounds does it
 switch to `excited` if still holding a bird, or `swim` otherwise, then clear the
 lock. The carried bird shrinks to 40% of its original scale at default fish size
@@ -62,8 +69,9 @@ its motion continued, causing apparent pauses followed by jumps.
 
 Internal `phase` values (`charge`, `leap`, `return`) describe movement within
 these modes. A fresh attack started while outside submerged bounds first returns
-to the water, then approaches its lock. A prey change during any phase preserves
-the current position and animation phase. Landing returns continuously instead
+to the water, then approaches its lock; this pre-launch return also cancels if
+prey leaves the decision circle. Cancellation preserves the fish's position and
+animation phase and resumes ordinary swimming continuously. Landing returns continuously instead
 of clamping an overshooting x-coordinate back to an edge. A missed attack leaves
 any remaining bird at its current position, and patrol immediately locks it for a new attack.
 

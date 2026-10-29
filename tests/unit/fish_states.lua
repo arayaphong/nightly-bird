@@ -37,9 +37,9 @@ local function finish(s,width,dt)
  error('Committed attack did not finish')
 end
 
--- Removing prey in any attack phase preserves the trajectory and locked point.
+-- Once launched, removing prey preserves flight and landing at the locked point.
 for _,width in ipairs({432,1280,2200}) do
- for _,wanted in ipairs({'charge','leap','return'}) do
+ for _,wanted in ipairs({'leap','return'}) do
   local a,b=prepared(width),prepared(width)
   local x=640+width*.35;local y=water.surface_y(w,x)-80
   assert(place(a,x,y,w,width) and place(b,x,y,w,width))
@@ -104,9 +104,40 @@ for _,side in ipairs({-1,1}) do
  for i=1,144 do assert(not swim.step(s,1/120,w,2200)) end
  assert(s.mode=='attack' and s.phase=='charge' and math.abs(s.x-x)>attack.LAUNCH_RANGE)
  assert(math.abs(s.x-start)>100,'Fish did not swim toward distant target')
- local lock=s.lock;assert(not place(s,640,720,w,2200));assert(s.lock==lock)
- assert(finish(s,2200)==1 and s.mode=='swim','Removed prey canceled the far approach')
+ local px,py=s.x,s.y
+ assert(not place(s,640,720,w,2200))
+ assert(s.mode=='swim' and not s.lock and not s.target and not s.caught,'Lost prey did not cancel the far approach')
+ near(s.x,px);near(s.y,py)
+ for i=1,360 do assert(not swim.step(s,1/120,w,2200),'Canceled approach launched later') end
 end
+
+-- The decision circle is 3x the bite circle and is centered on the lock, not
+-- the fish. A prey in the annulus keeps the approach but can still miss the bite.
+assert(attack.HIT_RADIUS==24 and attack.DECISION_RADIUS==72)
+for _,offset in ipairs({{0,0,true},{72,0,true},{0,-72,true},{72.0001,0,false},
+                        {72*.6,72*.6,true},{72*.8,72*.8,false}}) do
+ local s=prepared(2200);s.x=s.bounds.left+10
+ assert(place(s,1000,480,w,2200));local lock=s.lock;local prey=s.target
+ prey.x=lock.x+offset[1];prey.y=lock.y+offset[2]
+ local px,py=s.x,s.y;swim.step(s,0,w,2200);near(s.x,px);near(s.y,py)
+ if offset[3] then
+  assert(s.mode=='attack' and s.phase=='charge' and s.lock==lock,'Valid prey canceled the approach')
+ else
+  assert(s.mode=='swim' and not s.lock and s.target==prey,'Prey outside decision circle kept old attack')
+  -- Patrol detects the remaining prey next update and acquires its new location.
+  swim.step(s,0,w,2200)
+  assert(s.mode=='attack' and s.lock~=lock and s.target==prey)
+  near(s.lock.x,prey.x);near(s.lock.y,prey.y)
+ end
+end
+-- Even a fish close to launch cancels before leaping when the prey disappears.
+local s=prepared(1280);assert(place(s,640,480,w,1280))
+s.x=s.lock.x;s.y=water.surface_y(w,s.x)+s.scale*1336/2.1*.5
+assert(not place(s,640,720,w,1280));assert(s.mode=='swim' and not s.lock)
+-- Initial return-to-water is still pre-launch and must not keep a stale lock.
+local s=prepared(1280);s.y=s.bounds.top-20
+assert(place(s,700,480,w,1280));assert(s.phase=='return' and s.resume_attack)
+assert(not place(s,700,720,w,1280));assert(s.mode=='swim' and not s.lock and not s.resume_attack)
 
 -- A new round is allowed only after the current committed attack lands.
 local s=prepared(1280);assert(place(s,640,480,w,1280));finish(s,1280)
@@ -145,4 +176,4 @@ assert(not swim.place(s,640,720,w,1280));swim.step(s,0,w,1280)
 assert(s.mode=='swim' and not s.lock and not s.target)
 assert(swim.place(s,640,480,w,1280));s.target.x=700
 swim.step(s,0,w,1280);assert(s.lock.x==700,'AI locked the stale placement position')
-print('PASS fish states: immutable lock, uninterrupted approach/leap/return, one radial bite, autonomous patrol reacquisition, landing-only modes and bounded launch range')
+print('PASS fish states: 72-unit pre-launch decision circle, 24-unit bite circle, uninterrupted flight/landing, autonomous patrol acquisition and bounded launch range')

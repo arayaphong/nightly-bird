@@ -4,6 +4,7 @@ local viewport=require('shared.display.viewport')
 local mouth=require('shared.scenery.fish.mouth')
 local M={RANGE=128,LAUNCH_RANGE=96,HIT_RADIUS=24,APPROACH_SPEED=480,
     GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120}
+M.DECISION_RADIUS=M.HIT_RADIUS*3
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function M.accepts(x,y,w,width)
     if type(x)~='number' or type(y)~='number' or x~=x or y~=y then return false end
@@ -36,6 +37,15 @@ function M.acquire(s)
     local prey=s.target
     M.cancel(s)
     s.target=prey;s.lock={x=prey.x,y=prey.y};s.mode='attack';charge(s)
+    return true
+end
+function M.cancel_lost_approach(s)
+    -- Before launching, keep chasing only while prey remains within the larger
+    -- circle around the immutable lock. Leap and landing always finish.
+    if s.mode~='attack' or not (s.phase=='charge' or (s.phase=='return' and s.resume_attack)) then return false end
+    local prey,lock=s.target,s.lock
+    if prey and lock and (prey.x-lock.x)^2+(prey.y-lock.y)^2<=M.DECISION_RADIUS^2 then return false end
+    M.cancel(s);s.target=prey
     return true
 end
 function M.outside(s,b)
