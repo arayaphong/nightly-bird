@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build a static vector character grid and three small animated previews."""
-import math
+import math,colorsys
 import xml.etree.ElementTree as ET
 from defold_rive_bird import ROOT,start_file,finish_file,draw_group,draw_path,path,transform
 
@@ -63,6 +63,14 @@ def cloud(f,parent,channels=None):
         defs={'flash':radial('flash',140,'rgba(140,175,255,.32)','rgba(80,130,255,0)')}
         draw_path(f,ellipse(140,'url(#flash)'),glow,defs)
 
+def firefly_channels():
+    return dict(show_firefly=0,wing_left=1,wing_right=1,lamp_mix=.5,glow_scale=1,glow_alpha=.6,
+                normal_alpha=1,**{f'rainbow_alpha_{i}':0 for i in range(6)})
+
+def rainbow_color(hue,lightness,alpha=1):
+    rgb=[round(c*255) for c in colorsys.hls_to_rgb((hue%360)/360,lightness,1)]
+    return f'rgba({rgb[0]},{rgb[1]},{rgb[2]},{alpha})'
+
 def firefly(f,parent,channels=None):
     svg,defs=svg_asset('items/firefly')
     for g in reversed([g for g in svg if g.get('data-sprite') is not None]):
@@ -71,15 +79,28 @@ def firefly(f,parent,channels=None):
         if channels and g.get('id') in ('wing-left','wing-right'):
             f.bind(17,channels.index(g.get('id').replace('-','_')))
         if channels and g.get('id')=='lamp':
-            yellow=f.node('lamp-yellow',node,opacity=.5);f.bind(18,channels.index('lamp_mix'))
+            for i in range(6):
+                layer=f.node('lamp-rainbow-'+str(i),node,opacity=0);f.bind(18,channels.index(f'rainbow_alpha_{i}'))
+                for p in reversed(list(g)):
+                    q=ET.fromstring(ET.tostring(p));q.set('fill',rainbow_color(i*60,.7));draw_path(f,q,layer)
+            normal=f.node('lamp-normal',node);f.bind(18,channels.index('normal_alpha'))
+            yellow=f.node('lamp-yellow',normal,opacity=.5);f.bind(18,channels.index('lamp_mix'))
             for p in reversed(list(g)):
                 q=ET.fromstring(ET.tostring(p));q.set('fill','#ffec3c');draw_path(f,q,yellow)
+            draw_group(f,g,normal,defs)
+            continue
         draw_group(f,g,node,defs)
     radius=24 if channels else 7
     glow=f.node('glow',parent)
     if channels:
         f.bind(16,channels.index('glow_scale'));f.bind(17,channels.index('glow_scale'))
         f.bind(18,channels.index('glow_alpha'))
+        for i in range(6):
+            layer=f.node('glow-rainbow-'+str(i),glow,opacity=0);f.bind(18,channels.index(f'rainbow_alpha_{i}'))
+            gradient=radial('rainbow',radius,rainbow_color(i*60,.85),rainbow_color(i*60+120,.55,0))
+            gradient.insert(1,ET.Element('stop',{'offset':'.3','stop-color':rainbow_color(i*60,.6,.58)}))
+            draw_path(f,ellipse(radius,'url(#rainbow)'),layer,{'rainbow':gradient})
+        glow=f.node('glow-normal',glow);f.bind(18,channels.index('normal_alpha'))
     defs={'glow':radial('glow',radius,'rgba(190,255,90,.8)','rgba(60,220,0,0)')}
     draw_path(f,ellipse(radius,'url(#glow)'),glow,defs)
 
@@ -112,7 +133,7 @@ def gallery():
 
 def nature():
     previews={
-        'firefly':('Firefly',6,320,{'show_firefly':0,'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6}),
+        'firefly':('Firefly',6,320,firefly_channels()),
         'balloon':('Balloon',90,300,{'show_balloon':0,'balloon_y':300,'balloon_rotation':0}),
         'cloud':('RainCloud',1.7,300,{'show_cloud':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}),
     }

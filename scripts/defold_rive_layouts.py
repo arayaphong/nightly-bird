@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the landscape presentation from the shared SVG/vector painters."""
 from defold_rive_bird import ROOT,ITEMS,asset,draw_group,draw_path,path,start_file,finish_file as write_file
-from defold_rive_gallery import svg_asset,paint_svg,firefly,balloon,cloud,DROPS,BOLT_POINTS,FORK_POINTS
+from defold_rive_gallery import svg_asset,paint_svg,firefly,firefly_channels,balloon,cloud,DROPS,BOLT_POINTS,FORK_POINTS
 
 def finish_file(f,name,state_machine='Bird'):
     write_file(f,name,state_machine,destination='shared/display/artwork/landscape/'+name+'.riv')
@@ -49,7 +49,7 @@ def gallery():
 
 def nature():
     previews={
-        'firefly':('Firefly',9,330,{'show_firefly':0,'wing_left':1,'wing_right':1,'lamp_mix':.5,'glow_scale':1,'glow_alpha':.6}),
+        'firefly':('Firefly',9,330,firefly_channels()),
         'balloon':('Balloon',90,300,{'show_balloon':0,'balloon_y':300,'balloon_rotation':0}),
         'cloud':('RainCloud',1.7,300,{'show_cloud':0,'cloud_y':0,'bolt_alpha':0,'flash_alpha':0,'dark_alpha':0,'strike_glow_x':0,'strike_glow_y':45}),
     }

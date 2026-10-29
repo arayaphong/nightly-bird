@@ -56,6 +56,11 @@ local function move_page(self,direction)
     local next_page=pages.neighbor(self.page,direction)
     if next_page then set_page(self,next_page) end
 end
+local function update_firefly(self)
+    gui.set_text(self.firefly_label,self.firefly_rainbow and 'ชนิด: สีรุ้ง' or 'ชนิด: ปกติ')
+    gui.set_color(self.firefly_toggle,self.firefly_rainbow and ACCENT or vmath.vector4(.15,.23,.38,1))
+    gui.set_color(self.firefly_label,self.firefly_rainbow and vmath.vector4(.04,.09,.12,1) or WHITE)
+end
 local function build(self)
     local saved={};local fields={'status','fish_status','hawk_status','dive_label','lightning_label','dive','lightning'}
     for _,key in ipairs(fields) do
@@ -77,6 +82,7 @@ local function build(self)
         gui.set_color(self[key],value.color)
     end
     for key,value in pairs(badges) do gui.set_text(self.badges[key],value.text);gui.set_color(self.badges[key],value.color) end
+    update_firefly(self)
     self.layout_mode=viewport.mode;apply_route(self,self.page or 'home')
 end
 function init(self)
@@ -91,6 +97,7 @@ function on_message(self,id,message)
     elseif id==hash('route') then apply_route(self,message.name)
     elseif id==hash('status') then gui.set_text(self.status,'ปีก: '..message.text)
     elseif id==hash('fish_status') then gui.set_text(self.fish_status,message.text)
+    elseif id==hash('firefly_status') then self.firefly_rainbow=message.rainbow;update_firefly(self)
     elseif id==hash('hawk_status') then
         self.hawk_busy=message.busy
         local facing=message.turning and 'กำลังกลับตัว' or (message.direction==1 and 'หันขวา' or 'หันซ้าย')
@@ -117,6 +124,7 @@ local function button_at(self,x,y)
         return nil
     end
     if self.page=='fish' then return gui.pick_node(self.turn,x,y) and 'turn' or nil end
+    if self.page=='firefly' then return gui.pick_node(self.firefly_toggle,x,y) and 'toggle_firefly' or nil end
     if self.page=='hawk' then
         if gui.pick_node(self.hawk_turn,x,y) then return 'hawk_turn' end
         return not self.hawk_busy and gui.pick_node(self.dive,x,y) and 'dive' or nil
@@ -131,6 +139,7 @@ local function activate(self,button)
     if button=='home' then set_page(self,'characters')
     elseif button:sub(1,7)=='select:' then set_page(self,button:sub(8))
     elseif button=='turn' then msg.post('/fish#script','turn')
+    elseif button=='toggle_firefly' then msg.post('/objects#script','toggle_firefly')
     elseif button=='hawk_turn' then msg.post('/hawk#script','turn')
     elseif button=='dive' then if not self.hawk_busy then msg.post('/hawk#script','dive') end
     elseif button=='lightning' then if not self.cloud_busy then msg.post('/objects#script','lightning') end
@@ -178,10 +187,10 @@ function on_input(self,id,action)
         end
         return true
     end
-    if self.page=='fish' or self.page=='hawk' or self.page=='cloud' then
+    if self.page=='fish' or self.page=='hawk' or self.page=='cloud' or self.page=='firefly' then
         if self.page=='hawk' and id==hash('turn') and action.pressed then activate(self,'hawk_turn') end
         if id==hash('activate') and action.pressed then
-            activate(self,({fish='turn',hawk='dive',cloud='lightning'})[self.page])
+            activate(self,({fish='turn',hawk='dive',cloud='lightning',firefly='toggle_firefly'})[self.page])
         end
         return true
     end

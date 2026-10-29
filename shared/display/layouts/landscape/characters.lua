@@ -57,7 +57,11 @@ local PAGES,CHARACTER_LABELS,ITEMS,LABELS=kit.PAGES,kit.CHARACTER_LABELS,kit.ITE
         self[entry[1]..'_root'],text,box=group()
         text(640,668,entry[2]..' · VECTOR 2D',28)
         text(640,625,entry[1]=='cloud' and 'ฝนตก · กดปุ่มเพื่อทดสอบฟ้าแลบ' or 'แอนิเมชันอัตโนมัติ',17,MUTED)
-        if entry[1]=='cloud' then
+        if entry[1]=='firefly' then
+            self.firefly_toggle=box(1070,160,340,72,vmath.vector4(.15,.23,.38,1))
+            self.firefly_label=text(1070,160,'ชนิด: ปกติ',24,WHITE)
+            text(1070,102,'แตะเพื่อสลับชนิดหิ่งห้อย',15,MUTED)
+        elseif entry[1]=='cloud' then
             self.lightning=box(1070,120,280,70,ACCENT)
             self.lightning_label=text(1070,120,'ฟ้าแลบ',25,vmath.vector4(.04,.09,.12,1))
         end
