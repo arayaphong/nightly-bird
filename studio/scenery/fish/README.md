@@ -20,7 +20,7 @@ never opens an attack lock. On each update, patrol detects any existing prey and
 locks its current location itself, including prey introduced without a tap.
 Before launching, the fish cancels its approach if prey disappears or moves
 outside a **72-world-unit decision radius** around the locked point. A remaining
-prey can be acquired at its new position by patrol on the next update. Once
+prey can be acquired at its new position by patrol after cancellation recovery. Once
 launched, prey changes do not alter the lock, launch, bite attempt or landing.
 After a miss lands, patrol immediately acquires any
 remaining prey at its current position and starts another attack automatically;
@@ -71,7 +71,12 @@ Internal `phase` values (`charge`, `leap`, `return`) describe movement within
 these modes. A fresh attack started while outside submerged bounds first returns
 to the water, then approaches its lock; this pre-launch return also cancels if
 prey leaves the decision circle. Cancellation preserves the fish's position and
-animation phase and resumes ordinary swimming continuously. Landing returns continuously instead
+animation phase. It brakes from its current velocity over **0.2s**, then remains
+in place stunned for **0.5s**, with slower existing fin animation and a subtle
+2-degree body sway. During recovery its heading eases level; no new artwork is
+used. New prey cannot interrupt or restart the recovery timer. Afterward patrol
+swims gently back into submerged bounds with a level heading instead of diving
+head-first. Hiding/leaving still clears recovery immediately. Landing returns continuously instead
 of clamping an overshooting x-coordinate back to an edge. A missed attack leaves
 any remaining bird at its current position, and patrol immediately locks it for a new attack.
 

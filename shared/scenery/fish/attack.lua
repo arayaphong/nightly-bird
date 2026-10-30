@@ -1,9 +1,10 @@
--- Three public modes: swim / attack / excited. Flight phases are internal.
+-- Three public modes: swim / attack / excited. Recovery phases are internal.
 local water=require('shared.scenery.water.motion')
 local viewport=require('shared.display.viewport')
 local mouth=require('shared.scenery.fish.mouth')
 local M={RANGE=128,LAUNCH_RANGE=96,HIT_RADIUS=24,APPROACH_SPEED=480,
-    GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120}
+    GRAVITY=viewport.HEIGHT*4.2,RETURN_SPEED=360,NORMAL_RETURN_SPEED=120,
+    BRAKE_TIME=.2,STUN_TIME=.5}
 M.DECISION_RADIUS=M.HIT_RADIUS*3
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 function M.accepts(x,y,w,width)
@@ -18,6 +19,7 @@ function M.cancel(s)
     s.charge_time=nil;s.flight_time=nil;s.flight_elapsed=nil
     s.launch_x=nil;s.launch_y=nil;s.launch_vy=nil;s.launch_count=nil
     s.resume_attack=nil;s.bite_done=nil
+    s.recovery_elapsed=nil;s.brake_vx=nil;s.brake_vy=nil;s.soft_return=nil
     -- Remove the previous controller's queue/recovery state as well.
     s.pending=nil;s.rest=nil;s.excited=nil
 end
@@ -33,7 +35,7 @@ function M.place(s,x,y,w,width)
     return valid
 end
 function M.acquire(s)
-    if s.mode~='swim' or not s.target or s.caught then return false end
+    if s.mode~='swim' or not s.target or s.caught or s.phase=='brake' or s.phase=='stun' then return false end
     local prey=s.target
     M.cancel(s)
     s.target=prey;s.lock={x=prey.x,y=prey.y};s.mode='attack';charge(s)
@@ -45,7 +47,10 @@ function M.cancel_lost_approach(s)
     if s.mode~='attack' or not (s.phase=='charge' or (s.phase=='return' and s.resume_attack)) then return false end
     local prey,lock=s.target,s.lock
     if prey and lock and (prey.x-lock.x)^2+(prey.y-lock.y)^2<=M.DECISION_RADIUS^2 then return false end
+    local vx,vy=s.vx or 0,s.vy or 0
     M.cancel(s);s.target=prey
+    s.phase='brake';s.recovery_elapsed=0;s.brake_vx=vx;s.brake_vy=vy
+    s.vx=vx;s.vy=vy
     return true
 end
 function M.outside(s,b)
@@ -57,13 +62,35 @@ function M.return_to_water(s,resume_attack)
 end
 function M.step(s,dt,w)
     local launched=false
-    -- Consume time in bounded steps so a slow frame cannot skip contact or
-    -- re-entry. No recovery timer and no queued placement survive a reset.
+    -- Consume time in bounded steps so a slow frame cannot skip contact,
+    -- re-entry or either recovery boundary. Hard resets clear all phase timers.
     while dt>1e-9 and s.phase do
-        local h=math.min(dt,1/120);dt=dt-h
+        local recovering=s.phase=='brake' or s.phase=='stun'
+        local stunned=s.phase=='stun'
+        local boundary=not recovering and math.huge or (stunned and M.STUN_TIME or M.BRAKE_TIME)-s.recovery_elapsed
+        local h=math.min(dt,1/120,boundary);dt=dt-h
         local mouth_x,mouth_y=mouth.position(s);local was_leaping=s.phase=='leap'
         local size=s.scale*1336/2.1
-        if s.phase=='charge' then
+        if recovering then
+            local t=s.recovery_elapsed
+            s.recovery_elapsed=t+h
+            if stunned then
+                s.vx=0;s.vy=0
+                if s.recovery_elapsed>=M.STUN_TIME-1e-9 then
+                    s.phase=nil;s.recovery_elapsed=nil;s.brake_vx=nil;s.brake_vy=nil
+                    s.soft_return=true;s.duration=0;s.elapsed=0
+                end
+            else
+                -- Integrate a linear brake exactly; preserve momentum and position.
+                local travel=h*(1-(t+h*.5)/M.BRAKE_TIME)
+                s.x=s.x+s.brake_vx*travel;s.y=s.y+s.brake_vy*travel
+                local speed=math.max(0,1-s.recovery_elapsed/M.BRAKE_TIME)
+                s.vx=s.brake_vx*speed;s.vy=s.brake_vy*speed
+                if s.recovery_elapsed>=M.BRAKE_TIME-1e-9 then
+                    s.phase='stun';s.recovery_elapsed=0;s.vx=0;s.vy=0
+                end
+            end
+        elseif s.phase=='charge' then
             s.charge_time=s.charge_time+h
             local sprint=M.APPROACH_SPEED
             local dx=s.lock.x-s.x
@@ -108,12 +135,16 @@ function M.step(s,dt,w)
                 s.x=s.x+s.vx*h;s.y=s.y+s.vy*h
             end
         end
-        local want=math.atan2(s.vy*(s.phase=='leap' and 1 or .6),math.abs(s.vx)>1 and s.vx or s.pose.direction)
+        local want
+        if recovering then
+            local wobble=stunned and math.sin((s.recovery_elapsed or M.STUN_TIME)*4*math.pi)*math.rad(2) or 0
+            want=(s.pose.direction==1 and 0 or math.pi)+wobble
+        else want=math.atan2(s.vy*(s.phase=='leap' and 1 or .6),math.abs(s.vx)>1 and s.vx or s.pose.direction) end
         local delta=math.atan2(math.sin(want-s.pose.angle),math.cos(want-s.pose.angle))
-        s.pose.angle=s.pose.angle+delta*math.min(1,h*(s.phase=='leap' and 14 or 8))
+        s.pose.angle=s.pose.angle+delta*(recovering and (1-math.exp(-h*12)) or math.min(1,h*(s.phase=='leap' and 14 or 8)))
         s.pose.direction=math.cos(s.pose.angle)<0 and -1 or 1
         s.pose.target=s.pose.direction==1 and 0 or math.pi
-        s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(s.mode=='swim' and 7.5 or 20)
+        s.pose.time=s.pose.time+h;s.pose.sw=s.pose.sw+h*(stunned and 1.5 or (s.mode=='swim' and 7.5 or 20))
         if s.mode=='attack' and was_leaping and not s.bite_done and s.lock then
             local x,y=mouth.position(s)
             -- Bite once at the locked location, even when no prey remains.

@@ -45,20 +45,21 @@ function M.step(s,dt,w,width)
     s.scale=b.scale
     s.bounds=b
     local launched=false
-    local abandoned=attack.cancel_lost_approach(s)
+    attack.cancel_lost_approach(s)
+    if s.soft_return and not attack.outside(s,b) then s.soft_return=nil end
     while true do
         -- Patrol detects existing prey on every update, including the instant
         -- an unsuccessful attack returns underwater. No placement event needed.
-        if not abandoned and attack.acquire(s) then
+        if attack.acquire(s) then
             if attack.outside(s,b) then attack.return_to_water(s,true) end
-        elseif not s.phase and attack.outside(s,b) then
+        elseif not s.phase and not s.soft_return and attack.outside(s,b) then
             attack.return_to_water(s,false)
         end
         if not s.phase then break end
         local fired,remaining=attack.step(s,dt,w)
         launched=launched or fired;dt=remaining
         if s.phase then return launched end
-        if abandoned or not (s.mode=='swim' and s.target and not s.caught) then break end
+        if not (s.mode=='swim' and s.target and not s.caught) then break end
     end
     local changed=not s.previous_bounds or s.previous_bounds.left~=b.left or s.previous_bounds.top~=b.top or s.previous_bounds.bottom~=b.bottom
     s.previous_bounds=b

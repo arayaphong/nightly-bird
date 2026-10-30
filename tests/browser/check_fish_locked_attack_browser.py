@@ -24,6 +24,9 @@ with sync_playwright() as p:
  page.goto(URL);page.wait_for_function('window.Module && Module.calledRun',timeout=60000)
  session=c.new_cdp_session(page)
  def frames(n=2):page.evaluate('n=>new Promise(done=>{const tick=()=>--n<=0?done():requestAnimationFrame(tick);requestAnimationFrame(tick)})',n)
+ def wait_ms(ms):
+  end=page.evaluate('performance.now()')+ms
+  while page.evaluate('performance.now()')<end:frames(3)
  def rect():return page.locator('canvas').bounding_box()
  def tap(x,y):
   r=rect();s=min(r['width']/1280,r['height']/720);x=r['x']+r['width']/2+(x-640)*s;y=r['y']+r['height']/2+(360-y)*s
@@ -65,10 +68,10 @@ with sync_playwright() as p:
   tap(560,220) if replacement else tap(640,360)
   tracks=[]
   for i in range(36):
-   frames(3);v=snapshot(name+'-%02d'%i);tracks.append(v)
+   wait_ms(100);v=snapshot(name+'-%02d'%i);tracks.append(v)
    assert not (v['fish'][1]<555 and v['fish'][0]>930),'Fish leaped at the abandoned lock'
    if replacement and v['bird'] and v['bird']['centre'][1]>590 and v['bird']['pixels']<180:break
-   if not replacement and len(tracks)>=6 and all(v['top']>585 for v in tracks[-3:]):break
+   if not replacement and len(tracks)>=12 and all(v['top']>585 for v in tracks[-3:]):break
   (ART/(name+'-tracks.json')).write_text(json.dumps(tracks,indent=2))
   airborne=[v for v in tracks if v['fish'][1]<555]
   if replacement:
@@ -86,5 +89,5 @@ with sync_playwright() as p:
  replaced=approach_case('replaced',True)
  errors=[s for s in logs if any(v in s for v in ('ERROR:','PAGEERROR','GL_INVALID'))]
  assert not errors,errors
- result={'version':'0.8.40','orientation':'landscape','test_clock':'0.2x; frozen during screenshots (not an FPS benchmark)','prelaunch_missing_prey_cancels':True,'old_lock_is_abandoned':True,'patrol_acquires_existing_prey_without_extra_tap':True,'automatic_followup_catches':True,'removed':removed,'replaced':replaced,'errors':errors}
+ result={'version':'0.8.41','orientation':'landscape','test_clock':'0.2x; frozen during screenshots (not an FPS benchmark)','prelaunch_missing_prey_cancels':True,'old_lock_is_abandoned':True,'patrol_acquires_existing_prey_after_recovery':True,'automatic_followup_catches':True,'removed':removed,'replaced':replaced,'errors':errors}
  (ART/'test.json').write_text(json.dumps(result,indent=2));(ART/'browser.log').write_text('\n'.join(logs));print(json.dumps({k:v for k,v in result.items() if k not in ('removed','replaced','catch')}));b.close()

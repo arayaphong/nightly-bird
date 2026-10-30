@@ -124,8 +124,10 @@ for _,offset in ipairs({{0,0,true},{72,0,true},{0,-72,true},{72.0001,0,false},
   assert(s.mode=='attack' and s.phase=='charge' and s.lock==lock,'Valid prey canceled the approach')
  else
   assert(s.mode=='swim' and not s.lock and s.target==prey,'Prey outside decision circle kept old attack')
-  -- Patrol detects the remaining prey next update and acquires its new location.
-  swim.step(s,0,w,2200)
+  -- New prey cannot bypass braking/stun; patrol acquires it after recovery.
+  swim.step(s,attack.BRAKE_TIME+attack.STUN_TIME-.0001,w,2200)
+  assert(s.phase=='stun' and not s.lock)
+  swim.step(s,.0001,w,2200)
   assert(s.mode=='attack' and s.lock~=lock and s.target==prey)
   near(s.lock.x,prey.x);near(s.lock.y,prey.y)
  end
@@ -138,6 +140,51 @@ assert(not place(s,640,720,w,1280));assert(s.mode=='swim' and not s.lock)
 local s=prepared(1280);s.y=s.bounds.top-20
 assert(place(s,700,480,w,1280));assert(s.phase=='return' and s.resume_attack)
 assert(not place(s,700,720,w,1280));assert(s.mode=='swim' and not s.lock and not s.resume_attack)
+
+-- Cancellation retains momentum, brakes continuously, then holds position for
+-- exactly 0.5s. Re-entry uses level patrol rather than a head-first descent.
+for _,direction in ipairs({-1,1}) do
+ local s=prepared(1280);s.x=direction==1 and 150 or 1100
+ s.y=water.surface_y(w,s.x)+20
+ assert(place(s,direction==1 and 1100 or 150,480,w,1280))
+ s.vx=direction*480;s.vy=0;s.pose.direction=direction
+ s.pose.angle=(direction==1 and 0 or math.pi)+.35
+ local x,y,a=s.x,s.y,s.pose.angle
+ assert(not place(s,640,720,w,1280))
+ assert(s.phase=='brake' and s.vx==direction*480 and s.vy==0)
+ near(s.x,x);near(s.y,y);near(s.pose.angle,a)
+ for i=1,20 do
+  local speed=math.abs(s.vx);swim.step(s,.01,w,1280)
+  assert(math.abs(s.vx)<=speed+1e-8,'Brake accelerated the fish')
+ end
+ assert(s.phase=='stun' and s.vx==0 and s.vy==0)
+ near(s.x,x+direction*480*attack.BRAKE_TIME/2);near(s.y,y)
+ local x,y,fin=s.x,s.y,s.pose.sw
+ swim.step(s,.4999,w,1280)
+ assert(s.phase=='stun' and s.pose.sw>fin and not s.lock)
+ near(s.x,x);near(s.y,y)
+ swim.step(s,.0001,w,1280)
+ assert(not s.phase and s.mode=='swim' and s.soft_return)
+ for i=1,300 do
+  local y=s.y;swim.step(s,.01,w,1280)
+  assert(math.abs(math.sin(s.pose.angle))<.1,'Recovery turned the fish head-first')
+  assert(math.abs(s.y-y)<1.3,'Recovery plunged instead of normal patrol')
+ end
+end
+local function recovered(dt)
+ local s=prepared(1280);assert(place(s,1100,480,w,1280));s.vx=300;s.vy=-40
+ assert(not place(s,640,720,w,1280))
+ local elapsed=0
+ while elapsed<.7-1e-9 do local h=math.min(dt,.7-elapsed);swim.step(s,h,w,1280);elapsed=elapsed+h end
+ assert(not s.phase and not s.lock);return s
+end
+local a,b=recovered(.7),recovered(1/120);near(a.x,b.x);near(a.y,b.y)
+-- A new placement during recovery retains its elapsed timer; hiding clears it.
+local s=prepared(1280);assert(place(s,1100,480,w,1280));assert(not place(s,640,720,w,1280))
+swim.step(s,.3,w,1280);local elapsed=s.recovery_elapsed
+assert(swim.place(s,700,480,w,1280));near(s.recovery_elapsed,elapsed)
+assert(s.phase=='stun' and not attack.acquire(s))
+attack.cancel(s);assert(not s.phase and not s.target and not s.recovery_elapsed and not s.soft_return)
 
 -- A new round is allowed only after the current committed attack lands.
 local s=prepared(1280);assert(place(s,640,480,w,1280));finish(s,1280)
@@ -176,4 +223,4 @@ assert(not swim.place(s,640,720,w,1280));swim.step(s,0,w,1280)
 assert(s.mode=='swim' and not s.lock and not s.target)
 assert(swim.place(s,640,480,w,1280));s.target.x=700
 swim.step(s,0,w,1280);assert(s.lock.x==700,'AI locked the stale placement position')
-print('PASS fish states: 72-unit pre-launch decision circle, 24-unit bite circle, uninterrupted flight/landing, autonomous patrol acquisition and bounded launch range')
+print('PASS fish states: radial decisions, 0.2s continuous braking, 0.5s stationary stun, level recovery, delayed acquisition, uninterrupted flight and frame independence')
